@@ -8,12 +8,15 @@ import { defineConfig } from 'vite';
 import { bundleEvidencePlugin } from './build/bundleEvidencePlugin.ts';
 import { forbiddenGrafanaImportPlugin } from './build/forbiddenGrafanaImportPlugin.ts';
 import { pinnedGrafanaSourceTransformPlugin } from './build/pinnedGrafanaSourceTransformPlugin.ts';
+import { textRendererOnlyImportsPlugin } from './build/textRendererOnlyImportsPlugin.ts';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const grafanaSourceDir = process.env.GRAFANA_SOURCE_DIR
   ? resolve(process.env.GRAFANA_SOURCE_DIR)
   : undefined;
 const textExperimentEnabled = process.env.POC_TEXT_PANEL_EXPERIMENT === '1';
+const textRendererOnlyExperimentEnabled =
+  process.env.POC_TEXT_RENDERER_ONLY_EXPERIMENT === '1';
 const testDataExperimentEnabled = process.env.POC_TESTDATA_DATASOURCE_EXPERIMENT === '1';
 const expectedGrafanaCommit = '6193dc03311b631b9727b560d24369e683dc396e';
 const reviewedTestDataSourceFiles = [
@@ -118,6 +121,14 @@ const reviewedSourceFiles = grafanaSourceDir
       resolve(grafanaSourceDir, 'public/app/core/config.ts'),
       resolve(grafanaSourceDir, 'public/app/features/panel/suggestions/utils'),
       resolve(grafanaSourceDir, 'public/app/features/panel/suggestions/utils.ts'),
+      ...(textRendererOnlyExperimentEnabled
+        ? [
+            resolve(
+              grafanaSourceDir,
+              'public/app/plugins/panel/text/v1/TextPanel.tsx'
+            ),
+          ]
+        : []),
       ...reviewedStatSourceFiles.map((file) =>
         resolve(grafanaSourceDir, 'public/app/plugins/panel/stat', file)
       ),
@@ -149,6 +160,13 @@ const statSourceRoot = grafanaSourceDir
 const timeSeriesSourceRoot = grafanaSourceDir
   ? resolve(grafanaSourceDir, 'public/app/plugins/panel/timeseries')
   : undefined;
+const textSourceRoot = grafanaSourceDir
+  ? resolve(grafanaSourceDir, 'public/app/plugins/panel/text')
+  : undefined;
+const textRendererExperimentRoot = resolve(
+  repositoryRoot,
+  'experiments/bundle/text-renderer-only'
+);
 
 export default defineConfig({
   // This is the Task 5 dynamic Grafana cohort plus Task 6's direct RxJS boundary.
@@ -173,10 +191,26 @@ export default defineConfig({
     ],
   },
   plugins: [
+    ...(textRendererOnlyExperimentEnabled && textSourceRoot
+      ? [
+          textRendererOnlyImportsPlugin({
+            experimentRoot: textRendererExperimentRoot,
+            publishedImportMode: 'cohort',
+            repositoryRoot,
+            sourceRoot: textSourceRoot,
+          }),
+        ]
+      : []),
     forbiddenGrafanaImportPlugin({
       repositoryRoot,
       sourceBridgeFiles: reviewedSourceFiles,
-      sourceBridgeRoots: reviewedSourceRoots,
+      sourceBridgeRoots: [
+        ...reviewedSourceRoots,
+        ...(textRendererOnlyExperimentEnabled ? [textRendererExperimentRoot] : []),
+      ],
+      ...(textRendererOnlyExperimentEnabled
+        ? { textRendererExperimentRoot }
+        : {}),
     }),
     ...(testDataSourceRoot
       ? [
@@ -185,6 +219,16 @@ export default defineConfig({
             entrypoint: 'module.tsx',
             sourceRoot: testDataSourceRoot,
             virtualNamespace: 'testdata',
+          }),
+        ]
+      : []),
+    ...(textRendererOnlyExperimentEnabled && textSourceRoot
+      ? [
+          pinnedGrafanaSourceTransformPlugin({
+            entryAlias: 'grafana-experiment-text-renderer',
+            entrypoint: 'v1/TextPanel.tsx',
+            sourceRoot: textSourceRoot,
+            virtualNamespace: 'text-renderer-only',
           }),
         ]
       : []),
@@ -334,12 +378,24 @@ export default defineConfig({
               'packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts'
             ),
           },
+          ...(textRendererOnlyExperimentEnabled
+            ? [
+                {
+                  find: /^app\/core\/config$/,
+                  replacement: resolve(textRendererExperimentRoot, 'runtimeConfigViewOnly.ts'),
+                },
+              ]
+            : []),
           { find: 'app', replacement: resolve(grafanaSourceDir, 'public/app') },
           {
             find: 'grafana-poc-text-panel',
             replacement: resolve(
-              grafanaSourceDir,
-              'public/app/plugins/panel/text/v1/module.tsx'
+              textRendererOnlyExperimentEnabled
+                ? textRendererExperimentRoot
+                : grafanaSourceDir,
+              textRendererOnlyExperimentEnabled
+                ? 'rendererOnly.ts'
+                : 'public/app/plugins/panel/text/v1/module.tsx'
             ),
           },
         ]

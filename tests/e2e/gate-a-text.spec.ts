@@ -241,14 +241,43 @@ test('renders the real Grafana Text panel from the dashboard UID with clean life
       performance
         .getEntriesByType('resource')
         .map(({ name }) => new URL(name).pathname)
-        .filter((path) => /poc-grafana-bridge|plugins\/panel\/text|monaco|codicon|worker/i.test(path))
+        .filter((path) =>
+          /poc-grafana-bridge|plugins\/panel\/text|text-renderer-only|rendererOnly|task8Text|monaco|codicon|worker/i.test(
+            path
+          )
+        )
     );
-    expect(sourceResources).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining('/packages/poc-grafana-bridge/src/panels/text.ts'),
-        expect.stringContaining('/public/app/plugins/panel/text/v1/module.tsx'),
-      ])
-    );
+    if (process.env.POC_TEXT_RENDERER_ONLY_EXPERIMENT === '1') {
+      const cohortIdentity = await page.evaluate(async () => {
+        const identityPath =
+          '/@fs/workspace/experiments/bundle/text-renderer-only/browserCohortIdentity.ts';
+        const module = await import(/* @vite-ignore */ identityPath);
+        return module.inspectTextRendererCohortIdentity();
+      });
+      expect(cohortIdentity).toEqual({ config: true, panelPlugin: true, useStyles2: true });
+      expect(
+        sourceResources.some(
+          (path) =>
+            path.includes('/experiments/bundle/text-renderer-only/rendererOnly.ts') ||
+            /\/assets\/rendererOnly-[^/]+\.js$/.test(path)
+        )
+      ).toBe(true);
+      expect(
+        sourceResources.some((path) =>
+          path.includes('poc-pinned-grafana-source:text-renderer-only:v1/TextPanel.tsx')
+        )
+      ).toBe(true);
+      expect(
+        sourceResources.some((path) => path.includes('/public/app/plugins/panel/text/v1/module.tsx'))
+      ).toBe(false);
+    } else {
+      expect(sourceResources).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('/packages/poc-grafana-bridge/src/panels/text.ts'),
+          expect.stringContaining('/public/app/plugins/panel/text/v1/module.tsx'),
+        ])
+      );
+    }
     expect(sourceResources.some((path) => /monaco|codicon|worker/i.test(path))).toBe(false);
     expect(sourceResources.some((path) => path.includes('/text/v2/'))).toBe(false);
 
