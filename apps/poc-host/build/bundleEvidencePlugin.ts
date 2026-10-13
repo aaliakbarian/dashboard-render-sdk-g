@@ -22,7 +22,9 @@ function evidenceModuleId(id: string, repositoryRoot: string): string {
       const namespace = separator >= 0 ? virtualSource.slice(0, separator) : 'testdata';
       const relativeSource = (separator >= 0 ? virtualSource.slice(separator + 1) : virtualSource).replace(/\.js$/, '');
       const auditedRoot =
-        namespace === 'stat'
+        namespace === 'text-baseline' || namespace === 'text-renderer-only'
+          ? 'public/app/plugins/panel/text'
+          : namespace === 'stat'
           ? 'public/app/plugins/panel/stat'
           : namespace === 'timeseries'
             ? 'public/app/plugins/panel/timeseries'
@@ -65,6 +67,12 @@ function chunkEvidence(chunk: Rolldown.OutputChunk, repositoryRoot: string) {
     modules: Object.keys(chunk.modules)
       .map((id) => evidenceModuleId(id, repositoryRoot))
       .sort(),
+    moduleRenderedBytes: Object.entries(chunk.modules)
+      .map(([id, module]) => ({
+        id: evidenceModuleId(id, repositoryRoot),
+        renderedBytes: module.renderedLength,
+      }))
+      .sort((left, right) => left.id.localeCompare(right.id)),
     rawSize: content.byteLength,
   };
 }

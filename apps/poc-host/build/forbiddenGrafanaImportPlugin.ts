@@ -20,6 +20,7 @@ export interface ForbiddenGrafanaImportOptions {
   reportFile?: string;
   sourceBridgeFiles?: string[];
   sourceBridgeRoots?: string[];
+  textRendererExperimentRoot?: string;
 }
 
 function normalizeModuleId(id: string): string {
@@ -32,7 +33,9 @@ function normalizeModuleId(id: string): string {
     const namespace = separator >= 0 ? virtualSource.slice(0, separator) : 'testdata';
     const relativeSource = (separator >= 0 ? virtualSource.slice(separator + 1) : virtualSource).replace(/\.js$/, '');
     const auditedRoot =
-      namespace === 'stat'
+      namespace === 'text-baseline' || namespace === 'text-renderer-only'
+        ? 'public/app/plugins/panel/text'
+        : namespace === 'stat'
         ? 'public/app/plugins/panel/stat'
         : namespace === 'timeseries'
           ? 'public/app/plugins/panel/timeseries'
@@ -71,6 +74,15 @@ function isInsideAllowedSourceBoundary(importer: string | undefined, roots: read
       normalizedImporter.includes(`${normalizedRoot}/`)
     );
   });
+}
+
+function isInsideExactSourceBoundary(importer: string | undefined, root: string | undefined): boolean {
+  if (!importer || !root) {
+    return false;
+  }
+  const normalizedImporter = normalizeModuleId(importer);
+  const normalizedRoot = normalizeModuleId(root).replace(/\/$/, '');
+  return normalizedImporter === normalizedRoot || normalizedImporter.startsWith(`${normalizedRoot}/`);
 }
 
 function isBridgeModule(id: string | undefined): boolean {
@@ -137,6 +149,22 @@ export function classifyForbiddenGrafanaImport(
     return violation(
       'grafana-application-source-outside-bridge',
       'Audited Grafana source aliases may only be imported from the POC Grafana source bridge.'
+    );
+  }
+
+  if (
+    (id === 'grafana-experiment-text-renderer' ||
+      id === 'grafana-experiment-data-markdown' ||
+      id === 'grafana-experiment-data-panel-plugin' ||
+      id === 'grafana-experiment-data-sanitize' ||
+      id === 'grafana-experiment-runtime-config' ||
+      id === 'grafana-experiment-ui-scroll-container' ||
+      id === 'grafana-experiment-ui-theme-context') &&
+    !isInsideExactSourceBoundary(importer, options.textRendererExperimentRoot)
+  ) {
+    return violation(
+      'grafana-application-source-outside-bridge',
+      'Experimental Text renderer aliases may only be imported from the bounded experiment.'
     );
   }
 
@@ -211,6 +239,7 @@ export function forbiddenGrafanaImportPlugin(
     const finding = classifyForbiddenGrafanaImport(source, importer, {
       sourceBridgeFiles,
       sourceBridgeRoots,
+      textRendererExperimentRoot: options.textRendererExperimentRoot,
     });
     if (finding) {
       violations.set(`${finding.category}:${finding.id}:${finding.importer ?? ''}`, finding);
@@ -236,12 +265,16 @@ export function forbiddenGrafanaImportPlugin(
     moduleParsed(moduleInfo) {
       const moduleFinding = inspect(moduleInfo.id, moduleInfo.id);
       if (moduleFinding) {
-        this.error(`${moduleFinding.category}: ${moduleFinding.id} (${moduleFinding.reason})`);
+        this.error(
+          `${moduleFinding.category}: ${moduleFinding.id} imported by ${moduleFinding.importer ?? '<entry>'} (${moduleFinding.reason})`
+        );
       }
       for (const importedId of [...moduleInfo.importedIds, ...moduleInfo.dynamicallyImportedIds]) {
         const finding = inspect(importedId, moduleInfo.id);
         if (finding) {
-          this.error(`${finding.category}: ${finding.id} (${finding.reason})`);
+          this.error(
+            `${finding.category}: ${finding.id} imported by ${finding.importer ?? '<entry>'} (${finding.reason})`
+          );
         }
       }
     },
