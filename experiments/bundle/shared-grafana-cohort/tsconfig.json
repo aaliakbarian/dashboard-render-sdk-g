@@ -1,0 +1,11 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "composite": false,
+    "emitDeclarationOnly": false,
+    "noEmit": true,
+    "types": ["node", "vite/client"]
+  },
+  "include": ["./**/*.ts", "./**/*.tsx", "../../../tests/experiments/shared-grafana-cohort/**/*.ts"]
+}
