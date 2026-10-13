@@ -20,6 +20,7 @@ export interface ForbiddenGrafanaImportOptions {
   reportFile?: string;
   sourceBridgeFiles?: string[];
   sourceBridgeRoots?: string[];
+  testDataRuntimeExperimentRoot?: string;
   textRendererExperimentRoot?: string;
 }
 
@@ -153,6 +154,17 @@ export function classifyForbiddenGrafanaImport(
   }
 
   if (
+    (id === 'grafana-experiment-testdata-runtime-source' ||
+      id === 'grafana-experiment-testdata-runtime-provider') &&
+    !isInsideExactSourceBoundary(importer, options.testDataRuntimeExperimentRoot)
+  ) {
+    return violation(
+      'grafana-application-source-outside-bridge',
+      'Experimental TestData runtime-only aliases may only be imported from the bounded experiment.'
+    );
+  }
+
+  if (
     (id === 'grafana-experiment-text-renderer' ||
       id === 'grafana-experiment-data-markdown' ||
       id === 'grafana-experiment-data-panel-plugin' ||
@@ -239,6 +251,7 @@ export function forbiddenGrafanaImportPlugin(
     const finding = classifyForbiddenGrafanaImport(source, importer, {
       sourceBridgeFiles,
       sourceBridgeRoots,
+      testDataRuntimeExperimentRoot: options.testDataRuntimeExperimentRoot,
       textRendererExperimentRoot: options.textRendererExperimentRoot,
     });
     if (finding) {
