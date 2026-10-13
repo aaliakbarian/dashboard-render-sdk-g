@@ -20,6 +20,7 @@ export interface ForbiddenGrafanaImportOptions {
   reportFile?: string;
   sourceBridgeFiles?: string[];
   sourceBridgeRoots?: string[];
+  lazyPanelExperimentRoot?: string;
   testDataRuntimeExperimentRoot?: string;
   textRendererExperimentRoot?: string;
 }
@@ -141,6 +142,17 @@ export function classifyForbiddenGrafanaImport(
   ): ForbiddenGrafanaImport => ({ category, id, ...(importer ? { importer } : {}), reason });
 
   if (
+    (id === 'grafana-experiment-stat-renderer' ||
+      id === 'grafana-experiment-timeseries-renderer') &&
+    !isInsideExactSourceBoundary(importer, options.lazyPanelExperimentRoot)
+  ) {
+    return violation(
+      'grafana-application-source-outside-bridge',
+      'Experimental lazy-panel renderer aliases may only be imported from the bounded lazy-panel experiment.'
+    );
+  }
+
+  if (
     (id === 'grafana-poc-text-panel' ||
       id === 'grafana-poc-stat-panel' ||
       id === 'grafana-poc-timeseries-panel' ||
@@ -251,6 +263,7 @@ export function forbiddenGrafanaImportPlugin(
     const finding = classifyForbiddenGrafanaImport(source, importer, {
       sourceBridgeFiles,
       sourceBridgeRoots,
+      lazyPanelExperimentRoot: options.lazyPanelExperimentRoot,
       testDataRuntimeExperimentRoot: options.testDataRuntimeExperimentRoot,
       textRendererExperimentRoot: options.textRendererExperimentRoot,
     });

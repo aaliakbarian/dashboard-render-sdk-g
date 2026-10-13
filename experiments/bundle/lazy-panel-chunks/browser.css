@@ -1,0 +1,10 @@
+/* POC / EXPERIMENT / NOT FOR PRODUCTION */
+:root { font-family: Inter, system-ui, sans-serif; color: #1f2937; background: #f4f6f8; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+button { padding: 0.45rem 0.7rem; }
+.experiment-shell { margin: 0 auto; max-width: 1280px; padding: 1rem; }
+.experiment-controls { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.experiment-dashboard { min-height: 500px; width: 100%; }
+[data-poc-grafana-style-mode='minimum-scoped'] .poc-grafana-dashboard { color-scheme: light; }
+[data-poc-grafana-style-mode='minimum-scoped'] .poc-grafana-dashboard .uplot { max-width: 100%; }
