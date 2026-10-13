@@ -8,6 +8,7 @@ import { defineConfig } from 'vite';
 import { bundleEvidencePlugin } from './build/bundleEvidencePlugin.ts';
 import { forbiddenGrafanaImportPlugin } from './build/forbiddenGrafanaImportPlugin.ts';
 import { pinnedGrafanaSourceTransformPlugin } from './build/pinnedGrafanaSourceTransformPlugin.ts';
+import { testDataRuntimeOnlyImportsPlugin } from './build/testDataRuntimeOnlyImportsPlugin.ts';
 import { textRendererOnlyImportsPlugin } from './build/textRendererOnlyImportsPlugin.ts';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -18,6 +19,8 @@ const textExperimentEnabled = process.env.POC_TEXT_PANEL_EXPERIMENT === '1';
 const textRendererOnlyExperimentEnabled =
   process.env.POC_TEXT_RENDERER_ONLY_EXPERIMENT === '1';
 const testDataExperimentEnabled = process.env.POC_TESTDATA_DATASOURCE_EXPERIMENT === '1';
+const testDataRuntimeOnlyExperimentEnabled =
+  process.env.POC_TESTDATA_RUNTIME_ONLY_EXPERIMENT === '1';
 const expectedGrafanaCommit = '6193dc03311b631b9727b560d24369e683dc396e';
 const reviewedTestDataSourceFiles = [
   'ConfigEditor.tsx',
@@ -47,6 +50,19 @@ const reviewedTestDataSourceFiles = [
   'datasource.ts',
   'metricTree.ts',
   'module.tsx',
+  'nodeGraphUtils.ts',
+  'runStreams.ts',
+  'testData/flameGraphResponse.ts',
+  'testData/serviceMapResponse.ts',
+  'testData/serviceMapResponseMedium.ts',
+  'variables.ts',
+] as const;
+const reviewedTestDataRuntimeSourceFiles = [
+  'LogIpsum.ts',
+  'constants.ts',
+  'dataquery.ts',
+  'datasource.ts',
+  'metricTree.ts',
   'nodeGraphUtils.ts',
   'runStreams.ts',
   'testData/flameGraphResponse.ts',
@@ -140,7 +156,10 @@ const reviewedSourceFiles = grafanaSourceDir
         return [resolved, resolved.replace(/\.[^.]+$/, '')];
       }),
       ...(testDataExperimentEnabled
-        ? reviewedTestDataSourceFiles.map((file) =>
+        ? (testDataRuntimeOnlyExperimentEnabled
+            ? reviewedTestDataRuntimeSourceFiles
+            : reviewedTestDataSourceFiles
+          ).map((file) =>
             resolve(
               grafanaSourceDir,
               'public/app/plugins/datasource/grafana-testdata-datasource',
@@ -167,6 +186,10 @@ const textRendererExperimentRoot = resolve(
   repositoryRoot,
   'experiments/bundle/text-renderer-only'
 );
+const testDataRuntimeExperimentRoot = resolve(
+  repositoryRoot,
+  'experiments/bundle/testdata-runtime-only'
+);
 
 export default defineConfig({
   // This is the Task 5 dynamic Grafana cohort plus Task 6's direct RxJS boundary.
@@ -187,10 +210,19 @@ export default defineConfig({
       // bare imports avoids a mid-probe optimizer reload.
       'd3-random',
       'lodash',
-      'react-use',
+      ...(testDataRuntimeOnlyExperimentEnabled ? [] : ['react-use']),
     ],
   },
   plugins: [
+    ...(testDataRuntimeOnlyExperimentEnabled
+      ? [
+          testDataRuntimeOnlyImportsPlugin({
+            experimentRoot: testDataRuntimeExperimentRoot,
+            publishedImportMode: 'cohort',
+            repositoryRoot,
+          }),
+        ]
+      : []),
     ...(textRendererOnlyExperimentEnabled && textSourceRoot
       ? [
           textRendererOnlyImportsPlugin({
@@ -207,7 +239,11 @@ export default defineConfig({
       sourceBridgeRoots: [
         ...reviewedSourceRoots,
         ...(textRendererOnlyExperimentEnabled ? [textRendererExperimentRoot] : []),
+        ...(testDataRuntimeOnlyExperimentEnabled ? [testDataRuntimeExperimentRoot] : []),
       ],
+      ...(testDataRuntimeOnlyExperimentEnabled
+        ? { testDataRuntimeExperimentRoot }
+        : {}),
       ...(textRendererOnlyExperimentEnabled
         ? { textRendererExperimentRoot }
         : {}),
@@ -215,10 +251,14 @@ export default defineConfig({
     ...(testDataSourceRoot
       ? [
           pinnedGrafanaSourceTransformPlugin({
-            entryAlias: 'grafana-poc-testdata-datasource',
-            entrypoint: 'module.tsx',
+            entryAlias: testDataRuntimeOnlyExperimentEnabled
+              ? 'grafana-experiment-testdata-runtime-source'
+              : 'grafana-poc-testdata-datasource',
+            entrypoint: testDataRuntimeOnlyExperimentEnabled ? 'datasource.ts' : 'module.tsx',
             sourceRoot: testDataSourceRoot,
-            virtualNamespace: 'testdata',
+            virtualNamespace: testDataRuntimeOnlyExperimentEnabled
+              ? 'testdata-runtime-only'
+              : 'testdata',
           }),
         ]
       : []),
@@ -387,6 +427,14 @@ export default defineConfig({
               ]
             : []),
           { find: 'app', replacement: resolve(grafanaSourceDir, 'public/app') },
+          ...(testDataRuntimeOnlyExperimentEnabled
+            ? [
+                {
+                  find: 'grafana-poc-testdata-datasource',
+                  replacement: resolve(testDataRuntimeExperimentRoot, 'providerMetadata.ts'),
+                },
+              ]
+            : []),
           {
             find: 'grafana-poc-text-panel',
             replacement: resolve(

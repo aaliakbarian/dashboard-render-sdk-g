@@ -93,6 +93,36 @@ test('runs the real TestData Predictable Pulse query through the Task 7 SceneQue
       ])
     );
 
+    if (process.env.POC_TESTDATA_RUNTIME_ONLY_EXPERIMENT === '1') {
+      const experiment = await page.evaluate(async () => {
+        const identityPath =
+          '/@fs/workspace/experiments/bundle/testdata-runtime-only/browserCohortIdentity.ts';
+        const identity = await import(/* @vite-ignore */ identityPath);
+        return {
+          cohort: identity.inspectTestDataRuntimeCohortIdentity(),
+          resources: performance.getEntriesByType('resource').map((entry) => entry.name),
+        };
+      });
+      expect(experiment.cohort).toEqual({
+        data: true,
+        react: true,
+        reactDom: true,
+        runtime: true,
+        rxjs: true,
+        superclass: true,
+      });
+      expect(
+        experiment.resources.some((url) =>
+          url.includes('/experiments/bundle/testdata-runtime-only/providerMetadata.ts')
+        )
+      ).toBe(true);
+      expect(
+        experiment.resources.some((url) =>
+          /grafana-testdata-datasource\/(?:module|QueryEditor|ConfigEditor)\.tsx/.test(url)
+        )
+      ).toBe(false);
+    }
+
     const network = await networkEvidence.snapshot();
     const queryRequests = network.filter(
       (
