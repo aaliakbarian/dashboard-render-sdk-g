@@ -21,6 +21,7 @@ import type { LazyPanelLoadEvent } from '../lazy-panel-chunks/closedLazyPanelCat
 
 const modes = ['text', 'stat', 'timeseries', 'all', 'testdata', 'two'] as const;
 type Mode = (typeof modes)[number];
+const browserRequest = window.fetch.bind(window);
 const panelIds = {
   all: ['text', 'stat', 'timeseries'],
   stat: ['stat'],
@@ -37,6 +38,11 @@ const scenes: PocDashboardSceneRoot[] = [];
 const provider = createSharedGrafanaCohortProvider({
   cohortEvidence: { record: (event) => cohortEvents.push(structuredClone(event)) },
   panelEvidence: { record: (event) => pluginEvents.push(structuredClone(event)) },
+});
+const loadTestDataClass = async () => (await provider.loadTestData()).plugin.DataSourceClass;
+const runtimePanelCatalog = Object.freeze({
+  ...POC_GATE_C_TEXT_STAT_TIMESERIES_PANEL_CATALOG,
+  pluginImportUtils: provider.panels,
 });
 const styleManager = createPocStyleModeManager(document.documentElement);
 let queryProbe: { fields: number; points: number; series: number; state: string } | undefined;
@@ -129,20 +135,16 @@ export function SharedGrafanaCohortApp() {
       grafanaBasePath: '/grafana',
       locale: 'en-US',
       namespace: 'default',
-      panelCatalog: {
-        ...POC_GATE_C_TEXT_STAT_TIMESERIES_PANEL_CATALOG,
-        pluginImportUtils: provider.panels,
-      },
-      request: window.fetch.bind(window),
+      panelCatalog: runtimePanelCatalog,
+      request: browserRequest,
       theme: 'light',
       timezone: 'browser',
     }).then(async (acquired) => {
       lease = acquired;
       if (mode !== 'text') {
-        const testdata = await provider.loadTestData();
         await acquired.acquireQueryRuntime({
           evidence: queryEvidence,
-          loadDataSourceClass: async () => testdata.plugin.DataSourceClass,
+          loadDataSourceClass: loadTestDataClass,
           moduleIdentity: 'public/app/plugins/datasource/grafana-testdata-datasource/datasource.ts',
         });
       }
