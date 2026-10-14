@@ -1,0 +1,150 @@
+/* POC / EXPERIMENT / NOT FOR PRODUCTION */
+:root {
+  color: #17243e;
+  background: #eef2f7;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+body {
+  margin: 0;
+}
+
+.host-css-shell {
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.host-css-sentinels {
+  width: min(1180px, 100%);
+  margin: 0 auto 20px;
+  padding: 18px;
+  border: 3px solid #6d28d9;
+  border-radius: 11px;
+  color: #241247;
+  background: #fff7d6;
+  font: 16px/1.45 Georgia, 'Times New Roman', serif;
+}
+
+.host-css-sentinels h1 {
+  margin: 0 0 10px;
+  color: #4c1d95;
+  font-size: 27px;
+  line-height: 1.2;
+}
+
+.host-css-sentinels p {
+  margin: 0 0 12px;
+}
+
+.host-css-sentinel-container,
+.host-css-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.host-css-sentinels button,
+.host-css-sentinels input,
+.host-css-sentinels select {
+  padding: 6px 9px;
+  border: 2px solid #6d28d9;
+  border-radius: 6px;
+  color: #241247;
+  background: #fff;
+  font: 600 14px/1.25 Georgia, 'Times New Roman', serif;
+}
+
+.host-css-sentinels svg,
+.host-css-sentinels canvas {
+  flex: 0 0 auto;
+  color: #6d28d9;
+  background: #f3e8ff;
+}
+
+body[data-host-css-profile='reset'] *,
+body[data-host-css-profile='reset'] *::before,
+body[data-host-css-profile='reset'] *::after {
+  box-sizing: border-box;
+}
+
+body[data-host-css-profile='reset'] :where(h1, h2, h3, h4, p, figure) {
+  margin: 0;
+}
+
+body[data-host-css-profile='reset'] :where(button, input, select, textarea) {
+  font: inherit;
+}
+
+body[data-host-css-profile='reset'] :where(img, svg, canvas) {
+  display: block;
+  max-width: 100%;
+}
+
+body[data-host-css-profile='typography'] {
+  font-family: 'Courier New', monospace;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+  line-height: 1.85;
+}
+
+body[data-host-css-profile='typography'] :where(h1, h2, h3, p, a, button, input, select) {
+  font-family: inherit;
+  letter-spacing: 0.075em;
+  line-height: 1.8;
+}
+
+body[data-host-css-profile='layout'] :where(main, section, article, div) {
+  min-width: 0;
+}
+
+body[data-host-css-profile='layout'] :where(img, svg, canvas) {
+  height: auto;
+  max-width: 100%;
+}
+
+body[data-host-css-profile='layout'] :where(.container, .content, .panel) {
+  width: 100%;
+  overflow: hidden;
+}
+
+body[data-host-css-profile='controls'] :where(button, input, select, textarea) {
+  padding: 0.7rem 1rem;
+  border: 2px solid #b91c1c;
+  border-radius: 999px;
+  color: #450a0a;
+  background: #fee2e2;
+  font: 700 15px/1.2 Arial, sans-serif;
+}
+
+body[data-host-css-profile='controls'] :where(button, input, select, textarea):focus-visible {
+  outline: 4px solid #fb7185;
+  outline-offset: 3px;
+}
+
+body[data-host-css-profile='framework'] .host-css-shell :where(.container, .content, .panel) {
+  width: 100%;
+  max-width: 100%;
+  padding: 12px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+body[data-host-css-profile='framework'] .host-css-shell :where(h1, h2, h3, p) {
+  letter-spacing: 0.04em;
+  line-height: 1.7;
+}
+
+body[data-host-css-profile='framework'] .host-css-shell :where(canvas, svg) {
+  vertical-align: middle;
+}
+
+body[data-host-css-profile='important'] :where(img, svg, canvas) {
+  max-width: 100% !important;
+}
+
+body[data-host-css-profile='important'] :where(button, input, select, textarea) {
+  box-sizing: border-box !important;
+  font: inherit !important;
+}
