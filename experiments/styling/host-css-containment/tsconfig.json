@@ -1,0 +1,17 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "composite": false,
+    "emitDeclarationOnly": false,
+    "incremental": false,
+    "noEmit": true,
+    "types": ["node", "vite/client"]
+  },
+  "include": [
+    "./**/*.ts",
+    "./**/*.tsx",
+    "../../bundle/shared-grafana-cohort/grafana-source-modules.d.ts",
+    "../../../tests/experiments/host-css-containment/**/*.ts"
+  ]
+}

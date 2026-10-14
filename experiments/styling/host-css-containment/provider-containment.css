@@ -1,0 +1,60 @@
+/* POC / EXPERIMENT / NOT FOR PRODUCTION */
+.grsdk-experiment-provider-surface[data-grsdk-surface='dashboard'] {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+  overflow: hidden;
+  color: #1f1f20;
+  background: #fff;
+  color-scheme: light;
+  font: 14px/1.5 Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.grsdk-experiment-provider-surface[data-grsdk-surface='dashboard'],
+.grsdk-experiment-provider-surface[data-grsdk-surface='dashboard'] *,
+.grsdk-experiment-provider-surface[data-grsdk-surface='dashboard'] *::before,
+.grsdk-experiment-provider-surface[data-grsdk-surface='dashboard'] *::after {
+  box-sizing: border-box;
+}
+
+.grsdk-experiment-provider-surface[data-grsdk-surface='dashboard'] .grsdk-experiment-dashboard-list,
+.grsdk-experiment-provider-surface[data-grsdk-surface='dashboard'] .poc-grafana-dashboard {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.grsdk-experiment-provider-surface[data-grsdk-surface='dashboard'] :where(button, input, select, textarea) {
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/*
+ * Grafana UI's pinned VizLegend label is a native button whose one-class
+ * Emotion rule loses to common `body[data-*] button` host selectors. Reinforce
+ * only that exact version-coupled renderer surface; do not reset every button.
+ */
+.grsdk-experiment-provider-surface[data-grsdk-surface='dashboard'] button[class*='-LegendLabel'] {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+  background: none;
+}
+
+.grsdk-experiment-provider-surface[data-grsdk-surface='dashboard'] :where(canvas, svg, img) {
+  max-width: 100%;
+}
+
+.grsdk-experiment-provider-surface[data-grsdk-surface='dashboard'] .uplot {
+  max-width: 100%;
+}
+
+#grafana-portal-container[data-grsdk-surface='portal'] {
+  box-sizing: border-box;
+  color: #1f1f20;
+  color-scheme: light;
+  font: 14px/1.5 Inter, ui-sans-serif, system-ui, sans-serif;
+}
