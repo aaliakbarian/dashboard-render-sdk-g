@@ -7,7 +7,7 @@
 | Owner | Grafana React SDK maintainers |
 | Phase | Phase 1 — Production Architecture and Distribution Strategy |
 | Workstream | Experiment: Host CSS collision containment (GitHub issue #40) |
-| Status | Bounded technical experiment complete |
+| Status | Bounded technical experiment complete; revalidated against merged Experiment E |
 | Created | 2026-10-14 |
 | Last Updated | 2026-10-14 |
 | Grafana baseline | OSS 13.2.3, source commit `6193dc03311b631b9727b560d24369e683dc396e` |
@@ -21,12 +21,14 @@ evidence, not production implementation or universal CSS isolation. Generated
 computed-style evidence and screenshots under
 `artifacts/experiments/host-css-containment/` are ignored.
 
-The branch base contains the completed shared-cohort Experiment D. The reviewed
-React-externalized Experiment E commit (`e8dca98`) was available on its focused
-branch but was not merged into this experiment's `main` base. This probe uses
-the same shared provider cohort and proves one React/ReactDOM browser identity;
-it does not repeat Experiment E's separate package-boundary externalization
-claim.
+After the branch was rebased onto current `main`, the experiment was revalidated
+against the merged [React-externalized provider](./react-externalized-provider.md)
+boundary at `4670654`. A disposable cross-boundary browser probe built the real
+Experiment E provider and host artifacts, applied this experiment's exact host
+profiles and scoped normalization, and exercised real Text, Stat, Time series,
+TestData, host sentinels, admission identity, and per-profile cleanup. The
+committed Experiment E admission/browser suites and the original issue #40
+lifecycle suite were rerun independently.
 
 ## 2. Hypothesis
 
@@ -50,6 +52,12 @@ Grafana reset, or blanket `!important` repair.
 
 All required criteria passed after one measured collision was repaired inside
 the experiment's scoped provider stylesheet. No production source was changed.
+
+Revalidation through Experiment E also passed. Its provider artifact retained
+zero bundled React, ReactDOM, JSX-runtime, or JSX-dev-runtime implementations;
+all host/provider identity checks were true before the Grafana implementation
+loaded; and duplicate-identity and unsupported-version probes still rejected
+before implementation load.
 
 ## 4. Baseline
 
@@ -168,6 +176,13 @@ Viewport-relative `x`/`y` coordinates remain in the diagnostic evidence but
 are not a containment invariant: focusing the Time series legend can scroll
 the document without changing host CSS or intrinsic geometry.
 
+The direct Experiment E replay produced the same 20.58 px legend height and
+290 px plot height for baseline and Profiles A–F. Every profile recorded all
+React/ReactDOM/JSX admission identities as true, a real
+`/grafana/api/ds/query` request, zero iframe/navigation elements, zero SystemJS
+requests, stable host sentinel styles/dimensions, and zero instance resources
+after unmount.
+
 Cross-profile host differences were intentional proof that the hostile styles
 were active. For example, Profile B changed the host heading line height from
 32.4 px to 48.6 px while the provider root stayed at 14 px/21 px.
@@ -238,6 +253,10 @@ This experiment did not create a host-owned Emotion cache, test hydration
 markers, CSP nonces, or reverse insertion order. Those remain inputs to issue
 #41. A React `CacheProvider` alone would not relocate the separate
 `@emotion/css` singleton used by Grafana UI.
+
+The Experiment E artifact boundary introduced no additional Emotion owner or
+new measured collision. React externalization and pre-initialization admission
+did not change the known Profile D specificity result.
 
 ## 16. Multiple-instance result
 
@@ -325,8 +344,8 @@ they are admitted only to the extent covered by conformance profiles.
   micro-frontends remain issue #41 inputs.
 - The scoped `-LegendLabel` reinforcement is deliberately version-coupled and
   must be revalidated for each provider cell.
-- Experiment E package externalization was not present in this branch base;
-  this experiment proves browser runtime identity, not its packaging mechanics.
+- The merged Experiment E Vite/Rolldown package boundary is now covered, but
+  other consumer bundlers remain outside this experiment.
 
 ## 22. Decision
 
@@ -373,9 +392,7 @@ The legend collision should be retained as a known conformance fixture.
    provider contract tests during Phase 2 planning.
 3. Add dark theme, overlays, CSP, accessibility/zoom, and mobile/narrow-host
    profiles before broadening support claims.
-4. Rebase or recreate this experiment on the merged Experiment E artifact when
-   package-level styling conformance is established.
-5. Re-run the complete matrix for every supported Grafana/provider cell.
+4. Re-run the complete matrix for every supported Grafana/provider cell.
 
 ## 26. Final status
 
@@ -383,4 +400,6 @@ The legend collision should be retained as a known conformance fixture.
 
 PASS means only that the initial scoped-light-DOM contract survived Profiles
 A–F for Grafana 13.2.3, React/ReactDOM 19.2.8, and Scenes 8.13.5 with the
-controlled capabilities. It does not prove universal CSS isolation.
+controlled capabilities. The result is now validated against the merged
+Experiment E production-shaped provider boundary, and issue #40 is ready to
+close after human review. It does not prove universal CSS isolation.
