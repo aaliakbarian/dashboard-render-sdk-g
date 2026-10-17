@@ -1,0 +1,21 @@
+/* POC / EXPERIMENT / NOT FOR PRODUCTION */
+@font-face {
+  font-family: 'Grsdk Provider Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../../../.grafana-source/grafana-v13.2.3/public/fonts/inter/Inter-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Grsdk Provider Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../../../.grafana-source/grafana-v13.2.3/public/fonts/inter/Inter-Medium.woff2') format('woff2');
+}
+
+.grsdk-experiment-provider-surface[data-grsdk-provider='grafana-13.2.3'][data-grsdk-surface='dashboard'],
+#grafana-portal-container[data-grsdk-provider='grafana-13.2.3'][data-grsdk-surface='portal'] {
+  font-family: 'Grsdk Provider Inter', Inter, ui-sans-serif, system-ui, sans-serif;
+}
