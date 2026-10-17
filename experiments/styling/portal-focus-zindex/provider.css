@@ -1,0 +1,69 @@
+/* POC / EXPERIMENT / NOT FOR PRODUCTION */
+.grsdk-portal-experiment-surface {
+  background: #f8fafc;
+  border: 2px solid #0f766e;
+  color: #0f172a;
+  isolation: isolate;
+  min-width: 0;
+  padding: 12px;
+}
+
+.grsdk-portal-dashboard-owner {
+  border: 1px solid #94a3b8;
+  margin: 10px 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 8px;
+  transform: translateZ(0);
+}
+
+.grsdk-overlay-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.grsdk-overlay-control,
+.grsdk-overlay-content button {
+  background: #fff;
+  border: 2px solid #0f766e;
+  border-radius: 4px;
+  color: #134e4a;
+  padding: 6px 9px;
+}
+
+.grsdk-overlay-control:focus-visible,
+.grsdk-overlay-content button:focus-visible,
+.grsdk-portal-experiment-surface:focus-visible,
+.grsdk-portal-dashboard-owner:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+#grafana-portal-container[data-grsdk-runtime='portal-focus-zindex-v1'] {
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  width: 100%;
+}
+
+#grafana-portal-container[data-grsdk-runtime='portal-focus-zindex-v1'] > * {
+  pointer-events: auto;
+}
+
+.grsdk-overlay-content {
+  background: #fff;
+  border: 2px solid #0f766e;
+  box-shadow: 0 10px 30px rgb(15 23 42 / 25%);
+  color: #0f172a;
+  max-width: 320px;
+  padding: 12px;
+}
+
+.grsdk-nonmodal-overlay {
+  left: 320px !important;
+  position: fixed !important;
+  top: 72px !important;
+  transform: none !important;
+}

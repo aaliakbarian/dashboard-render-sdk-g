@@ -1,0 +1,11 @@
+/* POC / EXPERIMENT / NOT FOR PRODUCTION */
+body { margin: 0; }
+.host-shell { font-family: Georgia, serif; min-height: 100vh; padding: 16px; }
+.host-fixed-header { background: #312e81; color: white; height: 48px; left: 0; position: fixed; right: 0; top: 0; z-index: 900; }
+.host-controls { margin-top: 52px; }
+.host-overlay-low { background: rgb(254 202 202 / 85%); height: 120px; left: 300px; pointer-events: none; position: fixed; top: 60px; width: 340px; z-index: 1500; }
+.host-overlay-high { background: rgb(191 219 254 / 65%); height: 90px; left: 330px; pointer-events: none; position: fixed; top: 85px; width: 280px; z-index: 5000; }
+.host-positioned-context { position: relative; z-index: 3; }
+.host-transform-context { transform: translateZ(0); }
+.host-opacity-context { isolation: isolate; opacity: .99; }
+.host-button { background: #fff; border: 2px solid #6d28d9; color: #241247; padding: 6px 9px; }
