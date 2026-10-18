@@ -1,0 +1,18 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "composite": false,
+    "declaration": false,
+    "emitDeclarationOnly": false,
+    "noEmit": true,
+    "rootDir": "../../..",
+    "types": ["node", "vite/client"]
+  },
+  "include": [
+    "./**/*.ts",
+    "./**/*.tsx",
+    "../../bundle/testdata-runtime-only/grafana-source-modules.d.ts",
+    "../../../tests/experiments/style-lifecycle/**/*.ts"
+  ]
+}

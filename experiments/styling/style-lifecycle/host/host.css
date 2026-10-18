@@ -1,0 +1,12 @@
+/* POC / EXPERIMENT / NOT FOR PRODUCTION */
+.style-lifecycle-host {
+  min-height: 100vh;
+  padding: 18px;
+}
+
+.style-lifecycle-status {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
