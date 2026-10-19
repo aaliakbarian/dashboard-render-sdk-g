@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Owner | Grafana React SDK maintainers |
+| Owner | Dashboard Render SDK G maintainers |
 | Phase | Phase 1 — Production Architecture and Distribution Strategy |
 | Workstream | Experiment: Host CSS collision containment (GitHub issue #40) |
 | Status | Bounded technical experiment complete; revalidated against merged Experiment E |

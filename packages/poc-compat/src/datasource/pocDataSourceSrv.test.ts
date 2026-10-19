@@ -15,7 +15,7 @@ const settings = {
   isDefault: true,
   jsonData: {},
   meta: { id: 'grafana-testdata-datasource', metrics: true },
-  name: 'Grafana React SDK POC TestData',
+  name: 'Dashboard Render SDK G POC TestData',
   readOnly: true,
   type: 'grafana-testdata-datasource',
   uid: 'grsdk-testdata',

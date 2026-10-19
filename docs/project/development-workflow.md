@@ -15,7 +15,7 @@ Phase 1 architecture and distribution decisions.
   numbering, goals, outcomes, and completion criteria.
 - GitHub milestones group repository work for each roadmap phase.
 - The
-  [Grafana React SDK Roadmap project](https://github.com/users/aaliakbarian/projects/1)
+  [Dashboard Render SDK Roadmap project](https://github.com/users/aaliakbarian/projects/1)
   tracks cross-phase execution, status, and priority.
 - GitHub issues represent individual workstreams and tasks.
 - ADRs and architecture research documents contain durable technical decisions

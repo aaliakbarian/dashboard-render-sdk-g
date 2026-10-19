@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Owner | Grafana React SDK maintainers |
+| Owner | Dashboard Render SDK G maintainers |
 | Phase | Phase 1 — Production Architecture and Distribution Strategy |
 | Workstream | Experiment: React-externalized production provider entrypoint |
 | Status | Bounded technical experiment complete |

@@ -4,7 +4,7 @@ import type { SceneGridItem, SceneQueryRunner, VizPanel } from '@grafana/scenes'
 import {
   TESTDATA_MODULE_IDENTITY,
   loadExactTestDataDataSourceClass,
-} from '@grafana-react-sdk/poc-grafana-bridge';
+} from '@dashboard-render-sdk-g/poc-grafana-bridge';
 
 import {
   acquirePocRuntime,

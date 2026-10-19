@@ -2,7 +2,9 @@
 
 ## Our commitment
 
-We are committed to making participation in `grafana-react-sdk` a welcoming, respectful, and harassment-free experience for everyone, regardless of background, identity, experience level, or personal characteristics.
+We are committed to making participation in Dashboard Render SDK G a
+welcoming, respectful, and harassment-free experience for everyone, regardless
+of background, identity, experience level, or personal characteristics.
 
 ## Expected behavior
 

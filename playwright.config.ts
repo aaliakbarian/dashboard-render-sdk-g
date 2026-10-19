@@ -22,7 +22,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'corepack yarn workspace @grafana-react-sdk/poc-host dev',
+    command: 'corepack yarn workspace @dashboard-render-sdk-g/poc-host dev',
     url: 'http://localhost:5173',
     reuseExistingServer: process.env.POC_REUSE_EXISTING_SERVER === '1',
     timeout: 30_000,

@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Owner | Grafana React SDK maintainers |
+| Owner | Dashboard Render SDK G maintainers |
 | Phase | Phase 1 — Production Architecture and Distribution Strategy |
 | Workstream | Experiment: Provider font, icon, and static asset packaging (GitHub issue #44) |
 | Status | Bounded technical experiment complete |

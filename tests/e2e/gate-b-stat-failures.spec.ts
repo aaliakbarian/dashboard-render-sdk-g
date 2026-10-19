@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import type {
   PocQueryEvidenceEvent,
   PocTransportEvidenceEvent,
-} from '@grafana-react-sdk/poc-compat';
+} from '@dashboard-render-sdk-g/poc-compat';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 import { authenticateGrafanaFixture } from './support/grafanaAuth';

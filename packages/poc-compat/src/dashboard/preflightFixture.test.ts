@@ -76,7 +76,7 @@ describe('Task 7 fixture preflight', () => {
     expect(primary).toMatchObject({
       refresh: '',
       schemaVersion: 42,
-      title: 'Grafana React SDK Phase 0 POC',
+      title: 'Dashboard Render SDK G Phase 0 POC',
       uid: 'grsdk-phase0-poc',
     });
     expect(primary.panels.map(({ id, type }) => ({ id, type }))).toEqual([

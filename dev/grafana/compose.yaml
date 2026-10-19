@@ -1,4 +1,4 @@
-name: grafana-react-sdk-poc-grafana
+name: dashboard-render-sdk-g-poc-grafana
 
 services:
   grafana:
@@ -24,7 +24,7 @@ services:
       - ./provisioning/dashboards/grsdk-phase0-poc.json:/var/lib/grafana/dashboards/grsdk-phase0-poc.json:ro
       - ./provisioning/dashboards/grsdk-phase0-poc-alt.json:/var/lib/grafana/dashboards/grsdk-phase0-poc-alt.json:ro
     networks:
-      - grsdk-poc
+      - dashboard-render-sdk-g-poc
     healthcheck:
       test:
         - CMD-SHELL
@@ -38,5 +38,5 @@ volumes:
   grafana-data:
 
 networks:
-  grsdk-poc:
-    name: grsdk-poc
+  dashboard-render-sdk-g-poc:
+    name: dashboard-render-sdk-g-poc

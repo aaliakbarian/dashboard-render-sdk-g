@@ -2,7 +2,10 @@
 
 ## Product vision
 
-`grafana-react-sdk` should make a Grafana dashboard feel like a native region of a React product rather than a separately embedded application. Teams should be able to reuse dashboards they already operate while preserving their own navigation, layout, and application identity.
+Dashboard Render SDK G should make a supported Grafana dashboard feel like a
+native region of a React product rather than a separately embedded application.
+Teams should be able to reuse dashboards they already operate while preserving
+their own navigation, layout, and application identity.
 
 ## Experience principles
 

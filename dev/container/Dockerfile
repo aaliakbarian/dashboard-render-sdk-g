@@ -25,4 +25,4 @@ RUN chmod 0755 /usr/local/bin/poc-dev-entrypoint
 WORKDIR /workspace
 
 ENTRYPOINT ["poc-dev-entrypoint"]
-CMD ["yarn", "workspace", "@grafana-react-sdk/poc-host", "dev"]
+CMD ["yarn", "workspace", "@dashboard-render-sdk-g/poc-host", "dev"]

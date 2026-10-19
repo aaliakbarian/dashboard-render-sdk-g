@@ -358,6 +358,73 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dashboard-render-sdk-g/poc-compat@workspace:*, @dashboard-render-sdk-g/poc-compat@workspace:packages/poc-compat":
+  version: 0.0.0-use.local
+  resolution: "@dashboard-render-sdk-g/poc-compat@workspace:packages/poc-compat"
+  dependencies:
+    "@emotion/css": "npm:11.13.5"
+    "@emotion/react": "npm:11.14.0"
+    "@grafana/data": "npm:13.2.3"
+    "@grafana/e2e-selectors": "npm:13.2.3"
+    "@grafana/i18n": "npm:13.2.3"
+    "@grafana/runtime": "npm:13.2.3"
+    "@grafana/scenes": "npm:8.13.5"
+    "@grafana/schema": "npm:13.2.3"
+    "@grafana/ui": "npm:13.2.3"
+    "@types/node": "npm:24.10.1"
+    "@types/react": "npm:19.2.18"
+    "@types/react-dom": "npm:19.2.4"
+    react: "npm:19.2.8"
+    react-dom: "npm:19.2.8"
+    react-router-dom: "npm:6.30.3"
+    rxjs: "npm:7.8.2"
+    uplot: "npm:1.6.32"
+    vitest: "npm:4.1.10"
+  languageName: unknown
+  linkType: soft
+
+"@dashboard-render-sdk-g/poc-grafana-bridge@workspace:*, @dashboard-render-sdk-g/poc-grafana-bridge@workspace:packages/poc-grafana-bridge":
+  version: 0.0.0-use.local
+  resolution: "@dashboard-render-sdk-g/poc-grafana-bridge@workspace:packages/poc-grafana-bridge"
+  dependencies:
+    "@emotion/css": "npm:11.13.5"
+    "@emotion/react": "npm:11.14.0"
+    "@grafana/data": "npm:13.2.3"
+    "@grafana/e2e-selectors": "npm:13.2.3"
+    "@grafana/i18n": "npm:13.2.3"
+    "@grafana/runtime": "npm:13.2.3"
+    "@grafana/scenes": "npm:8.13.5"
+    "@grafana/schema": "npm:13.2.3"
+    "@grafana/ui": "npm:13.2.3"
+    "@types/react": "npm:19.2.18"
+    "@types/react-dom": "npm:19.2.4"
+    d3-random: "npm:3.0.1"
+    dangerously-set-html-content: "npm:1.1.1"
+    lodash: "npm:4.18.1"
+    react: "npm:19.2.8"
+    react-dom: "npm:19.2.8"
+    react-router-dom: "npm:6.30.3"
+    react-use: "npm:17.6.1"
+    rxjs: "npm:7.8.2"
+    uplot: "npm:1.6.32"
+  languageName: unknown
+  linkType: soft
+
+"@dashboard-render-sdk-g/poc-host@workspace:apps/poc-host":
+  version: 0.0.0-use.local
+  resolution: "@dashboard-render-sdk-g/poc-host@workspace:apps/poc-host"
+  dependencies:
+    "@dashboard-render-sdk-g/poc-compat": "workspace:*"
+    "@dashboard-render-sdk-g/poc-grafana-bridge": "workspace:*"
+    "@types/react": "npm:19.2.18"
+    "@types/react-dom": "npm:19.2.4"
+    "@vitejs/plugin-react": "npm:6.1.1"
+    react: "npm:19.2.8"
+    react-dom: "npm:19.2.8"
+    vite: "npm:8.2.0"
+  languageName: unknown
+  linkType: soft
+
 "@emotion/babel-plugin@npm:^11.13.5":
   version: 11.13.5
   resolution: "@emotion/babel-plugin@npm:11.13.5"
@@ -591,73 +658,6 @@ __metadata:
   checksum: 10/eb12a7f5367bbecdfafc20d7f005559ce840f420e970f425c5213d35e94e86dfe75bde03464971a26494bf8427d4961269db22ecad2834f2a19d888b5d9cc064
   languageName: node
   linkType: hard
-
-"@grafana-react-sdk/poc-compat@workspace:*, @grafana-react-sdk/poc-compat@workspace:packages/poc-compat":
-  version: 0.0.0-use.local
-  resolution: "@grafana-react-sdk/poc-compat@workspace:packages/poc-compat"
-  dependencies:
-    "@emotion/css": "npm:11.13.5"
-    "@emotion/react": "npm:11.14.0"
-    "@grafana/data": "npm:13.2.3"
-    "@grafana/e2e-selectors": "npm:13.2.3"
-    "@grafana/i18n": "npm:13.2.3"
-    "@grafana/runtime": "npm:13.2.3"
-    "@grafana/scenes": "npm:8.13.5"
-    "@grafana/schema": "npm:13.2.3"
-    "@grafana/ui": "npm:13.2.3"
-    "@types/node": "npm:24.10.1"
-    "@types/react": "npm:19.2.18"
-    "@types/react-dom": "npm:19.2.4"
-    react: "npm:19.2.8"
-    react-dom: "npm:19.2.8"
-    react-router-dom: "npm:6.30.3"
-    rxjs: "npm:7.8.2"
-    uplot: "npm:1.6.32"
-    vitest: "npm:4.1.10"
-  languageName: unknown
-  linkType: soft
-
-"@grafana-react-sdk/poc-grafana-bridge@workspace:*, @grafana-react-sdk/poc-grafana-bridge@workspace:packages/poc-grafana-bridge":
-  version: 0.0.0-use.local
-  resolution: "@grafana-react-sdk/poc-grafana-bridge@workspace:packages/poc-grafana-bridge"
-  dependencies:
-    "@emotion/css": "npm:11.13.5"
-    "@emotion/react": "npm:11.14.0"
-    "@grafana/data": "npm:13.2.3"
-    "@grafana/e2e-selectors": "npm:13.2.3"
-    "@grafana/i18n": "npm:13.2.3"
-    "@grafana/runtime": "npm:13.2.3"
-    "@grafana/scenes": "npm:8.13.5"
-    "@grafana/schema": "npm:13.2.3"
-    "@grafana/ui": "npm:13.2.3"
-    "@types/react": "npm:19.2.18"
-    "@types/react-dom": "npm:19.2.4"
-    d3-random: "npm:3.0.1"
-    dangerously-set-html-content: "npm:1.1.1"
-    lodash: "npm:4.18.1"
-    react: "npm:19.2.8"
-    react-dom: "npm:19.2.8"
-    react-router-dom: "npm:6.30.3"
-    react-use: "npm:17.6.1"
-    rxjs: "npm:7.8.2"
-    uplot: "npm:1.6.32"
-  languageName: unknown
-  linkType: soft
-
-"@grafana-react-sdk/poc-host@workspace:apps/poc-host":
-  version: 0.0.0-use.local
-  resolution: "@grafana-react-sdk/poc-host@workspace:apps/poc-host"
-  dependencies:
-    "@grafana-react-sdk/poc-compat": "workspace:*"
-    "@grafana-react-sdk/poc-grafana-bridge": "workspace:*"
-    "@types/react": "npm:19.2.18"
-    "@types/react-dom": "npm:19.2.4"
-    "@vitejs/plugin-react": "npm:6.1.1"
-    react: "npm:19.2.8"
-    react-dom: "npm:19.2.8"
-    vite: "npm:8.2.0"
-  languageName: unknown
-  linkType: soft
 
 "@grafana/data@npm:13.2.3":
   version: 13.2.3
@@ -2444,6 +2444,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dashboard-render-sdk-g-poc-root@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "dashboard-render-sdk-g-poc-root@workspace:."
+  dependencies:
+    "@axe-core/playwright": "npm:4.11.1"
+    "@playwright/test": "npm:1.56.1"
+    "@types/node": "npm:24.10.1"
+    "@types/react": "npm:19.2.18"
+    "@types/react-dom": "npm:19.2.4"
+    "@vitejs/plugin-react": "npm:6.1.1"
+    playwright-core: "npm:1.56.1"
+    typescript: "npm:@typescript/typescript6@6.0.2"
+    vite: "npm:8.2.0"
+    vitest: "npm:4.1.10"
+  languageName: unknown
+  linkType: soft
+
 "date-fns@npm:^4.1.0":
   version: 4.4.0
   resolution: "date-fns@npm:4.4.0"
@@ -2811,23 +2828,6 @@ __metadata:
   checksum: 10/bf152d0ed1dc159239db1ba1f74fdbc40cb02f626770dcd5815c427ce0688c2635a06ed69af364396da4636d0408fcf7d4afdf7881724c3307e46aff30ca49e2
   languageName: node
   linkType: hard
-
-"grafana-react-sdk-poc-root@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "grafana-react-sdk-poc-root@workspace:."
-  dependencies:
-    "@axe-core/playwright": "npm:4.11.1"
-    "@playwright/test": "npm:1.56.1"
-    "@types/node": "npm:24.10.1"
-    "@types/react": "npm:19.2.18"
-    "@types/react-dom": "npm:19.2.4"
-    "@vitejs/plugin-react": "npm:6.1.1"
-    playwright-core: "npm:1.56.1"
-    typescript: "npm:@typescript/typescript6@6.0.2"
-    vite: "npm:8.2.0"
-    vitest: "npm:4.1.10"
-  languageName: unknown
-  linkType: soft
 
 "hasown@npm:^2.0.4":
   version: 2.0.4

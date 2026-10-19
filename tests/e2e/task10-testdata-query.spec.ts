@@ -36,7 +36,7 @@ test('runs the real TestData Predictable Pulse query through the Task 7 SceneQue
     expect(result).toMatchObject({
       cancellation: { staleDonePublished: false, transitions: ['Loading'] },
       datasource: {
-        name: 'Grafana React SDK POC TestData',
+        name: 'Dashboard Render SDK G POC TestData',
         type: 'grafana-testdata-datasource',
         uid: 'grsdk-testdata',
       },

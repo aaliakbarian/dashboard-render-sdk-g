@@ -4,7 +4,7 @@
 
 | Field | Value |
 | --- | --- |
-| Owner | Grafana React SDK maintainers |
+| Owner | Dashboard Render SDK G maintainers |
 | Phase | Phase 1 — Production Architecture and Distribution Strategy |
 | Status | Proposed for maintainer and qualified legal review |
 | Created | 2026-10-10 |

@@ -52,7 +52,7 @@ const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Provider asset experiment host root is missing.');
 
 let setMounted: ((value: boolean) => void) | undefined;
-const fontProbeText = 'Grafana React SDK 0123456789';
+const fontProbeText = 'Dashboard Render SDK G 0123456789';
 
 function inspectFont() {
   const family = getComputedStyle(document.querySelector('[data-grsdk-surface="dashboard"]') ?? document.body).fontFamily;

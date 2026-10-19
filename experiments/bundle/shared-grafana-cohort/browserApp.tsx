@@ -12,7 +12,7 @@ import {
   loadPocSceneConversion,
   type PocDashboardSceneRoot,
   type PocRuntimeLease,
-} from '@grafana-react-sdk/poc-compat';
+} from '@dashboard-render-sdk-g/poc-compat';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { createSharedGrafanaCohortProvider } from './providerBootstrap.ts';

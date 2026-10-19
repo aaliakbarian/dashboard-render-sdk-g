@@ -1,12 +1,12 @@
 # Roadmap
 
 The canonical source for project phase names, numbering, goals, and completion
-criteria is this roadmap. GitHub milestones and the Grafana React SDK Roadmap
+criteria is this roadmap. GitHub milestones and the Dashboard Render SDK Roadmap
 project track execution and status against this roadmap.
 
 This roadmap is ordered by evidence and capability, not by calendar date.
 Detailed workstream and task status belongs in GitHub issues and the
-[Grafana React SDK Roadmap project](https://github.com/users/aaliakbarian/projects/1),
+[Dashboard Render SDK Roadmap project](https://github.com/users/aaliakbarian/projects/1),
 not in this document.
 
 ## Foundation — COMPLETE

@@ -1,5 +1,5 @@
 {
-  "name": "@grafana-react-sdk/poc-grafana-bridge",
+  "name": "@dashboard-render-sdk-g/poc-grafana-bridge",
   "version": "0.0.0-poc",
   "private": true,
   "description": "Disposable private boundary for pinned Grafana application-source research; never publish.",

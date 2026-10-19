@@ -78,7 +78,7 @@ Inside the Compose network, Vite forwards `/grafana/*` to `http://grafana:3000` 
 The fixture provisions:
 
 - Grafana image `grafana/grafana:13.2.3@sha256:d84563330dc9d2fd2bc096d0fb96021b5319c75bf6ed555566709998e823dec4` on `linux/amd64`;
-- TestData datasource `Grafana React SDK POC TestData`, UID `grsdk-testdata`, type `grafana-testdata-datasource`;
+- TestData datasource `Dashboard Render SDK G POC TestData`, UID `grsdk-testdata`, type `grafana-testdata-datasource`;
 - schema-42 dashboard UID `grsdk-phase0-poc` with Text, Stat, Time series, and diagnostic Table panels; and
 - lifecycle dashboard UID `grsdk-phase0-poc-alt` with one alternate Text sentinel.
 
