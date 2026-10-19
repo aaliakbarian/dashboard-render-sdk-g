@@ -119,8 +119,17 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md), the
 
 ## License
 
-No open-source license has been selected yet. The current [LICENSE](LICENSE)
-file is a placeholder; until it is replaced, no license permission is granted.
+Dashboard Render SDK G project-owned code is licensed under
+[AGPL-3.0-only](LICENSE). Third-party dependencies and incorporated upstream
+materials retain their applicable licenses and notice requirements; the
+project license does not relicense them. See the
+[license-adoption record](docs/project/agpl-license-adoption.md) for the
+boundary and outstanding release gates.
+
+This license decision does not authorize public package or renderer-provider
+distribution. Phase 2 publication remains subject to the third-party
+license/notice, source-availability, reproducibility, SBOM, and other release
+compliance gates.
 
 Grafana is a trademark of Grafana Labs. Dashboard Render SDK G is an
 independent project and is not affiliated with, endorsed by, or sponsored by
