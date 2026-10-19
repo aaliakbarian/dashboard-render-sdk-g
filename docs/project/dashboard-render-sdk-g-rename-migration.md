@@ -237,4 +237,3 @@ The project-rename issue is ready to close after:
    verified;
 4. the GitHub Project display name is updated; and
 5. the default branch passes the complete container-first verification suite.
-
