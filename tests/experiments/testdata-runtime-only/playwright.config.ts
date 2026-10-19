@@ -34,7 +34,7 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      'corepack yarn workspace @grafana-react-sdk/poc-host dev --port 5175 --strictPort --force',
+      'corepack yarn workspace @dashboard-render-sdk-g/poc-host dev --port 5175 --strictPort --force',
     reuseExistingServer: false,
     timeout: 30_000,
     url: 'http://localhost:5175',

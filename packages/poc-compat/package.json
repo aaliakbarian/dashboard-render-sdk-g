@@ -1,5 +1,5 @@
 {
-  "name": "@grafana-react-sdk/poc-compat",
+  "name": "@dashboard-render-sdk-g/poc-compat",
   "version": "0.0.0-poc",
   "private": true,
   "description": "Disposable private Grafana compatibility research code; never publish.",

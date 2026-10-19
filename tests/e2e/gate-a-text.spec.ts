@@ -101,7 +101,7 @@ test('renders the real Grafana Text panel from the dashboard UID with clean life
     expect(dashboardError, `Gate A dashboard failed with ${dashboardError ?? 'no category'}.`).toBeNull();
 
     await expect(textPanel).toBeVisible();
-    await expect(textPanel).toContainText('Grafana React SDK POC');
+    await expect(textPanel).toContainText('Dashboard Render SDK G POC');
     await expect(textPanel).toContainText('Native phase0 Text fixture for phase0.');
     await expect(textPanel.locator('strong')).toHaveText('phase0');
     await expect(page.getByRole('region', { name: 'Text — phase0' })).toBeVisible();

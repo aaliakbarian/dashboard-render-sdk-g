@@ -14,7 +14,7 @@ import {
   type PocSceneConversionEvidenceEvent,
   type PocSceneConversionEvidenceRecorder,
   type PocStyleModeManager,
-} from '@grafana-react-sdk/poc-compat';
+} from '@dashboard-render-sdk-g/poc-compat';
 import {
   createTextPanelCatalog,
   createTextAndStatPanelCatalog,
@@ -25,10 +25,10 @@ import {
   loadExactTestDataDataSourceClass,
   TESTDATA_MODULE_IDENTITY,
   type PanelPluginLoadEvent,
-} from '@grafana-react-sdk/poc-grafana-bridge';
+} from '@dashboard-render-sdk-g/poc-grafana-bridge';
 import { GlobalStyles } from '@grafana/ui';
 import { useCallback, useEffect, useState } from 'react';
-import '@grafana-react-sdk/poc-compat/poc-panel.css';
+import '@dashboard-render-sdk-g/poc-compat/poc-panel.css';
 
 const pluginEvents: PanelPluginLoadEvent[] = [];
 const dashboardErrors: string[] = [];

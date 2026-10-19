@@ -20,7 +20,7 @@ const requiredInventory: ProviderAssetInventoryEntry[] = [
     owner: 'provider',
     size: 120,
     sourceCommit: null,
-    sourcePackage: 'grafana-react-sdk',
+    sourcePackage: 'dashboard-render-sdk-g',
     source: '<repo>/experiments/styling/provider-assets/provider-assets.css',
     sourceVersion: 'unpublished-experiment',
     url: '/app/sdk/assets/provider-assets-a1.css',

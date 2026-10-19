@@ -13,7 +13,7 @@ const rawSettings = {
   isDefault: true,
   jsonData: { keep: 'safe' },
   meta: { builtIn: true, id: 'grafana-testdata-datasource', metrics: true },
-  name: 'Grafana React SDK POC TestData',
+  name: 'Dashboard Render SDK G POC TestData',
   readOnly: true,
   type: 'grafana-testdata-datasource',
   uid: 'grsdk-testdata',
@@ -24,7 +24,7 @@ describe('Task 10 frontend datasource settings', () => {
   it('selects and sanitizes only the controlled UID and type', async () => {
     const backend = backendWith({
       datasources: {
-        'Grafana React SDK POC TestData': {
+        'Dashboard Render SDK G POC TestData': {
           ...rawSettings,
           password: 'must-not-survive',
           secureJsonFields: { token: true },

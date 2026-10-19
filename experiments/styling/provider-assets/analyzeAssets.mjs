@@ -72,7 +72,7 @@ for (const path of paths) {
       ? 'uplot'
       : isSlider
         ? '@rc-component/slider'
-        : 'grafana-react-sdk';
+        : 'dashboard-render-sdk-g';
   const sourceVersion = isGrafanaAsset
     ? '13.2.3'
     : isVisualization

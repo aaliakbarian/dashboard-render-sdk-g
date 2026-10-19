@@ -2,7 +2,7 @@
 import {
   acquirePocRuntime,
   inspectPocRuntime,
-} from '@grafana-react-sdk/poc-compat';
+} from '@dashboard-render-sdk-g/poc-compat';
 
 import {
   inspectStrictCspProvider,

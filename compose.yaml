@@ -1,8 +1,8 @@
-name: grafana-react-sdk-poc
+name: dashboard-render-sdk-g-poc
 
 services:
   dev:
-    image: grafana-react-sdk-poc-dev:local
+    image: dashboard-render-sdk-g-poc-dev:local
     build:
       context: .
       dockerfile: dev/container/Dockerfile
@@ -27,14 +27,14 @@ services:
       - "127.0.0.1:5173:5173"
     shm_size: 1gb
     networks:
-      - grsdk-poc
+      - dashboard-render-sdk-g-poc
     depends_on:
       grafana:
         condition: service_healthy
     command:
       - yarn
       - workspace
-      - "@grafana-react-sdk/poc-host"
+      - "@dashboard-render-sdk-g/poc-host"
       - dev
 
   grafana:
@@ -48,7 +48,7 @@ services:
       - ./dev/grafana/provisioning/dashboards/grsdk-phase0-poc.json:/var/lib/grafana/dashboards/grsdk-phase0-poc.json:ro
       - ./dev/grafana/provisioning/dashboards/grsdk-phase0-poc-alt.json:/var/lib/grafana/dashboards/grsdk-phase0-poc-alt.json:ro
     networks:
-      - grsdk-poc
+      - dashboard-render-sdk-g-poc
 
 volumes:
   grafana-data:
@@ -56,5 +56,5 @@ volumes:
   poc-yarn-cache:
 
 networks:
-  grsdk-poc:
-    name: grsdk-poc
+  dashboard-render-sdk-g-poc:
+    name: dashboard-render-sdk-g-poc

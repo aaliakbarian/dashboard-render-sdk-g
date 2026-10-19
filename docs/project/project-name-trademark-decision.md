@@ -8,7 +8,7 @@
 | Phase | Phase 1 — Production Architecture and Distribution Strategy |
 | Workstream | Project name and trademark |
 | GitHub issue | [`#66` — Resolve project name and Grafana trademark usage](https://github.com/aaliakbarian/grafana-react-sdk/issues/66) |
-| Status | Working name selected; rename pending |
+| Status | Working name adopted internally; GitHub repository rename pending |
 | Created | 2026-10-18 |
 | Last Updated | 2026-10-19 |
 
@@ -39,17 +39,18 @@ reserved.
 
 ## 3. Current project identity
 
-The repository still uses its historical working identity pending a controlled
-rename:
+The project-owned repository content now adopts the selected working identity.
+The external GitHub repository and project remain under their historical names
+until the maintainer performs the post-merge rename:
 
 | Surface | Current identity | State |
 | --- | --- | --- |
-| Display name | Grafana React SDK | Experimental working name |
-| GitHub repository | `aaliakbarian/grafana-react-sdk` | Public source repository |
-| Repository slug | `grafana-react-sdk` | Contains the Grafana mark |
-| Root private workspace | `grafana-react-sdk` | POC-only; unpublished |
-| Private workspace scope | `@grafana-react-sdk/*` | POC-only; unpublished |
-| Roadmap project | Grafana React SDK Roadmap | Project-control working name |
+| Display name | Dashboard Render SDK G | Adopted in current repository content |
+| GitHub repository | `aaliakbarian/grafana-react-sdk` | Historical external URL retained until post-merge repository rename |
+| Repository slug | `grafana-react-sdk` | External rename to `dashboard-render-sdk-g` remains pending |
+| Root private workspace | `dashboard-render-sdk-g-poc-root` | POC-only; unpublished |
+| Private workspace scope | `@dashboard-render-sdk-g/*` | POC-only; provisional and unpublished |
+| Roadmap project | Dashboard Render SDK Roadmap | Display rename remains a maintainer action in GitHub |
 | Public npm packages | None | No package or scope has been published/reserved by this workstream |
 
 The maintainer has selected the following replacement working identity:

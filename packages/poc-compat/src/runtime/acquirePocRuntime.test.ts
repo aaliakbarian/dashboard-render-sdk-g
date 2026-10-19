@@ -265,13 +265,13 @@ describe('POC compatibility runtime coordinator', () => {
               isDefault: true,
               jsonData: {},
               meta: { id: 'grafana-testdata-datasource', metrics: true },
-              name: 'Grafana React SDK POC TestData',
+              name: 'Dashboard Render SDK G POC TestData',
               readOnly: true,
               type: 'grafana-testdata-datasource',
               uid: 'grsdk-testdata',
             },
           },
-          defaultDatasource: 'Grafana React SDK POC TestData',
+          defaultDatasource: 'Dashboard Render SDK G POC TestData',
         }),
         { headers: { 'content-type': 'application/json' }, status: 200 }
       )

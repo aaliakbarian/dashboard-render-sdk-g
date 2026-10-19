@@ -1,5 +1,5 @@
 {
-  "name": "@grafana-react-sdk/poc-host",
+  "name": "@dashboard-render-sdk-g/poc-host",
   "version": "0.0.0-poc",
   "private": true,
   "description": "Disposable private React host for native-rendering research; never publish.",
@@ -11,8 +11,8 @@
     "typecheck": "tsc6 --noEmit --pretty false"
   },
   "dependencies": {
-    "@grafana-react-sdk/poc-compat": "workspace:*",
-    "@grafana-react-sdk/poc-grafana-bridge": "workspace:*",
+    "@dashboard-render-sdk-g/poc-compat": "workspace:*",
+    "@dashboard-render-sdk-g/poc-grafana-bridge": "workspace:*",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

@@ -1,6 +1,8 @@
 # Contributing
 
-Thank you for helping shape `grafana-react-sdk`. The project is currently establishing its architecture and validating technical feasibility; there is no SDK implementation or stable API yet.
+Thank you for helping shape Dashboard Render SDK G. The repository contains an
+experimental architecture POC, but there is no published SDK or stable public
+API yet.
 
 ## Before contributing
 
@@ -24,7 +26,9 @@ Contributions are currently most useful when they:
 - improve the proof-of-concept plan; or
 - correct and clarify project documentation.
 
-Please do not introduce an SDK implementation, `package.json`, or runtime dependencies until the project reaches the implementation phase described in the roadmap.
+Do not treat the disposable POC as the production SDK. Production package and
+runtime work must follow the phase boundaries and approved decisions in the
+roadmap.
 
 ## Proposing a change
 

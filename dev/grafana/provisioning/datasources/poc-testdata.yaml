@@ -1,11 +1,11 @@
 apiVersion: 1
 
 deleteDatasources:
-  - name: Grafana React SDK POC TestData
+  - name: Dashboard Render SDK G POC TestData
     orgId: 1
 
 datasources:
-  - name: Grafana React SDK POC TestData
+  - name: Dashboard Render SDK G POC TestData
     uid: grsdk-testdata
     type: grafana-testdata-datasource
     access: proxy

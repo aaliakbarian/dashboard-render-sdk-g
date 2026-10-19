@@ -1,10 +1,12 @@
-# Grafana React SDK
+# Dashboard Render SDK G
 
 > **Experimental pre-release project.** There is no published npm SDK yet. The
 > current implementation is disposable architecture-POC code, not a supported
 > production SDK.
 
-Render existing Grafana OSS dashboards as native React components.
+Dashboard Render SDK G is an independent open-source SDK project for rendering
+supported dashboards compatible with its verified Grafana OSS provider cell as
+native React components.
 
 No iframe.  
 No Grafana application shell.
@@ -106,7 +108,7 @@ commands.
 - [Vision](docs/project/vision.md)
 - [Roadmap](docs/project/roadmap.md)
 - [Phase 0 GitHub milestone](https://github.com/aaliakbarian/grafana-react-sdk/milestone/1)
-- [Grafana React SDK Roadmap project](https://github.com/users/aaliakbarian/projects/1)
+- [Dashboard Render SDK Roadmap project](https://github.com/users/aaliakbarian/projects/1)
 
 ## Contributing
 
@@ -120,5 +122,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md), the
 No open-source license has been selected yet. The current [LICENSE](LICENSE)
 file is a placeholder; until it is replaced, no license permission is granted.
 
-Grafana is a trademark of Grafana Labs. This project is independent and is not
-endorsed by or affiliated with Grafana Labs.
+Grafana is a trademark of Grafana Labs. Dashboard Render SDK G is an
+independent project and is not affiliated with, endorsed by, or sponsored by
+Grafana Labs or its affiliates. References to Grafana identify compatibility
+targets only.

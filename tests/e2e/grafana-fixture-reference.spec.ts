@@ -15,7 +15,7 @@ test('renders the provisioned dashboard in pinned Grafana as reference evidence'
 
   await page.goto('/grafana/d/grsdk-phase0-poc/grsdk-phase0-poc?from=now-1h&to=now');
 
-  await expect(page.getByText('Grafana React SDK Phase 0 POC', { exact: true }).first()).toBeVisible();
+  await expect(page.getByText('Dashboard Render SDK G Phase 0 POC', { exact: true }).first()).toBeVisible();
   await expect(page.getByText('Text — phase0', { exact: true })).toBeVisible();
   await expect(page.getByText('Stat — predictable pulse', { exact: true })).toBeVisible();
   await expect(page.getByText('Time series — predictable pulse', { exact: true })).toBeVisible();

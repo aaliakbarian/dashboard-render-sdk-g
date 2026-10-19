@@ -17,7 +17,7 @@ test('records objective Time series comparison evidence against Grafana 13.2.3',
     const poc = await capturePanelVisual(pocPanel, 'gate-c-poc-timeseries');
 
     await page.goto(
-      '/grafana/d/grsdk-phase0-poc/grafana-react-sdk-phase-0-poc?orgId=1&from=now-1h&to=now&viewPanel=3&kiosk&theme=light'
+      '/grafana/d/grsdk-phase0-poc/dashboard-render-sdk-g-phase-0-poc?orgId=1&from=now-1h&to=now&viewPanel=3&kiosk&theme=light'
     );
     const referencePanel = page.getByRole('region', { name: 'Time series — predictable pulse' });
     await expect(referencePanel).toBeVisible({ timeout: 20_000 });

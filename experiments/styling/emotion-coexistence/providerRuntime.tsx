@@ -12,7 +12,7 @@ import {
   inspectPocRuntime,
   type PocDashboardSceneRoot,
   type PocRuntimeLease,
-} from '@grafana-react-sdk/poc-compat';
+} from '@dashboard-render-sdk-g/poc-compat';
 import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 

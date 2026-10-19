@@ -2,7 +2,7 @@
   "annotations": {
     "list": []
   },
-  "description": "Disposable synthetic dashboard for the Grafana React SDK native-rendering POC.",
+  "description": "Disposable synthetic dashboard for the Dashboard Render SDK G native-rendering POC.",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -28,7 +28,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "# Grafana React SDK POC\n\nNative **phase0** Text fixture for `$environment`.",
+        "content": "# Dashboard Render SDK G POC\n\nNative **phase0** Text fixture for `$environment`.",
         "mode": "markdown"
       },
       "pluginVersion": "13.2.3",
@@ -303,7 +303,7 @@
   "refresh": "",
   "schemaVersion": 42,
   "tags": [
-    "grafana-react-sdk",
+    "dashboard-render-sdk-g",
     "phase0",
     "synthetic"
   ],
@@ -330,7 +330,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Grafana React SDK Phase 0 POC",
+  "title": "Dashboard Render SDK G Phase 0 POC",
   "uid": "grsdk-phase0-poc",
   "version": 1,
   "weekStart": ""

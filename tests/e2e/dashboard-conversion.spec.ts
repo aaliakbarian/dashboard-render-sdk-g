@@ -93,14 +93,14 @@ test('converts both real V1 fixture DTOs into inactive Scenes graphs', async ({ 
     ],
     refresh: '',
     timeRange: { from: 'now-1h', timeZone: 'browser', to: 'now' },
-    title: 'Grafana React SDK Phase 0 POC',
+    title: 'Dashboard Render SDK G Phase 0 POC',
     uid: 'grsdk-phase0-poc',
     variables: [{ hide: 2, name: 'environment', value: 'phase0' }],
   });
   expect(result.alternate).toMatchObject({
     active: false,
     panels: [{ dataProvider: 'none', id: 1, queryCount: 0, type: 'text' }],
-    title: 'Grafana React SDK Phase 0 POC Alternate',
+    title: 'Dashboard Render SDK G Phase 0 POC Alternate',
     uid: 'grsdk-phase0-poc-alt',
   });
   expect(result).toMatchObject({

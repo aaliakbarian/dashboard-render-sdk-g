@@ -1,6 +1,6 @@
 // POC / EXPERIMENT / NOT FOR PRODUCTION
 import type { CustomTransformOperator, DataFrame, DataTransformerConfig, DataTransformerInfo } from '@grafana/data';
-import type { PocRuntimeLease } from '@grafana-react-sdk/poc-compat';
+import type { PocRuntimeLease } from '@dashboard-render-sdk-g/poc-compat';
 import { catchError, map, throwError } from 'rxjs';
 
 import {

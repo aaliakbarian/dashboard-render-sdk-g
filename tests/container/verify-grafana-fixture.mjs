@@ -73,7 +73,7 @@ assert.deepEqual(
   },
   {
     isDefault: true,
-    name: 'Grafana React SDK POC TestData',
+    name: 'Dashboard Render SDK G POC TestData',
     readOnly: true,
     type: 'grafana-testdata-datasource',
     uid: 'grsdk-testdata',

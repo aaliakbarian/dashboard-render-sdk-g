@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import type { PocQueryEvidenceEvent } from '@grafana-react-sdk/poc-compat';
+import type { PocQueryEvidenceEvent } from '@dashboard-render-sdk-g/poc-compat';
 
 import { authenticateGrafanaFixture } from './support/grafanaAuth';
 import { installConsoleGuard } from './support/consoleGuard';
