@@ -2,6 +2,7 @@
   "name": "@dashboard-render-sdk-g/poc-grafana-bridge",
   "version": "0.0.0-poc",
   "private": true,
+  "license": "AGPL-3.0-only",
   "description": "Disposable private boundary for pinned Grafana application-source research; never publish.",
   "type": "module",
   "exports": {

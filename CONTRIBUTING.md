@@ -41,6 +41,18 @@ roadmap.
 
 Follow the commit and pull-request conventions documented in the [development workflow](docs/project/development-workflow.md).
 
+## Contribution license
+
+Project-owned code is licensed under
+[GNU Affero General Public License v3.0 only](LICENSE). By submitting a
+contribution, you agree that you have the right to provide it and that it is
+provided under `AGPL-3.0-only`, the same license used for project-owned code.
+
+The project does not currently require a Contributor License Agreement,
+copyright assignment, or Developer Certificate of Origin. Contributions must
+not relicense third-party code or assets; include accurate provenance and
+applicable upstream license information for any third-party material.
+
 ## Architecture decisions
 
 ADRs live in `docs/architecture/decisions/`. Existing accepted decisions are constraints, not suggestions. A proposal that changes one should add a new ADR that supersedes the earlier decision rather than silently editing its history.

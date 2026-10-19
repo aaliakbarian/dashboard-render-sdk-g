@@ -2,6 +2,7 @@
   "name": "dashboard-render-sdk-g-poc-root",
   "version": "0.0.0-poc",
   "private": true,
+  "license": "AGPL-3.0-only",
   "description": "Disposable private research workspace for the Grafana native-rendering POC.",
   "packageManager": "yarn@4.17.1",
   "engines": {
