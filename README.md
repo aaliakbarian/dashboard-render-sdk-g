@@ -1,7 +1,8 @@
 # Dashboard Render SDK G
 
 > **Experimental pre-release project.** There is no published npm SDK yet. The
-> current implementation is disposable architecture-POC code, not a supported
+> repository contains a disposable Phase 0 POC and is beginning private Phase 2
+> implementation of the approved architecture; neither is a supported
 > production SDK.
 
 Dashboard Render SDK G is an independent open-source SDK project for rendering
@@ -26,10 +27,24 @@ without an iframe or the Grafana application shell is viable. The controlled
 POC renders real Grafana OSS 13.2.3 panels through React 19.2.8 without calling
 `GrafanaApp.init`.
 
-`REVISE` does not mean the rendering architecture failed. It means the
-production and distribution architecture requires further work before an SDK
-can be released or supported. See the complete
+`REVISE` does not mean the rendering architecture failed. It records that
+production and distribution architecture work was still required when Phase 0
+ended. See the complete
 [Phase 0 results](docs/architecture/research/poc-results.md).
+
+## Project progression
+
+- **Phase 0 — REVISE:** native rendering succeeded, but production architecture
+  still needed definition and validation.
+- **Phase 1 — APPROVE:** the production architecture was accepted and now
+  authorizes private, experimental Phase 2 implementation. See the
+  [Phase 1 production architecture decision](docs/architecture/production/phase1-production-architecture-decision.md).
+- **Phase 2 — CURRENT:** the project is implementing and validating the
+  production-oriented SDK foundation within that approved architecture.
+
+Phase 1 approval does not authorize public npm or renderer-provider
+publication. Public release remains gated by artifact-specific compliance,
+conformance, provenance, security, bundle, and maintainer review.
 
 ## What works today
 
@@ -64,22 +79,8 @@ Current support is intentionally constrained to:
 
 The POC does not establish compatibility with arbitrary panels, plugins,
 datasources, dashboard features, Grafana versions, or V2 dashboards. It is
-evidence for a future SDK architecture, not a general compatibility promise.
-
-## Why REVISE?
-
-The production architecture still needs decisions and validation for:
-
-- licensing and distribution of Grafana application source and assets;
-- productizing or replacing the exact-version application-source bridge;
-- the large bundle and inherited Monaco/editor closure;
-- Grafana Runtime singleton ownership and page-level isolation;
-- React 19 support while Scenes declares React 18 peers;
-- containment of Grafana styling and global resets;
-- exact Grafana-version coupling and upgrade strategy; and
-- a scalable transformation-compatibility strategy.
-
-These are technical and review checkpoints, not legal conclusions.
+evidence for the approved production architecture, not a general compatibility
+promise and not production code to promote wholesale.
 
 ## Project boundaries
 
@@ -101,13 +102,14 @@ commands.
 ## Documentation and tracking
 
 - [Phase 0 results](docs/architecture/research/poc-results.md)
+- [Phase 1 production architecture decision](docs/architecture/production/phase1-production-architecture-decision.md)
 - [Standalone rendering POC design](docs/architecture/research/grafana-rendering-poc.md)
 - [POC implementation plan](docs/development/poc-implementation-plan.md)
 - [Local development](docs/development/local-development.md)
 - [Project context](docs/project/project-context.md)
 - [Vision](docs/project/vision.md)
 - [Roadmap](docs/project/roadmap.md)
-- [Phase 0 GitHub milestone](https://github.com/aaliakbarian/grafana-react-sdk/milestone/1)
+- [Phase 0 GitHub milestone](https://github.com/aaliakbarian/dashboard-render-sdk-g/milestone/1)
 - [Dashboard Render SDK Roadmap project](https://github.com/users/aaliakbarian/projects/1)
 
 ## Contributing
@@ -129,7 +131,9 @@ boundary and outstanding release gates.
 This license decision does not authorize public package or renderer-provider
 distribution. Phase 2 publication remains subject to the third-party
 license/notice, source-availability, reproducibility, SBOM, and other release
-compliance gates.
+compliance gates, including
+[#64](https://github.com/aaliakbarian/dashboard-render-sdk-g/issues/64) and
+[#65](https://github.com/aaliakbarian/dashboard-render-sdk-g/issues/65).
 
 Grafana is a trademark of Grafana Labs. Dashboard Render SDK G is an
 independent project and is not affiliated with, endorsed by, or sponsored by
