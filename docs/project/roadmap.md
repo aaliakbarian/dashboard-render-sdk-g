@@ -40,33 +40,52 @@ production and distribution architecture needs further work; it does not mean
 the rendering architecture failed. See the
 [Phase 0 results](../architecture/research/poc-results.md).
 
-## Phase 1 — Production Architecture and Distribution Strategy — CURRENT
+## Phase 1 — Production Architecture and Distribution Strategy — COMPLETE
 
 Goal: turn the Phase 0 evidence into an approved, supportable production
 architecture and distribution strategy.
 
-- Resolve Grafana source licensing and distribution requirements.
-- Define how the bounded application-source bridge can be productized or
-  replaced.
-- Establish the supported Grafana version and compatibility policy.
-- Define Runtime ownership and isolation.
-- Establish the supported React and Scenes combination.
-- Reduce and govern bundle size.
-- Select a styling-containment strategy.
-- Define the transformation-compatibility strategy.
-- Make the final production-architecture approval decision.
+- Resolved Grafana source licensing and distribution direction.
+- Defined the bounded provider/core architecture and exact-version capability
+  model.
+- Established version, Runtime, React/Scenes, bundle, presentation, asset, CSP,
+  lifecycle, and transformation policies.
+- Completed the required production-shaped conformance experiments.
+- Adopted `AGPL-3.0-only` for project-owned code and retained applicable
+  third-party licensing boundaries.
+- Final Phase 1 decision: **APPROVE**.
 
-## Phase 2 — SDK Foundation and Experimental Package — FUTURE
+Phase 1 approval authorizes private, experimental Phase 2 implementation. It
+does not authorize public package or provider publication. See the
+[Phase 1 production architecture decision](../architecture/production/phase1-production-architecture-decision.md).
+
+## Phase 2 — SDK Foundation and Experimental Package — CURRENT
 
 Goal: implement the first production-oriented SDK foundation from approved
 Phase 1 decisions.
 
+### Implementation and validation
+
 - Establish the production package and workspace structure.
-- Define the public API.
-- Provide the supported dashboard component.
-- Implement adapters based on Phase 1 decisions.
-- Add automated compatibility testing.
-- Publish the first experimental npm release.
+- Implement the provider-contract and provider-neutral core boundaries.
+- Implement the experimental exact-version Grafana-compatible provider.
+- Establish durable conformance, compatibility, bundle, provenance, security,
+  and lifecycle infrastructure.
+- Deliberately rewrite and productize approved POC concepts rather than
+  promoting disposable POC code wholesale.
+- Stabilize known test-harness debt.
+- Build and validate the experimental package against the approved
+  compatibility cell.
+
+### Publication
+
+Phase 2 implementation does not automatically publish an npm package or
+renderer provider. Public publication remains gated by at least:
+
+- [#64 — third-party licenses and notices](https://github.com/aaliakbarian/dashboard-render-sdk-g/issues/64);
+- [#65 — source availability, reproducibility, and SBOM](https://github.com/aaliakbarian/dashboard-render-sdk-g/issues/65); and
+- applicable candidate-artifact conformance, provenance, security, bundle, and
+  maintainer release review.
 
 ## Phase 3 — Alpha and Compatibility Expansion — FUTURE
 

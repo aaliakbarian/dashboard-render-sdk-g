@@ -2,12 +2,15 @@
 
 ## Current phase
 
-**Phase 1 — Production Architecture and Distribution Strategy**
+**Phase 2 — SDK Foundation and Experimental Package**
 
 Source code, private workspaces, container tooling, tests, and disposable POC
 implementations now exist. They are experimental research artifacts, not a
-published or supported SDK. Production SDK implementation must wait for the
-Phase 1 architecture and distribution decisions.
+published or supported SDK. Phase 2 may implement the production-oriented SDK
+foundation within the approved
+[Phase 1 production architecture](../architecture/production/phase1-production-architecture-decision.md).
+Implementation remains private and experimental; public package/provider
+publication is not yet authorized.
 
 ## Project-control sources
 
@@ -30,7 +33,7 @@ roadmap.
 1. Tie the work to a GitHub issue and the applicable milestone.
 2. Read the project context, roadmap, relevant ADRs, and applicable research.
 3. Create a focused, short-lived branch from the current default branch for
-   normal Phase 1 and later changes.
+   normal Phase 2 and later changes.
 4. Keep each change limited to one concern and define the evidence needed to
    validate it.
 5. Add or update tests for implementation behavior.
@@ -82,14 +85,24 @@ Research documents should state the question, environment, method, evidence, fin
 ## Implementation workflow
 
 The existing implementation is disposable POC code and does not automatically
-define the production SDK architecture. Phase 1 may add bounded experiments
-needed to resolve architecture questions, but production SDK implementation
-must wait for the Phase 1 approval decision.
+become the production SDK. Phase 2 may implement the approved production
+package structure, provider contract, provider-neutral core, exact-version
+provider, and conformance infrastructure. Approved POC concepts must be
+deliberately rewritten or productized behind those boundaries rather than
+promoted wholesale.
 
 Each authorized behavior change should include automated tests appropriate to
 its boundary and preserve the project's evidence and import guardrails. Use
 only commands documented by the repository; do not invent production release
 procedures before they exist.
+
+Phase 2 implementation and public publication are separate decisions. Keep all
+Phase 2 packages private and experimental until the explicit release gates
+pass, including
+[#64](https://github.com/aaliakbarian/dashboard-render-sdk-g/issues/64),
+[#65](https://github.com/aaliakbarian/dashboard-render-sdk-g/issues/65), and
+applicable candidate-artifact conformance, provenance, security, bundle, and
+maintainer release review.
 
 ## Pull requests and commits
 
