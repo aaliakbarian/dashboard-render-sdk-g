@@ -137,6 +137,26 @@ async function waitForZeroDashboards(page: Page) {
   await page.waitForTimeout(0);
 }
 
+async function warmProviderPresentationCaches(page: Page) {
+  await command(page, 'switchUidWithOpenModal');
+  await expect(page.getByRole('region', { name: 'Alternate Text sentinel' })).toContainText('phase0-alt');
+  await command(page, 'switchUidWithOpenModal');
+  await waitForPanels(page);
+  await command(page, 'resize');
+
+  await page.getByTestId('popover-trigger-portal-primary').click();
+  await expect(page.getByTestId('popover-portal-primary')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('popover-portal-primary')).toHaveCount(0);
+
+  await page.getByTestId('modal-trigger-portal-primary').click();
+  const dialog = page.getByRole('dialog', { name: 'Provider modal portal-primary' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Close modal', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect.poll(async () => (await inspect(page)).provider.provider.portal.childCount).toBe(0);
+}
+
 async function open(page: Page, url = '/') {
   await installCspCapture(page);
   const session = await authenticateGrafanaFixture(page);
@@ -170,12 +190,17 @@ function structuralMetrics(
   listeners: LifecycleListenerSnapshot,
   timers?: LifecycleTimerSnapshot
 ) {
+  const emotionRulesByOwner = state.styles.tags.reduce<Record<string, number>>((rules, tag) => {
+    rules[tag.owner] = (rules[tag.owner] ?? 0) + Math.max(0, tag.rules);
+    return rules;
+  }, {});
   return {
     abortControllers: resource.page.abortController,
     activeDashboardScopes: state.provider.runtime.activeDashboardScopes,
     activeLeases: state.provider.runtime.activeLeases,
     animationFrames: resource.page.animationFrame,
     emotionElements: state.styles.emotionElements,
+    emotionRulesByOwner,
     comparableEventListeners: listeners.activeComparable,
     listenerByTarget: listeners.byTarget,
     listenerByTargetType: listeners.byTargetType,
@@ -194,6 +219,29 @@ function structuralMetrics(
     timerByDelay: timers?.byDelay ?? {},
     totalRules: state.styles.totalRules,
   };
+}
+
+function expectProviderStyleBaseline(
+  actual: ReturnType<typeof structuralMetrics>,
+  baseline: ReturnType<typeof structuralMetrics>,
+  context = 'provider style baseline'
+) {
+  expect(actual.emotionElements, context).toBe(baseline.emotionElements);
+  expect(actual.emotionRulesByOwner, context).toEqual(baseline.emotionRulesByOwner);
+  expect(actual.styleElements, context).toBe(baseline.styleElements);
+  expect(actual.totalRules, context).toBe(baseline.totalRules);
+}
+
+function expectProviderStyleOwners(
+  actual: ReturnType<typeof structuralMetrics>,
+  baseline: ReturnType<typeof structuralMetrics>,
+  context: string
+) {
+  expect(actual.emotionElements, context).toBe(baseline.emotionElements);
+  expect(Object.keys(actual.emotionRulesByOwner).sort(), context).toEqual(
+    Object.keys(baseline.emotionRulesByOwner).sort()
+  );
+  expect(actual.styleElements, context).toBe(baseline.styleElements);
 }
 
 async function assertBoundaries(page: Page, state: LifecycleInspection) {
@@ -337,14 +385,37 @@ test('twenty cycles, two-dashboard handoff, and compatible remount keep structur
   const run = await open(page);
   try {
     const sentinel = (await inspect(page)).hostSentinels;
+    await warmProviderPresentationCaches(page);
     await command(page, 'togglePrimary');
     await waitForZeroDashboards(page);
+    const firstUseState = await inspect(page);
+    const firstUseResource = await captureResourceEvidence(page, 'style-first-use-release');
+    const firstUse = structuralMetrics(
+      firstUseState,
+      firstUseResource,
+      await captureLifecycleListenerEvidence(page),
+      await captureLifecycleTimerEvidence(page)
+    );
 
+    await command(page, 'mountPrimary');
+    await waitForPanels(page);
+    await command(page, 'resize');
+    await inspect(page);
+    await captureResourceEvidence(page, 'style-qualification-during');
+    await command(page, 'togglePrimary');
+    await waitForZeroDashboards(page);
     const baselineState = await inspect(page);
-    const baselineResource = await captureResourceEvidence(page, 'stress-baseline');
-    const baselineListeners = await captureLifecycleListenerEvidence(page);
-    const baselineTimers = await captureLifecycleTimerEvidence(page);
-    const baseline = structuralMetrics(baselineState, baselineResource, baselineListeners, baselineTimers);
+    const baselineResource = await captureResourceEvidence(page, 'style-qualification-release');
+    const baseline = structuralMetrics(
+      baselineState,
+      baselineResource,
+      await captureLifecycleListenerEvidence(page),
+      await captureLifecycleTimerEvidence(page)
+    );
+    expectProviderStyleOwners(baseline, firstUse, 'first-use to qualified provider style ownership');
+    for (const [owner, rules] of Object.entries(firstUse.emotionRulesByOwner)) {
+      expect(baseline.emotionRulesByOwner[owner], `${owner} rules after qualification`).toBeGreaterThanOrEqual(rules);
+    }
     const baselineMemory = await memoryObservation(page);
     const samples: Array<{ cycle: number; during: ReturnType<typeof structuralMetrics>; released: ReturnType<typeof structuralMetrics> }> = [];
 
@@ -391,8 +462,17 @@ test('twenty cycles, two-dashboard handoff, and compatible remount keep structur
         resizeObservers: baseline.resizeObservers,
         styleElements: baseline.styleElements,
       });
+      expectProviderStyleOwners(sample.released, baseline, `stress cycle ${sample.cycle} release`);
       expect(sample.released.fetches).toBe(0);
     }
+
+    const providerCssRuleCounts = samples.map(({ released }) => released.emotionRulesByOwner['provider-css'] ?? 0);
+    for (let index = 1; index < providerCssRuleCounts.length; index += 1) {
+      expect(providerCssRuleCounts[index], `provider-css rules at stress cycle ${index + 1}`).toBeGreaterThanOrEqual(
+        providerCssRuleCounts[index - 1]!
+      );
+    }
+    const repeatedCycleBaseline = samples.at(-1)!.released;
 
     for (const sample of samples.slice(0, 3)) {
       expect(sample.released.comparableEventListeners).toBe(baseline.comparableEventListeners);
@@ -409,8 +489,6 @@ test('twenty cycles, two-dashboard handoff, and compatible remount keep structur
     const warm = samples.slice(4).map(({ released }) => released);
     expect(Math.max(...warm.map(({ timeouts }) => timeouts)) - Math.min(...warm.map(({ timeouts }) => timeouts))).toBeLessThanOrEqual(12);
     expect(Math.max(...warm.map(({ animationFrames }) => animationFrames))).toBeLessThanOrEqual(1);
-    expect(new Set(warm.map(({ styleElements }) => styleElements)).size).toBe(1);
-    expect(new Set(warm.map(({ totalRules }) => totalRules)).size).toBe(1);
 
     await command(page, 'mountPrimary');
     await waitForPanels(page);
@@ -444,13 +522,34 @@ test('twenty cycles, two-dashboard handoff, and compatible remount keep structur
       await captureLifecycleListenerEvidence(page),
       await captureLifecycleTimerEvidence(page)
     );
+    expectProviderStyleOwners(twoDashboardPeak, repeatedCycleBaseline, 'two-dashboard provider style ownership');
+    for (const [owner, rules] of Object.entries(repeatedCycleBaseline.emotionRulesByOwner)) {
+      expect(twoDashboardPeak.emotionRulesByOwner[owner], `${owner} rules after final first-use surface`).toBeGreaterThanOrEqual(rules);
+    }
+    for (const snapshot of [afterDashboardAUnmount, afterAllDashboardsUnmount]) {
+      expectProviderStyleBaseline(snapshot, twoDashboardPeak);
+    }
+    const steadyStyleBaseline = afterAllDashboardsUnmount;
 
-    await command(page, 'mountPrimary');
-    await waitForPanels(page);
-    await expect(page.getByTestId('host-sentinel-button')).toBeVisible();
-    expect((await inspect(page)).hostSentinels).toEqual(sentinel);
-    await command(page, 'togglePrimary');
-    await waitForZeroDashboards(page);
+    const postWarmReleases: Array<ReturnType<typeof structuralMetrics>> = [];
+    for (let pass = 1; pass <= 3; pass += 1) {
+      await command(page, 'mountPrimary');
+      await waitForPanels(page);
+      if (pass === 1) {
+        await expect(page.getByTestId('host-sentinel-button')).toBeVisible();
+        expect((await inspect(page)).hostSentinels).toEqual(sentinel);
+      }
+      await command(page, 'togglePrimary');
+      await waitForZeroDashboards(page);
+      const released = structuralMetrics(
+        await inspect(page),
+        await captureResourceEvidence(page, `post-warm-release-${pass}`),
+        await captureLifecycleListenerEvidence(page),
+        await captureLifecycleTimerEvidence(page)
+      );
+      expectProviderStyleBaseline(released, steadyStyleBaseline, `post-warm release ${pass}`);
+      postWarmReleases.push(released);
+    }
 
     await page.waitForTimeout(2_100);
     await page.requestGC();
@@ -465,6 +564,7 @@ test('twenty cycles, two-dashboard handoff, and compatible remount keep structur
     expect(settled.resizeObservers).toBe(0);
     expect(settled.portalChildren).toBe(0);
     expect(settled.portalReferences).toBe(0);
+    expectProviderStyleBaseline(settled, steadyStyleBaseline);
 
     const staticRequests = run.requests.filter((path) => /\.(?:css|svg|woff2)$/.test(path));
     const staticRequestCounts = new Map<string, number>();
@@ -481,8 +581,11 @@ test('twenty cycles, two-dashboard handoff, and compatible remount keep structur
       afterDashboardAUnmount,
       duplicateStaticRequests,
       memory: { baseline: baselineMemory, settled: settledMemory },
+      postWarmReleases,
       samples,
       settled,
+      steadyStyleBaseline,
+      styleWarmup: { firstUse, qualified: baseline },
       staticRequests: [...new Set(staticRequests)].sort(),
       twoDashboardPeak,
     };

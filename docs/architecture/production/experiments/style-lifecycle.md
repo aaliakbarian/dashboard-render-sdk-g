@@ -9,7 +9,7 @@
 | Workstream | Experiment: Production-shaped style lifecycle cleanup (GitHub issue #45) |
 | Status | Bounded integration experiment complete |
 | Created | 2026-10-18 |
-| Last Updated | 2026-10-18 |
+| Last Updated | 2026-10-20 |
 | Grafana baseline | OSS 13.2.3, source commit `6193dc03311b631b9727b560d24369e683dc396e` |
 | Runtime cell | React/ReactDOM 19.2.8; `@grafana/scenes` 8.13.5; Chromium from Playwright 1.56.1 |
 | Presentation inputs | Experiment E and issues #40, #41, #42, #43, and #44 |
@@ -382,6 +382,43 @@ closure.
 | CSS rules rose 41 → 145 → 148 → 164 | Intentional lazy cache warming | Owners stayed constant at three; remount/cycles did not continue growth |
 
 No unresolved unbounded structural growth was observed in the verified cell.
+
+### Phase 2 durable conformance clarification
+
+Phase 2 issue #67 revalidated the CSS-rule assertion independently of the
+historical absolute measurements above. The lifecycle and transformation
+Playwright configurations launch separate Node processes, web servers,
+browser contexts, pages, JavaScript realms, Grafana singletons, Emotion
+caches, and CSSOMs. Their only shared live dependency is the external Grafana
+fixture; a predecessor cannot carry an in-memory style cache into the
+lifecycle page. The intermittent failure was reproduced by repeating the
+lifecycle stress case itself.
+
+In the reproducer, all three Emotion style owners and all three style tags
+remained constant while the Grafana `@emotion/css` owner made bounded,
+monotonic first-use insertions. Depending on execution timing, released-cycle
+rule totals included `145 → 148` in the original test and `161 → 164` in a
+focused corrected run; insertion timing and intermediate totals varied without
+changing the final provider-owned plateau. Active dashboard scopes,
+portal children and references, observers, fetches, intervals, animation
+frames, and subscriptions still returned to their expected baselines. The
+change was therefore provider/page-lifetime cache warming, not a
+dashboard-lifetime leak or cross-suite singleton contamination.
+
+The durable conformance invariant is ownership based:
+
+- establish the provider/page baseline in the current realm rather than
+  requiring a historical absolute rule count;
+- require the same three style owners and style-tag count throughout;
+- permit only monotonic first-use insertion by the provider-owned Grafana
+  cache during the twenty repeated dashboard cycles; and
+- after the final first-use Modal surface, require dashboard handoff, release,
+  three explicit compatible remount/release cycles, and the settled
+  zero-dashboard state to return to the same exact per-owner CSS-rule plateau.
+
+No retry, timeout increase, cache clearing, Grafana-global reset, or runtime
+behavior change is part of this clarification. Historical counts remain
+useful execution evidence; they are not universal cold-start constants.
 
 ## 25. Required Phase 2 lifecycle contract
 
