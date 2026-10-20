@@ -5,6 +5,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { authenticateGrafanaFixture } from '../../e2e/support/grafanaAuth.ts';
 import { installConsoleGuard } from '../../e2e/support/consoleGuard.ts';
 import { captureResourceEvidence, installResourceEvidence } from '../../e2e/support/resourceEvidence.ts';
+import { assessTimerSettlement } from '../../../experiments/styling/style-lifecycle/lifecycleContract.ts';
 import {
   captureLifecycleListenerEvidence,
   captureLifecycleTimerEvidence,
@@ -216,6 +217,7 @@ function structuralMetrics(
     styleElements: resource.dom.styleElements,
     subscriptions: resource.page.subscription,
     timeouts: resource.page.timeout,
+    trackedTimeouts: timers?.active ?? 0,
     timerByDelay: timers?.byDelay ?? {},
     totalRules: state.styles.totalRules,
   };
@@ -381,7 +383,7 @@ test('initialization, single lifecycle, dormant state, remount, and incompatible
   }
 });
 
-test('twenty cycles, two-dashboard handoff, and compatible remount keep structural resources bounded', async ({ page }) => {
+test('twenty cycles, two-dashboard handoff, and compatible remount keep structural resources bounded', async ({ page }, testInfo) => {
   const run = await open(page);
   try {
     const sentinel = (await inspect(page)).hostSentinels;
@@ -487,7 +489,6 @@ test('twenty cycles, two-dashboard handoff, and compatible remount keep structur
     }
 
     const warm = samples.slice(4).map(({ released }) => released);
-    expect(Math.max(...warm.map(({ timeouts }) => timeouts)) - Math.min(...warm.map(({ timeouts }) => timeouts))).toBeLessThanOrEqual(12);
     expect(Math.max(...warm.map(({ animationFrames }) => animationFrames))).toBeLessThanOrEqual(1);
 
     await command(page, 'mountPrimary');
@@ -551,7 +552,10 @@ test('twenty cycles, two-dashboard handoff, and compatible remount keep structur
       postWarmReleases.push(released);
     }
 
-    await page.waitForTimeout(2_100);
+    await expect.poll(
+      async () => (await captureLifecycleTimerEvidence(page)).active,
+      { message: 'active browser timers must reach the observable quiescent state' }
+    ).toBe(0);
     await page.requestGC();
     const settledState = await inspect(page);
     const settledResource = await captureResourceEvidence(page, 'stress-settled');
@@ -559,7 +563,23 @@ test('twenty cycles, two-dashboard handoff, and compatible remount keep structur
     const settledTimers = await captureLifecycleTimerEvidence(page);
     const settled = structuralMetrics(settledState, settledResource, settledListeners, settledTimers);
     const settledMemory = await memoryObservation(page);
-    expect(settled.timeouts).toBeLessThanOrEqual(baseline.timeouts);
+    const timerSettlement = assessTimerSettlement({
+      allowedTransientDelays: [2_000],
+      settled: settledTimers,
+      transient: [
+        baseline,
+        ...samples.map(({ released }) => released),
+        afterAllDashboardsUnmount,
+        ...postWarmReleases,
+      ].map(({ trackedTimeouts: active, timerByDelay: byDelay }) => ({ active, byDelay })),
+    });
+    expect(timerSettlement).toMatchObject({
+      conformant: true,
+      internallyConsistent: true,
+      settled: true,
+      unexpectedTransientDelays: [],
+    });
+    expect(settled.timeouts).toBe(0);
     expect(settled.fetches).toBe(0);
     expect(settled.resizeObservers).toBe(0);
     expect(settled.portalChildren).toBe(0);
@@ -575,7 +595,7 @@ test('twenty cycles, two-dashboard handoff, and compatible remount keep structur
     expect(duplicateStaticRequests).toEqual([]);
     await assertBoundaries(page, await inspect(page));
     await run.guard.assertClean();
-    evidence.stress = {
+    const stressEvidence = {
       baseline,
       afterAllDashboardsUnmount,
       afterDashboardAUnmount,
@@ -584,11 +604,20 @@ test('twenty cycles, two-dashboard handoff, and compatible remount keep structur
       postWarmReleases,
       samples,
       settled,
+      timerSettlement,
       steadyStyleBaseline,
       styleWarmup: { firstUse, qualified: baseline },
       staticRequests: [...new Set(staticRequests)].sort(),
       twoDashboardPeak,
     };
+    evidence.stress = stressEvidence;
+    const stressRepeats = (evidence.stressRepeats ??= {}) as Record<string, unknown>;
+    stressRepeats[String(testInfo.repeatEachIndex)] = stressEvidence;
+    await mkdir(artifactRoot, { recursive: true });
+    await writeFile(
+      `${artifactRoot}/stress-repeat-${testInfo.repeatEachIndex}.json`,
+      `${JSON.stringify(stressEvidence, null, 2)}\n`
+    );
   } finally {
     await run.session.cleanup();
   }
