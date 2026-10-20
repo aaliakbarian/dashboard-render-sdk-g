@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { resolveRepositoryPath } from '../testing/repositoryPath';
 import type { PocDashboardV1Result } from './types';
 import {
   POC_TASK7_PANEL_CATALOG,
@@ -12,7 +12,10 @@ import {
 
 function fixtureResult(name = 'grsdk-phase0-poc'): PocDashboardV1Result {
   const spec = JSON.parse(
-    readFileSync(resolve(`dev/grafana/provisioning/dashboards/${name}.json`), 'utf8')
+    readFileSync(
+      resolveRepositoryPath(`dev/grafana/provisioning/dashboards/${name}.json`),
+      'utf8'
+    )
   ) as Record<string, unknown>;
 
   return {
