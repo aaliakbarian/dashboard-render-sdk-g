@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 
 import { describe, expect, it, vi } from 'vitest';
 
 import type { PocScenesModule } from '../config/loadGrafanaCohort';
 import { POC_TASK7_PANEL_CATALOG } from '../dashboard/preflightFixture';
 import type { PocDashboardV1Result } from '../dashboard/types';
+import { resolveRepositoryPath } from '../testing/repositoryPath';
 import {
   convertFixtureV1ToScene,
   createSceneConversionEvidenceRecorder,
@@ -48,7 +48,10 @@ const scenes = {
 
 function fixtureResult(name = 'grsdk-phase0-poc'): PocDashboardV1Result {
   const spec = JSON.parse(
-    readFileSync(resolve(`dev/grafana/provisioning/dashboards/${name}.json`), 'utf8')
+    readFileSync(
+      resolveRepositoryPath(`dev/grafana/provisioning/dashboards/${name}.json`),
+      'utf8'
+    )
   ) as PocDashboardV1Result['dto']['spec'];
   return {
     apiVersion: 'v1',
@@ -280,7 +283,7 @@ describe('Task 7 fixture V1 to Scenes conversion', () => {
       'packages/poc-compat/src/component/GrafanaDashboard.tsx',
     ];
     const source = sourceFiles
-      .map((path) => readFileSync(resolve(path), 'utf8'))
+      .map((path) => readFileSync(resolveRepositoryPath(path), 'utf8'))
       .join('\n');
 
     expect(source).not.toMatch(
