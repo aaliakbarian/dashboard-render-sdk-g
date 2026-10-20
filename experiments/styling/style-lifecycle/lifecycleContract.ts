@@ -62,6 +62,41 @@ export function assessLifecycleTrend(
   });
 }
 
+export interface TimerSnapshot {
+  readonly active: number;
+  readonly byDelay: Readonly<Record<string, number>>;
+}
+
+export function assessTimerSettlement(input: {
+  readonly allowedTransientDelays: readonly number[];
+  readonly settled: TimerSnapshot;
+  readonly transient: readonly TimerSnapshot[];
+}) {
+  const allowedDelays = new Set(input.allowedTransientDelays.map(String));
+  const unexpectedTransientDelays = [...new Set(
+    input.transient.flatMap(({ byDelay }) => Object.keys(byDelay).filter((delay) => !allowedDelays.has(delay)))
+  )].sort((left, right) => Number(left) - Number(right));
+  const countTimers = ({ byDelay }: TimerSnapshot) =>
+    Object.values(byDelay).reduce((total, count) => total + count, 0);
+  const internallyConsistent = [...input.transient, input.settled]
+    .every((snapshot) => snapshot.active === countTimers(snapshot));
+  const settled = input.settled.active === 0 && countTimers(input.settled) === 0;
+  const activeTransientTimers = input.transient.map(({ active }) => active);
+  const transientPeak = Math.max(0, ...activeTransientTimers);
+  const transientSpread = activeTransientTimers.length > 0
+    ? Math.max(...activeTransientTimers) - Math.min(...activeTransientTimers)
+    : 0;
+
+  return Object.freeze({
+    conformant: internallyConsistent && settled && unexpectedTransientDelays.length === 0,
+    internallyConsistent,
+    settled,
+    transientPeak,
+    transientSpread,
+    unexpectedTransientDelays,
+  });
+}
+
 interface ResourceExpectation {
   readonly expectedLifetime: ResourceLifetime;
   readonly owner: string;

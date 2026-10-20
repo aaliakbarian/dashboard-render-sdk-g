@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   STYLE_LIFECYCLE_OWNERSHIP,
   assessLifecycleTrend,
+  assessTimerSettlement,
   buildResourceAccountingRows,
 } from '../../../experiments/styling/style-lifecycle/lifecycleContract.ts';
 
@@ -54,6 +55,29 @@ describe('production-shaped style lifecycle contract', () => {
       delta: 4,
       monotonicGrowth: true,
     });
+  });
+
+  it('treats transient PanelChrome timers as diagnostics but requires exact quiescent settlement', () => {
+    const transient = [18, 34, 22].map((active) => ({ active, byDelay: { '2000': active } }));
+
+    expect(assessTimerSettlement({
+      allowedTransientDelays: [2_000],
+      settled: { active: 0, byDelay: {} },
+      transient,
+    })).toEqual({
+      conformant: true,
+      internallyConsistent: true,
+      settled: true,
+      transientPeak: 34,
+      transientSpread: 16,
+      unexpectedTransientDelays: [],
+    });
+
+    expect(assessTimerSettlement({
+      allowedTransientDelays: [2_000],
+      settled: { active: 1, byDelay: { '2000': 1 } },
+      transient,
+    })).toMatchObject({ conformant: false, settled: false });
   });
 
   it('produces the required before/during/after accounting shape', () => {

@@ -420,6 +420,63 @@ No retry, timeout increase, cache clearing, Grafana-global reset, or runtime
 behavior change is part of this clarification. Historical counts remain
 useful execution evidence; they are not universal cold-start constants.
 
+### Phase 2 timer conformance clarification
+
+Phase 2 issue #78 traced the timeout-spread guard end to end. The generic
+resource tracker and the delay-specific lifecycle recorder both count active
+one-shot browser timers, removing an entry when its callback runs or when it
+is cleared. They do not count cumulative timer creation. Because the two
+snapshots are read sequentially, a timer can expire between them.
+
+Every pending timer observed in the repeated-cycle released-state samples had
+the same source and delay: Grafana UI's
+`packages/grafana-ui/src/components/PanelChrome/PanelChrome.tsx` renders
+`DelayRender` with a 2,000 ms delay while a cancellable query is loading, and
+`packages/grafana-ui/src/utils/DelayRender.tsx` schedules that timer without
+returning an effect cleanup. A loading-state rerender may therefore create a
+self-expiring panel timer that remains active briefly after the dashboard is
+released. The timer stack consistently entered the provider Grafana cohort
+from that React effect.
+
+The original warm-cycle assertion required the difference between the largest
+and smallest immediate active-timeout samples to be at most 12. That value was
+a historical empirical bound, not an ownership or cleanup invariant. An
+untouched three-repeat run reproduced the failure with a spread of 13; the
+previous issue evidence had observed 16. Focused diagnostic repeats produced
+different absolute sequences while all timers remained 2,000 ms timers and
+the final timer registry returned to exact zero. Dashboard scopes, leases,
+portals, observers, fetches, subscriptions, intervals, animation frames, and
+the issue #67 per-owner CSS plateau remained bounded.
+
+The variation is therefore classified as **SCHEDULING / SNAPSHOT TIMING
+VARIANCE** combined with **TEST-HARNESS COUPLING**, not a persistent runtime
+leak or timer-instrumentation defect. `--repeat-each` creates a fresh browser
+context, page, and JavaScript realm for each test execution. The configured
+web server is shared for the invocation. The configuration admits one worker
+at a time, while each `--repeat-each` copy runs in its own worker process with
+its own worker-scoped browser; the experiment writes a repeat-indexed stress
+artifact because module-level evidence does not cross those workers. Browser
+timer state cannot cross the context, page, or realm boundaries.
+
+The durable timeout contract is now:
+
+- immediate active-timeout counts and their spread are transient diagnostics;
+- every immediate released-state timer in this verified path must belong to
+  the explicit 2,000 ms delay bucket, and the active total must equal its delay
+  buckets;
+- after all dashboard owners are released, the test waits for the observable
+  timer registry to become quiescent rather than sleeping for a guessed
+  duration; and
+- the quiescent lifecycle timer registry and the generic active-timeout count
+  must both equal exactly zero.
+
+Within this suite, released/settled interval zero is an architectural
+invariant. The immediate animation-frame `<= 1` guard and immediate timeout
+counts are transient diagnostics; settled RAF zero and settled timeout zero
+are architectural lifecycle invariants. No Grafana runtime behavior, retry,
+test timeout, dependency, stress-cycle count, or numeric spread threshold was
+changed for issue #78.
+
 ## 25. Required Phase 2 lifecycle contract
 
 Phase 2 must preserve these requirements:
