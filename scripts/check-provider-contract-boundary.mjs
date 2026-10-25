@@ -36,7 +36,12 @@ function sourcePragmas(sourceFile, name) {
   return pragma ? [pragma] : [];
 }
 
-export function inspectSourceImports(sourceText, file = '<source>', jsxImportSource = 'react') {
+export function inspectSourceImports(
+  sourceText,
+  file = '<source>',
+  jsxImportSource = 'react',
+  includeRelativeReferences = false
+) {
   const sourceFile = ts.createSourceFile(
     file,
     sourceText,
@@ -58,7 +63,7 @@ export function inspectSourceImports(sourceText, file = '<source>', jsxImportSou
   };
 
   const report = (node, kind, specifier) => {
-    if (!isExternalSpecifier(specifier)) return;
+    if (!includeRelativeReferences && !isExternalSpecifier(specifier)) return;
     reportAt(node.getStart(sourceFile), kind, specifier);
   };
 
@@ -254,13 +259,13 @@ function readProductionConfiguration(packageRoot) {
   const config = ts.readConfigFile(configPath, ts.sys.readFile);
   if (config.error) {
     throw new Error(
-      `Unable to read provider-contract production TypeScript configuration: ${ts.flattenDiagnosticMessageText(config.error.messageText, '\n')}`
+      `Unable to read production TypeScript configuration at ${configPath}: ${ts.flattenDiagnosticMessageText(config.error.messageText, '\n')}`
     );
   }
   const parsed = ts.parseJsonConfigFileContent(config.config, ts.sys, packageRoot, undefined, configPath);
   if (parsed.errors.length > 0) {
     throw new Error(
-      `Invalid provider-contract production TypeScript configuration: ${parsed.errors
+      `Invalid production TypeScript configuration at ${configPath}: ${parsed.errors
         .map(({ messageText }) => ts.flattenDiagnosticMessageText(messageText, '\n'))
         .join('; ')}`
     );
@@ -271,15 +276,14 @@ function readProductionConfiguration(packageRoot) {
   };
 }
 
-export async function inspectProviderContractBoundary(repositoryRoot = process.cwd()) {
-  const packageRoot = path.join(repositoryRoot, 'packages/provider-contract');
-  const manifestPath = path.join(packageRoot, 'package.json');
+export function inspectProductionTypeScriptBoundary(
+  repositoryRoot,
+  packageRelativePath,
+  { includeRelativeReferences = false } = {}
+) {
+  const packageRoot = path.join(repositoryRoot, packageRelativePath);
   const tsconfigPath = path.join(packageRoot, 'tsconfig.json');
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
-  const dependencyFindings = inspectDependencySections(manifest).map((finding) => ({
-    file: path.relative(repositoryRoot, manifestPath),
-    ...finding,
-  }));
+  const dependencyFindings = [];
   const importFindings = [];
   const { compilerOptions, rootFileNames } = readProductionConfiguration(packageRoot);
   if (compilerOptions.types === undefined || compilerOptions.types.length > 0) {
@@ -315,6 +319,27 @@ export async function inspectProviderContractBoundary(repositoryRoot = process.c
       file: path.relative(repositoryRoot, tsconfigPath),
       packages: ['tslib'],
       section: 'compilerOptions.importHelpers',
+    });
+  }
+  if (compilerOptions.plugins !== undefined && compilerOptions.plugins.length > 0) {
+    dependencyFindings.push({
+      file: path.relative(repositoryRoot, tsconfigPath),
+      packages: compilerOptions.plugins.map(({ name }) => name ?? '<unnamed plugin>'),
+      section: 'compilerOptions.plugins',
+    });
+  }
+  if (compilerOptions.paths !== undefined && Object.keys(compilerOptions.paths).length > 0) {
+    dependencyFindings.push({
+      file: path.relative(repositoryRoot, tsconfigPath),
+      packages: Object.keys(compilerOptions.paths).sort(),
+      section: 'compilerOptions.paths',
+    });
+  }
+  if (compilerOptions.baseUrl !== undefined) {
+    dependencyFindings.push({
+      file: path.relative(repositoryRoot, tsconfigPath),
+      packages: ['<configured base URL>'],
+      section: 'compilerOptions.baseUrl',
     });
   }
   const jsxImportSource = compilerOptions.jsxImportSource ?? 'react';
@@ -357,7 +382,14 @@ export async function inspectProviderContractBoundary(repositoryRoot = process.c
       true,
       scriptKindForFile(fileName)
     );
-    importFindings.push(...inspectSourceImports(sourceFile.text, file, jsxImportSource));
+    importFindings.push(
+      ...inspectSourceImports(
+        sourceFile.text,
+        file,
+        jsxImportSource,
+        includeRelativeReferences
+      )
+    );
     const resolution = resolveRelativeImports(
       sourceFile,
       file,
@@ -381,6 +413,29 @@ export async function inspectProviderContractBoundary(repositoryRoot = process.c
   );
 
   return { dependencyFindings, importFindings };
+}
+
+export async function inspectProviderContractBoundary(repositoryRoot = process.cwd()) {
+  const packageRelativePath = 'packages/provider-contract';
+  const packageRoot = path.join(repositoryRoot, packageRelativePath);
+  const manifestPath = path.join(packageRoot, 'package.json');
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const manifestDependencyFindings = inspectDependencySections(manifest).map((finding) => ({
+    file: path.relative(repositoryRoot, manifestPath),
+    ...finding,
+  }));
+  const sourceFindings = inspectProductionTypeScriptBoundary(
+    repositoryRoot,
+    packageRelativePath
+  );
+
+  return {
+    dependencyFindings: [
+      ...manifestDependencyFindings,
+      ...sourceFindings.dependencyFindings,
+    ],
+    importFindings: sourceFindings.importFindings,
+  };
 }
 
 function formatFindings({ dependencyFindings, importFindings }) {

@@ -30,6 +30,9 @@
       "path": "./packages/provider-contract"
     },
     {
+      "path": "./packages/core"
+    },
+    {
       "path": "./apps/poc-host"
     },
     {

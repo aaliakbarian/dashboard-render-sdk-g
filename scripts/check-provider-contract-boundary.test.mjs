@@ -341,3 +341,30 @@ test('reports imported compiler helpers configured for the production program', 
     { importHelpers: true }
   );
 });
+
+test('reports module-resolution redirects configured for the production program', async () => {
+  for (const [compilerOptions, section, packages] of [
+    [
+      { paths: { '@dashboard-render-sdk-g/provider-contract': ['../redirected/index.ts'] } },
+      'compilerOptions.paths',
+      ['@dashboard-render-sdk-g/provider-contract'],
+    ],
+    [{ baseUrl: './redirected' }, 'compilerOptions.baseUrl', ['<configured base URL>']],
+  ]) {
+    await withBoundaryFixture(
+      { 'index.ts': 'export const value = 1;\n' },
+      async (repositoryRoot) => {
+        const findings = await inspectProviderContractBoundary(repositoryRoot);
+
+        assert.deepEqual(findings.dependencyFindings, [
+          {
+            file: 'packages/provider-contract/tsconfig.json',
+            packages,
+            section,
+          },
+        ]);
+      },
+      compilerOptions
+    );
+  }
+});
