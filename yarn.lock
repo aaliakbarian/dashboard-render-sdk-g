@@ -358,6 +358,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dashboard-render-sdk-g/core@workspace:packages/core":
+  version: 0.0.0-use.local
+  resolution: "@dashboard-render-sdk-g/core@workspace:packages/core"
+  dependencies:
+    "@dashboard-render-sdk-g/provider-contract": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "@dashboard-render-sdk-g/poc-compat@workspace:*, @dashboard-render-sdk-g/poc-compat@workspace:packages/poc-compat":
   version: 0.0.0-use.local
   resolution: "@dashboard-render-sdk-g/poc-compat@workspace:packages/poc-compat"
@@ -425,7 +433,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dashboard-render-sdk-g/provider-contract@workspace:packages/provider-contract":
+"@dashboard-render-sdk-g/provider-contract@workspace:*, @dashboard-render-sdk-g/provider-contract@workspace:packages/provider-contract":
   version: 0.0.0-use.local
   resolution: "@dashboard-render-sdk-g/provider-contract@workspace:packages/provider-contract"
   languageName: unknown
