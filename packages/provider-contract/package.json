@@ -1,0 +1,16 @@
+{
+  "name": "@dashboard-render-sdk-g/provider-contract",
+  "version": "0.0.0-private",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "description": "Private provider-neutral contracts for experimental Dashboard Render SDK G providers; never publish.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "yarn --cwd ../.. tsc6 -b packages/provider-contract/tsconfig.json --pretty false",
+    "test:unit": "yarn --cwd ../.. vitest run packages/provider-contract/src/manifestValidation.test.ts --environment node",
+    "typecheck": "yarn --cwd ../.. tsc6 --project packages/provider-contract/tsconfig.typecheck.json --pretty false"
+  }
+}

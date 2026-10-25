@@ -425,6 +425,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@dashboard-render-sdk-g/provider-contract@workspace:packages/provider-contract":
+  version: 0.0.0-use.local
+  resolution: "@dashboard-render-sdk-g/provider-contract@workspace:packages/provider-contract"
+  languageName: unknown
+  linkType: soft
+
 "@emotion/babel-plugin@npm:^11.13.5":
   version: 11.13.5
   resolution: "@emotion/babel-plugin@npm:11.13.5"
