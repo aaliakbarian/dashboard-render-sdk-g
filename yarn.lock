@@ -433,6 +433,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@dashboard-render-sdk-g/provider-13@workspace:packages/provider-13":
+  version: 0.0.0-use.local
+  resolution: "@dashboard-render-sdk-g/provider-13@workspace:packages/provider-13"
+  dependencies:
+    "@dashboard-render-sdk-g/provider-contract": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "@dashboard-render-sdk-g/provider-contract@workspace:*, @dashboard-render-sdk-g/provider-contract@workspace:packages/provider-contract":
   version: 0.0.0-use.local
   resolution: "@dashboard-render-sdk-g/provider-contract@workspace:packages/provider-contract"
