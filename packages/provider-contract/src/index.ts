@@ -23,3 +23,16 @@ export {
   type ManifestValidationSuccess,
   validateProviderCompatibilityManifest,
 } from './manifestValidation';
+export {
+  HOST_TRANSPORT_DESCRIPTOR_SCHEMA_VERSION,
+  type HostTransportCapability,
+  type HostTransportDescriptor,
+  type HostTransportExecutor,
+  type HostTransportResponse,
+  type TransportHeader,
+  type TransportMethod,
+  type TransportPolicyErrorCode,
+  type TransportQueryParameter,
+  type TransportRequest,
+  type TransportResult,
+} from './transport';
