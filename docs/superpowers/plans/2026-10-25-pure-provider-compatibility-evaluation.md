@@ -573,4 +573,3 @@ The following remain Stage B or later work and must not appear in issue #85:
 ## No Material Architectural Conflict
 
 The issue fits the approved Phase 1 boundaries and merged issues #81/#83. Provider-contract gains only provider-neutral data vocabulary; core gains only a pure comparison function. The existing metadata inspector remains the sole path that reads configured provider metadata and the existing validator remains the sole manifest validator. Stage A deliberately produces comparison evidence, not executable admission.
-

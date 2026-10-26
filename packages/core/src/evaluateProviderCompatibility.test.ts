@@ -76,6 +76,13 @@ function inspectWithDependencies(
   return inspect({ ...createManifest(), runtimeDependencies });
 }
 
+function numberedDependencies(count: number): ExactVersionedDependency[] {
+  return Array.from({ length: count }, (_, index) => ({
+    id: `dependency-${String(index).padStart(4, '0')}`,
+    version: '1.0.0',
+  }));
+}
+
 function evaluateUnknown(
   observations: unknown,
   inspection: ManifestValidationSuccess = inspect()
@@ -668,6 +675,86 @@ describe('evaluateProviderCompatibility dependencies and safety', () => {
       status: 'invalid-observation',
     });
     expect(result.outcome).toBe('invalid-observations');
+  });
+
+  it('does not turn a truncated set of matching checks into invalid observations', () => {
+    const dependencies = numberedDependencies(97);
+
+    const result = evaluateProviderCompatibility(inspectWithDependencies(dependencies), {
+      ...matchingObservations(),
+      runtimeDependencies: dependencies,
+    });
+
+    expect(result.checks).toHaveLength(100);
+    expect(result.checks[99]).toEqual({
+      expected: 'at most 99 detailed checks',
+      observed: 'additional diagnostics omitted',
+      path: '$',
+      status: 'match',
+    });
+    expect(result.outcome).toBe('declared-requirements-match');
+  });
+
+  it('preserves a mismatch that occurs only after returned checks are truncated', () => {
+    const expected = numberedDependencies(100);
+    const observed = expected.map((dependency, index) =>
+      index === expected.length - 1 ? { ...dependency, version: '1.0.1' } : dependency
+    );
+
+    const result = evaluateProviderCompatibility(inspectWithDependencies(expected), {
+      ...matchingObservations(),
+      runtimeDependencies: observed,
+    });
+
+    expect(result.checks).toHaveLength(100);
+    expect(result.checks[99]?.status).toBe('mismatch');
+    expect(result.checks.some(({ status }) => status === 'invalid-observation')).toBe(false);
+    expect(result.outcome).toBe('mismatch');
+  });
+
+  it('preserves missing and invalid evidence when more than 100 checks are evaluated', () => {
+    const dependencies = numberedDependencies(97);
+    const missing = evaluateProviderCompatibility(inspectWithDependencies(dependencies), {
+      ...matchingObservations(),
+      host: { reactDomVersion: '19.2.8' },
+      runtimeDependencies: dependencies,
+    });
+    const invalidObservations = {
+      ...matchingObservations(),
+      extra: true,
+      runtimeDependencies: dependencies,
+    };
+    const invalid = evaluateUnknown(invalidObservations, inspectWithDependencies(dependencies));
+
+    expect(missing.checks).toHaveLength(100);
+    expect(missing.outcome).toBe('insufficient-evidence');
+    expect(invalid.checks).toHaveLength(100);
+    expect(invalid.checks[99]?.status).toBe('invalid-observation');
+    expect(invalid.outcome).toBe('invalid-observations');
+  });
+
+  it('keeps truncated output deterministic and applies full-result outcome precedence', () => {
+    const expected = numberedDependencies(100);
+    const observed = expected.map((dependency, index) =>
+      index === expected.length - 1 ? { ...dependency, version: '1.0.1' } : dependency
+    );
+    const createObservations = (runtimeDependencies: ExactVersionedDependency[]) => ({
+      host: { reactDomVersion: '19.2.8' },
+      invalid: true,
+      runtimeDependencies,
+      target: { edition: 'oss', family: 'grafana', version: '13.2.3' },
+    });
+
+    const first = evaluateUnknown(createObservations(observed), inspectWithDependencies(expected));
+    const second = evaluateUnknown(
+      createObservations([...observed].reverse()),
+      inspectWithDependencies(expected)
+    );
+
+    expect(first).toEqual(second);
+    expect(first.checks).toHaveLength(100);
+    expect(first.checks[99]?.status).toBe('invalid-observation');
+    expect(first.outcome).toBe('invalid-observations');
   });
 
   it('applies outcome precedence independently of check order', () => {

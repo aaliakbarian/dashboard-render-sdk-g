@@ -1,6 +1,8 @@
 import {
   isExactVersion,
   type CompatibilityEvaluationCheck,
+  type CompatibilityEvaluationCheckStatus,
+  type CompatibilityEvaluationOutcome,
   type CompatibilityEvaluationResult,
   type CompatibilityObservations,
   type ExactVersionedDependency,
@@ -31,24 +33,68 @@ function compareCodeUnits(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-const diagnosticLimitCheck = Object.freeze({
-  expected: 'at most 99 detailed checks',
-  observed: 'additional diagnostics omitted',
-  path: '$',
-  status: 'invalid-observation' as const,
-});
+const statusPrecedence = [
+  'invalid-observation',
+  'mismatch',
+  'missing-evidence',
+  'match',
+] as const satisfies readonly CompatibilityEvaluationCheckStatus[];
+
+function highestPrecedenceStatus(
+  statuses: ReadonlySet<CompatibilityEvaluationCheckStatus>
+): CompatibilityEvaluationCheckStatus {
+  return statusPrecedence.find((status) => statuses.has(status)) ?? 'match';
+}
+
+function diagnosticLimitCheck(
+  status: CompatibilityEvaluationCheckStatus
+): CompatibilityEvaluationCheck {
+  return {
+    expected: 'at most 99 detailed checks',
+    observed: 'additional diagnostics omitted',
+    path: '$',
+    status,
+  };
+}
+
+function outcomeFor(
+  statuses: ReadonlySet<CompatibilityEvaluationCheckStatus>
+): CompatibilityEvaluationOutcome {
+  const status = highestPrecedenceStatus(statuses);
+  if (status === 'invalid-observation') return 'invalid-observations';
+  if (status === 'mismatch') return 'mismatch';
+  if (status === 'missing-evidence') return 'insufficient-evidence';
+  return 'declared-requirements-match';
+}
 
 class BoundedChecks {
   readonly values: CompatibilityEvaluationCheck[] = [];
+  readonly #statuses = new Set<CompatibilityEvaluationCheckStatus>();
+  readonly #omittedStatuses = new Set<CompatibilityEvaluationCheckStatus>();
   #truncated = false;
 
+  get outcome(): CompatibilityEvaluationOutcome {
+    return outcomeFor(this.#statuses);
+  }
+
   add(check: CompatibilityEvaluationCheck) {
-    if (this.#truncated) return;
+    this.#statuses.add(check.status);
+    if (this.#truncated) {
+      this.#omittedStatuses.add(check.status);
+      this.values[MAX_RETURNED_CHECKS - 1] = diagnosticLimitCheck(
+        highestPrecedenceStatus(this.#omittedStatuses)
+      );
+      return;
+    }
     if (this.values.length < MAX_RETURNED_CHECKS) {
       this.values.push(check);
       return;
     }
-    this.values[MAX_RETURNED_CHECKS - 1] = diagnosticLimitCheck;
+    this.#omittedStatuses.add(this.values[MAX_RETURNED_CHECKS - 1]!.status);
+    this.#omittedStatuses.add(check.status);
+    this.values[MAX_RETURNED_CHECKS - 1] = diagnosticLimitCheck(
+      highestPrecedenceStatus(this.#omittedStatuses)
+    );
     this.#truncated = true;
   }
 }
@@ -353,23 +399,16 @@ function cloneTargetCell(cell: TargetCompatibilityCell): TargetCompatibilityCell
   return Object.freeze({ edition: cell.edition, source, version: cell.version });
 }
 
-function outcomeFor(checks: readonly CompatibilityEvaluationCheck[]) {
-  if (checks.some(({ status }) => status === 'invalid-observation')) return 'invalid-observations' as const;
-  if (checks.some(({ status }) => status === 'mismatch')) return 'mismatch' as const;
-  if (checks.some(({ status }) => status === 'missing-evidence')) return 'insufficient-evidence' as const;
-  return 'declared-requirements-match' as const;
-}
-
 function freezeResult(
-  checks: CompatibilityEvaluationCheck[],
+  checks: BoundedChecks,
   matchedTargetCell: TargetCompatibilityCell | undefined
 ): CompatibilityEvaluationResult {
-  for (const check of checks) Object.freeze(check);
-  Object.freeze(checks);
+  for (const check of checks.values) Object.freeze(check);
+  Object.freeze(checks.values);
   return Object.freeze({
-    checks,
+    checks: checks.values,
     ...(matchedTargetCell === undefined ? {} : { matchedTargetCell }),
-    outcome: outcomeFor(checks),
+    outcome: checks.outcome,
   });
 }
 
@@ -394,7 +433,7 @@ export function evaluateProviderCompatibility(
     new Set(['host', 'runtimeDependencies', 'target']),
     diagnostics
   );
-  if (root === undefined) return freezeResult(diagnostics.values, undefined);
+  if (root === undefined) return freezeResult(diagnostics, undefined);
 
   const targetValue = root.values.target;
   const targetInvalid = root.invalidKeys.has('target');
@@ -487,5 +526,5 @@ export function evaluateProviderCompatibility(
     addDependencyChecks(checks, inspection.manifest.runtimeDependencies, dependencyInspection);
   }
   for (const diagnostic of diagnostics.values) checks.add(diagnostic);
-  return freezeResult(checks.values, matchedTargetCell);
+  return freezeResult(checks, matchedTargetCell);
 }
