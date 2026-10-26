@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./dist/provider-13.tsbuildinfo",
+    "jsx": "preserve",
+    "types": []
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.type-test.ts"
+  ],
+  "references": [
+    {
+      "path": "../provider-contract"
+    }
+  ]
+}
