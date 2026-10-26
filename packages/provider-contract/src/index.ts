@@ -1,5 +1,10 @@
 export {
   PROVIDER_MANIFEST_SCHEMA_VERSION,
+  type CompatibilityEvaluationCheck,
+  type CompatibilityEvaluationCheckStatus,
+  type CompatibilityEvaluationOutcome,
+  type CompatibilityEvaluationResult,
+  type CompatibilityObservations,
   type ExactVersionedDependency,
   type ProviderCapabilities,
   type ProviderCompatibilityManifest,
@@ -9,6 +14,7 @@ export {
   type SourceProvenance,
   type TargetCompatibilityCell,
 } from './contracts';
+export { isExactVersion } from './exactVersion';
 export {
   type ManifestValidationError,
   type ManifestValidationErrorCode,

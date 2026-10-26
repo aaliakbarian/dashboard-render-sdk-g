@@ -2,7 +2,7 @@
 
 Private, experimental core skeleton for Dashboard Render SDK G.
 
-This workspace is `AGPL-3.0-only`, is not published, and does not render dashboards. It contains only the initial provider-neutral configuration and metadata-inspection boundary for Phase 2.
+This workspace is `AGPL-3.0-only`, is not published, and does not render dashboards. It contains only the initial provider-neutral configuration, metadata-inspection, and pure compatibility-evaluation boundaries for Phase 2.
 
 ## Current API
 
@@ -11,6 +11,27 @@ This workspace is `AGPL-3.0-only`, is not published, and does not render dashboa
 `inspectConfiguredProvider(configuration)` reads the configured provider's manifest once and delegates it to the canonical provider-contract validator. The result is `ProviderMetadataInspectionResult`, an alias of the existing `ManifestValidationResult` discriminated union.
 
 A `valid: true` result means only that the manifest is structurally valid. It does not prove runtime compatibility, perform compatibility admission, initialize a provider, create a runtime, or start a dashboard session. Authentication and authorized connectivity to Grafana remain host-owned.
+
+After structural inspection succeeds, `evaluateProviderCompatibility(inspection, observations)` compares explicit caller-supplied metadata with the manifest's exact target cell, React/ReactDOM requirements, and runtime dependency set:
+
+```ts
+const inspection = inspectConfiguredProvider(configuration);
+
+if (inspection.valid) {
+  const evaluation = evaluateProviderCompatibility(inspection, {
+    host: { reactDomVersion: '19.2.8', reactVersion: '19.2.8' },
+    runtimeDependencies: [{ id: '@example/runtime', version: '1.2.3' }],
+    target: { edition: 'default', family: 'example', version: '1.2.3' },
+  });
+
+  // This is declared metadata equality only, never executable admission.
+  if (evaluation.outcome === 'declared-requirements-match') {
+    // A later Stage B boundary must still verify and admit the loaded runtime.
+  }
+}
+```
+
+The evaluator does not acquire observations. Server probing, React object-identity checks, loaded-cohort verification, runtime admission and identity, transport, provider execution, and rendering remain deferred. A matching result is comparison evidence only; it does not establish that the provider can safely initialize or render.
 
 The package currently exports no SDK factory, provider registry, runtime acquisition API, React component, hook, calendar implementation, renderer, or transport.
 
