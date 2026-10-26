@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "yarn --cwd ../.. tsc6 -b packages/core/tsconfig.json --pretty false",
-    "test:unit": "yarn --cwd ../.. vitest run packages/core/src/inspectConfiguredProvider.test.ts packages/core/src/evaluateProviderCompatibility.test.ts --environment node",
+    "test:unit": "yarn --cwd ../.. vitest run packages/core/src/inspectConfiguredProvider.test.ts packages/core/src/evaluateProviderCompatibility.test.ts packages/core/src/hostTransport.test.ts --environment node",
     "typecheck": "yarn --cwd ../.. tsc6 --project packages/core/tsconfig.typecheck.json --pretty false"
   },
   "dependencies": {
