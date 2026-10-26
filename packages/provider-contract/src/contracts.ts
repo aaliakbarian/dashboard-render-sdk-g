@@ -19,6 +19,44 @@ export interface TargetCompatibilityCell {
   readonly source: SourceProvenance;
 }
 
+export interface CompatibilityObservations {
+  readonly target?: {
+    readonly family?: string;
+    readonly version?: string;
+    readonly edition?: string;
+  };
+  readonly host?: {
+    readonly reactVersion?: string;
+    readonly reactDomVersion?: string;
+  };
+  readonly runtimeDependencies?: readonly ExactVersionedDependency[];
+}
+
+export type CompatibilityEvaluationOutcome =
+  | 'declared-requirements-match'
+  | 'mismatch'
+  | 'insufficient-evidence'
+  | 'invalid-observations';
+
+export type CompatibilityEvaluationCheckStatus =
+  | 'match'
+  | 'mismatch'
+  | 'missing-evidence'
+  | 'invalid-observation';
+
+export interface CompatibilityEvaluationCheck {
+  readonly path: string;
+  readonly status: CompatibilityEvaluationCheckStatus;
+  readonly expected?: string;
+  readonly observed?: string;
+}
+
+export interface CompatibilityEvaluationResult {
+  readonly outcome: CompatibilityEvaluationOutcome;
+  readonly checks: readonly CompatibilityEvaluationCheck[];
+  readonly matchedTargetCell?: TargetCompatibilityCell;
+}
+
 export interface ProviderCapabilities {
   readonly panels: readonly string[];
   readonly datasources: readonly string[];

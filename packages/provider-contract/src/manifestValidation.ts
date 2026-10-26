@@ -3,6 +3,7 @@ import {
   type ProviderCompatibilityManifest,
   type ProviderSupportTier,
 } from './contracts';
+import { isExactVersion } from './exactVersion';
 
 export type ManifestValidationErrorCode =
   | 'non-serializable'
@@ -53,8 +54,6 @@ type ReflectionResult<T> = { readonly ok: true; readonly value: T } | { readonly
 
 const supportTiers = new Set<ProviderSupportTier>(['experimental', 'verified', 'supported', 'deprecated']);
 const identifierPattern = /^[A-Za-z0-9@][A-Za-z0-9@._:/-]*$/;
-const exactVersionPattern =
-  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
 
 // Provider manifests are small metadata records. These deliberately generous
 // limits admit the verified provider-13 fixture while bounding hostile input.
@@ -382,7 +381,7 @@ function validateExactVersion(value: unknown, path: string, errors: MutableValid
     addError(errors, 'invalid-field', path, `${path} must be an exact semantic version string.`);
     return false;
   }
-  if (!exactVersionPattern.test(value)) {
+  if (!isExactVersion(value)) {
     addError(errors, 'invalid-exact-version', path, `${path} must be an exact semantic version, not a range.`);
     return false;
   }

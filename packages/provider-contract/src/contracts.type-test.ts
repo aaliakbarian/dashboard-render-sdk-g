@@ -1,10 +1,24 @@
 import {
   PROVIDER_MANIFEST_SCHEMA_VERSION,
+  type CompatibilityEvaluationCheckStatus,
+  type CompatibilityEvaluationOutcome,
+  type CompatibilityEvaluationResult,
+  type CompatibilityObservations,
+  type ExactVersionedDependency,
   type ProviderCompatibilityManifest,
   type ProviderSupportTier,
   type RendererProvider,
   type RuntimeIdentity,
+  type TargetCompatibilityCell,
 } from './index';
+
+type Assert<T extends true> = T;
+type IsExact<A, B> =
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+    ? (<T>() => T extends B ? 1 : 2) extends <T>() => T extends A ? 1 : 2
+      ? true
+      : false
+    : false;
 
 const grafanaCompatibilityExample = {
   capabilities: {
@@ -100,6 +114,68 @@ const runtimeIdentity = {
   },
 } satisfies RuntimeIdentity;
 
+const missingCompatibilityEvidence = {} satisfies CompatibilityObservations;
+const partialCompatibilityEvidence = {
+  host: { reactVersion: '19.2.8' },
+  runtimeDependencies: [{ id: '@grafana/data', version: '13.2.3' }],
+  target: { family: 'grafana' },
+} satisfies CompatibilityObservations;
+
+type ObservationDependency = NonNullable<CompatibilityObservations['runtimeDependencies']>[number];
+type ObservationDependencyReusesCanonicalType = Assert<
+  IsExact<ObservationDependency, ExactVersionedDependency>
+>;
+type MatchedCellReusesCanonicalType = Assert<
+  IsExact<NonNullable<CompatibilityEvaluationResult['matchedTargetCell']>, TargetCompatibilityCell>
+>;
+
+const validOutcomes: readonly CompatibilityEvaluationOutcome[] = [
+  'declared-requirements-match',
+  'mismatch',
+  'insufficient-evidence',
+  'invalid-observations',
+];
+const validCheckStatuses: readonly CompatibilityEvaluationCheckStatus[] = [
+  'match',
+  'mismatch',
+  'missing-evidence',
+  'invalid-observation',
+];
+
+// @ts-expect-error Evaluation outcomes are a closed vocabulary.
+const invalidOutcome: CompatibilityEvaluationOutcome = 'compatible';
+// @ts-expect-error Check statuses are a closed vocabulary.
+const invalidCheckStatus: CompatibilityEvaluationCheckStatus = 'verified';
+
+declare const compatibilityResult: CompatibilityEvaluationResult;
+// @ts-expect-error Structural comparison does not admit compatibility.
+compatibilityResult.compatible;
+// @ts-expect-error Structural comparison does not verify a provider.
+compatibilityResult.verified;
+// @ts-expect-error Structural comparison does not admit a provider.
+compatibilityResult.admitted;
+// @ts-expect-error Structural comparison does not construct runtime identity.
+compatibilityResult.runtimeIdentity;
+// @ts-expect-error Structural comparison does not acquire a runtime lease.
+compatibilityResult.runtimeLease;
+// @ts-expect-error Structural comparison does not expose a renderer.
+compatibilityResult.renderer;
+
+declare const readonlyObservations: CompatibilityObservations;
+// @ts-expect-error Observation groups are immutable.
+readonlyObservations.target = {};
+if (readonlyObservations.target) {
+  // @ts-expect-error Nested observation fields are immutable.
+  readonlyObservations.target.family = 'mutated';
+}
+if (readonlyObservations.runtimeDependencies) {
+  // @ts-expect-error Dependency arrays are immutable.
+  readonlyObservations.runtimeDependencies.push({ id: 'x', version: '1.0.0' });
+}
+
+// @ts-expect-error Source provenance does not alias runtime BuildCommit metadata.
+grafanaCompatibilityExample.target.cells[0]!.source.buildCommit;
+
 const readonlyManifest: ProviderCompatibilityManifest = grafanaCompatibilityExample;
 // @ts-expect-error Contract metadata is immutable after construction.
 readonlyManifest.provider.id = 'mutated-provider';
@@ -108,7 +184,15 @@ readonlyManifest.provider.id = 'mutated-provider';
 const invalidSupportTier: ProviderSupportTier = 'preview';
 
 void metadataOnlyProvider;
+void missingCompatibilityEvidence;
+void partialCompatibilityEvidence;
+void validOutcomes;
+void validCheckStatuses;
+void invalidOutcome;
+void invalidCheckStatus;
 void invalidSupportTier;
 void providerNeutralExample;
 void readonlyManifest;
 void runtimeIdentity;
+type _ObservationDependencyReusesCanonicalType = ObservationDependencyReusesCanonicalType;
+type _MatchedCellReusesCanonicalType = MatchedCellReusesCanonicalType;

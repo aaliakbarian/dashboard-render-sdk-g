@@ -1,6 +1,31 @@
 import { describe, expect, it } from 'vitest';
 
+import { isExactVersion } from './index';
 import { validateProviderCompatibilityManifest } from './manifestValidation';
+
+describe('isExactVersion', () => {
+  it.each(['0.0.0', '13.2.3', '1.2.3-test.1', '1.2.3+build.7', '1.2.3-rc.1+build.7'])(
+    'accepts exact version %s',
+    (version) => {
+      expect(isExactVersion(version)).toBe(true);
+    }
+  );
+
+  it.each([
+    ['range', '^13.2.3'],
+    ['wildcard', '13.x'],
+    ['partial', '13.2'],
+    ['major only', '13'],
+    ['empty', ''],
+    ['leading zero', '013.2.3'],
+    ['version prefix', 'v13.2.3'],
+    ['malformed prerelease', '13.2.3-'],
+    ['number', 13_002_003],
+    ['undefined', undefined],
+  ])('rejects %s exact-version observation', (_label, value) => {
+    expect(isExactVersion(value)).toBe(false);
+  });
+});
 
 function validManifest(): Record<string, unknown> {
   return {
