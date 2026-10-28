@@ -1,0 +1,7 @@
+# Combine with the root compose.yaml, never with the four-service demo stack.
+# Linux host networking makes localhost:8088 the same origin inside Chromium.
+services:
+  dev:
+    network_mode: host
+    networks: !reset []
+    ports: !reset []

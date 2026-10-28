@@ -1,0 +1,30 @@
+{
+  "name": "@dashboard-render-sdk-g/standalone-demo",
+  "version": "0.0.0-private",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "description": "Local standalone SDK reference host with independent SPA and Grafana sessions.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 5173 --strictPort",
+    "typecheck": "yarn --cwd ../.. tsc6 --project demo/standalone/tsconfig.json --noEmit --pretty false",
+    "test:unit": "yarn --cwd ../.. vitest run demo/standalone/src --environment node",
+    "test:e2e": "yarn --cwd ../.. playwright test --config demo/standalone/playwright.config.ts"
+  },
+  "dependencies": {
+    "@dashboard-render-sdk-g/core": "workspace:*",
+    "@dashboard-render-sdk-g/provider-13": "workspace:*",
+    "@dashboard-render-sdk-g/provider-contract": "workspace:*",
+    "keycloak-js": "26.2.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@vitejs/plugin-react": "6.1.1",
+    "vite": "8.2.0"
+  }
+}

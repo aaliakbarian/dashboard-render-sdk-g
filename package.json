@@ -10,7 +10,8 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "demo/standalone"
   ],
   "scripts": {
     "install:poc": "yarn install --immutable",

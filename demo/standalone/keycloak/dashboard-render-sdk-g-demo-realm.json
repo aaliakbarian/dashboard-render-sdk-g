@@ -1,0 +1,63 @@
+{
+  "realm": "dashboard-render-sdk-g-demo",
+  "displayName": "Dashboard Render SDK G — development demo",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "loginWithEmailAllowed": false,
+  "clients": [
+    {
+      "clientId": "standalone-demo",
+      "name": "Standalone development SPA",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:8088/*"],
+      "webOrigins": ["http://localhost:8088"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8088/"
+      },
+      "defaultClientScopes": ["web-origins", "acr", "profile", "email"]
+    },
+    {
+      "clientId": "grafana",
+      "name": "Grafana development Viewer session",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "development-only-grafana-client",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:8088/grafana/login/generic_oauth"],
+      "webOrigins": ["http://localhost:8088"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8088/"
+      },
+      "defaultClientScopes": ["web-origins", "acr", "profile", "email"]
+    }
+  ],
+  "users": [
+    {
+      "username": "demo-viewer",
+      "firstName": "Demo",
+      "lastName": "Viewer",
+      "email": "demo-viewer@example.invalid",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        { "type": "password", "value": "development-only-viewer", "temporary": false }
+      ]
+    }
+  ]
+}
