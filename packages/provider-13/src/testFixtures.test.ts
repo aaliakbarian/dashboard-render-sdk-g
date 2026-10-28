@@ -62,7 +62,7 @@ export function canonicalManifest(
 }
 
 export function fixtureDashboard(
-  uid: 'grsdk-phase0-poc' | 'grsdk-phase0-poc-alt'
+  uid: 'grsdk-phase0-poc' | 'grsdk-phase0-poc-alt' | 'drsdk-g-phase2-visualizations'
 ): Grafana13DashboardV1 {
   const raw = JSON.parse(readFileSync(
     new URL(`../../../dev/grafana/provisioning/dashboards/${uid}.json`, import.meta.url),

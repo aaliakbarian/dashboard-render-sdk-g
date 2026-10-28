@@ -3,6 +3,7 @@ import type {
   HostTransportResponse,
   TransportRequest,
 } from '@dashboard-render-sdk-g/provider-contract';
+import { isSdkHostDatasourceRequestAllowed } from './queryTransportPolicy';
 
 type FetchImplementation = (
   input: string,
@@ -13,7 +14,7 @@ const dashboardDtoPath =
   /^\/apis\/dashboard\.grafana\.app\/v1\/namespaces\/default\/dashboards\/[A-Za-z0-9_-]{1,40}\/dto$/;
 
 function isAllowedRequest(request: TransportRequest): boolean {
-  return (
+  return isSdkHostDatasourceRequestAllowed(request) || (
     request.method === 'GET' &&
     request.body === undefined &&
     (request.query === undefined || request.query.length === 0) &&
@@ -33,9 +34,13 @@ export function createSdkHostBrowserExecutor(
     }
 
     const url = new URL(`/grafana${request.path}`, origin);
+    for (const [name, value] of request.query ?? []) url.searchParams.append(name, value);
+    const headers = new Headers(request.headers?.map(([name, value]) => [name, value]));
+    if (request.method === 'POST') headers.set('Content-Type', 'application/json');
     const response = await fetchImplementation(`${url.pathname}${url.search}`, {
+      ...(request.body === undefined ? {} : { body: request.body }),
       credentials: 'same-origin',
-      headers: request.headers?.map(([name, value]) => [name, value]),
+      headers,
       method: request.method,
       redirect: 'error',
       signal: request.signal,

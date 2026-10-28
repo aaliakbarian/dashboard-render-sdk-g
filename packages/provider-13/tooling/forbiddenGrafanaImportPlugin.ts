@@ -1,4 +1,5 @@
 import type { Plugin } from 'vite';
+import { GRAFANA_13_TESTDATA_SOURCES } from './sourceIdentity.ts';
 
 export interface Provider13ForbiddenImport {
   readonly category: string;
@@ -8,11 +9,16 @@ export interface Provider13ForbiddenImport {
 const allowedApplicationSources = [
   'public/app/plugins/panel/text/panelcfg.gen.ts',
   'public/app/plugins/panel/text/v1/TextPanel.tsx',
+  ...GRAFANA_13_TESTDATA_SOURCES,
 ] as const;
 
 function normalizedApplicationSource(source: string): string | undefined {
   const normalized = source.replace(/^\0+/, '').replaceAll('\\', '/').split('?')[0] ?? source;
   const virtualPrefix = 'provider-13-pinned-grafana-source:text:';
+  const testdataPrefix = 'provider-13-pinned-grafana-source:testdata:';
+  if (normalized.startsWith(testdataPrefix)) {
+    return `public/app/plugins/datasource/grafana-testdata-datasource/${normalized.slice(testdataPrefix.length).replace(/\.js$/, '')}`;
+  }
   if (normalized.startsWith(virtualPrefix)) {
     return `public/app/plugins/panel/text/${normalized.slice(virtualPrefix.length).replace(/\.js$/, '')}`;
   }

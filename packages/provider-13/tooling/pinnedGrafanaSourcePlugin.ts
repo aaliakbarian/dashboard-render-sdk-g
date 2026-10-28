@@ -3,20 +3,24 @@ import { relative, resolve, sep } from 'node:path';
 
 import { transformWithOxc, type Plugin } from 'vite';
 
-const VIRTUAL_PREFIX = '\0provider-13-pinned-grafana-source:text:';
-
 export interface PinnedGrafanaSourcePluginOptions {
+  readonly feature?: 'text' | 'testdata';
+  readonly reviewedFiles?: readonly string[];
   readonly entryAlias: string;
   readonly entrypoint: string;
   readonly sourceRoot: string;
 }
 
 export function pinnedGrafanaSourcePlugin(options: PinnedGrafanaSourcePluginOptions): Plugin {
+  const VIRTUAL_PREFIX = `\0provider-13-pinned-grafana-source:${options.feature ?? 'text'}:`;
   const sourceRoot = resolve(options.sourceRoot).replaceAll('\\', '/').replace(/\/$/, '');
   const assertInside = (file: string) => {
     const absolute = resolve(file).replaceAll('\\', '/');
     if (absolute !== sourceRoot && !absolute.startsWith(`${sourceRoot}/`)) {
       throw new Error(`Pinned Grafana module is outside the audited source root: ${file}`);
+    }
+    if (options.reviewedFiles && !options.reviewedFiles.includes(relative(sourceRoot, absolute).split(sep).join('/'))) {
+      throw new Error('Pinned Grafana module is outside the reviewed file inventory.');
     }
     return absolute;
   };
@@ -52,6 +56,7 @@ export function pinnedGrafanaSourcePlugin(options: PinnedGrafanaSourcePluginOpti
       const result = await transformWithOxc(code, sourcefile, {
         jsx: { runtime: 'automatic' },
         sourcemap: false,
+        tsconfig: { compilerOptions: { jsx: 'react-jsx' } },
       });
       return { code: result.code, map: result.map };
     },

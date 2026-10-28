@@ -156,6 +156,15 @@ const EXACT_SOURCE_OWNERS = {
 
 function exceptionalReferenceKey({ file, kind, specifier }) {
   const normalizedFile = file.replaceAll('\\', '/');
+  const queryEdges = [
+    [`${PACKAGE_PATH}/src/runtime/initializeRuntime.ts`, 'dynamic-import', './installQueryRuntime'],
+    [`${PACKAGE_PATH}/src/runtime/installQueryRuntime.ts`, 'dynamic-import', 'grafana-provider13-query-services'],
+    [`${PACKAGE_PATH}/src/runtime/installQueryRuntime.ts`, 'dynamic-import', '../datasource/testDataPlugin'],
+    [`${PACKAGE_PATH}/src/datasource/testDataPlugin.ts`, 'import', 'grafana-provider13-testdata-runtime'],
+  ];
+  if (queryEdges.some(([owner, edge, target]) => normalizedFile === owner && kind === edge && specifier === target)) {
+    return `${normalizedFile}|${kind}|${specifier}`;
+  }
   if (
     kind === 'dynamic-import' &&
     specifier === './textPlugin' &&

@@ -264,6 +264,20 @@ test('allows only the exact local Text dynamic edge and exact audited alias owne
   );
 });
 
+test('admits the four closed query edges only at their exact production owners', async () => {
+  const files = {
+    'index.ts': `export * from './runtime/initializeRuntime';`,
+    'runtime/initializeRuntime.ts': `export const acquire = () => import('./installQueryRuntime');`,
+    'runtime/installQueryRuntime.ts': `export const install = () => Promise.all([import('grafana-provider13-query-services'), import('../datasource/testDataPlugin')]);`,
+    'datasource/testDataPlugin.ts': `import { TestDataDataSource } from 'grafana-provider13-testdata-runtime'; export const source = TestDataDataSource;`,
+  };
+  await withFixture(files, async root => assert.deepEqual((await inspectProvider13Boundary(root)).importFindings, []));
+  await withFixture({ 'index.ts': `void import('grafana-provider13-query-services'); void import('./runtime/installQueryRuntime'); export { TestDataDataSource } from 'grafana-provider13-testdata-runtime';`,
+    'runtime/installQueryRuntime.ts': 'export const value = true;' }, async root => {
+      assert.equal((await inspectProvider13Boundary(root)).importFindings.length, 3);
+    });
+});
+
 test('allows only the inert renderer dynamic implementation edge', async () => {
   await withFixture(
     {

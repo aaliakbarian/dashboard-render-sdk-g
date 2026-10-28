@@ -16,7 +16,10 @@ const applicationSources = modules
 const expectedSources = [
   'public/app/plugins/panel/text/panelcfg.gen.ts',
   'public/app/plugins/panel/text/v1/TextPanel.tsx',
-];
+  ...['LogIpsum.ts', 'constants.ts', 'dataquery.ts', 'datasource.ts', 'metricTree.ts', 'nodeGraphUtils.ts', 'runStreams.ts',
+    'testData/flameGraphResponse.ts', 'testData/serviceMapResponse.ts', 'testData/serviceMapResponseMedium.ts', 'variables.ts']
+    .map(file => `public/app/plugins/datasource/grafana-testdata-datasource/${file}`),
+].sort();
 const implementationCounts = {
   jsxDevRuntime: modules.filter((id) => /node_modules\/react\/(?:cjs\/)?react-jsx-dev-runtime/.test(id)).length,
   jsxRuntime: modules.filter((id) => /node_modules\/react\/(?:cjs\/)?react-jsx-runtime/.test(id)).length,
@@ -28,7 +31,7 @@ const forbidden = modules.filter((id) =>
   /(?:monaco|codicon|systemjs|(?:^|\/)[^/]*editor[^/]*(?:\/|$)|public\/app\/(?:routes|core\/navigation|core\/components\/AppChrome))/i.test(id)
 );
 const executableQueryModules = modules.filter((id) =>
-  /(?:\/querying\/(?:SceneQueryRunner|RuntimeDataSource)\.(?:m?js)|\/services\/dataSourceSrv\.mjs)$/.test(id)
+  /\/querying\/(?:SceneQueryRunner|RuntimeDataSource)\.(?:m?js)$/.test(id)
 );
 const inertEntryGrafanaModules = report.chunks
   .filter((chunk) => chunk.isEntry)

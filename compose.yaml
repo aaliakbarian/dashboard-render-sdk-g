@@ -47,6 +47,7 @@ services:
       - ./dev/grafana/provisioning/dashboards/provider.yaml:/etc/grafana/provisioning/dashboards/provider.yaml:ro
       - ./dev/grafana/provisioning/dashboards/grsdk-phase0-poc.json:/var/lib/grafana/dashboards/grsdk-phase0-poc.json:ro
       - ./dev/grafana/provisioning/dashboards/grsdk-phase0-poc-alt.json:/var/lib/grafana/dashboards/grsdk-phase0-poc-alt.json:ro
+      - ./dev/grafana/provisioning/dashboards/drsdk-g-phase2-visualizations.json:/var/lib/grafana/dashboards/drsdk-g-phase2-visualizations.json:ro
     networks:
       - dashboard-render-sdk-g-poc
 

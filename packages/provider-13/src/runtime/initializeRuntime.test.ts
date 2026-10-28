@@ -60,6 +60,8 @@ describe('initializeGrafana13Runtime', () => {
     };
     const window = { location: { origin: 'https://host.example' } };
     const panelCatalog = createGrafana13TextPanelCatalog({ loadTextPlugin: vi.fn() });
+    let queryLoads = 0;
+    const queryValue = {};
     const result = await initializeGrafana13Runtime(
       {
         hostReact: hostReact(),
@@ -79,6 +81,7 @@ describe('initializeGrafana13Runtime', () => {
           return cohort as never;
         },
         panelCatalog,
+        loadQueryRuntime: async () => { if (++queryLoads === 1) throw new Error('private module failure'); return queryValue as never; },
         window,
       }
     );
@@ -87,6 +90,14 @@ describe('initializeGrafana13Runtime', () => {
     expect(result.cohort).toBe(cohort);
     expect(result.providerValues).toEqual({ ThemeContext, theme: { isLight: true } });
     expect(catalog).toBe(panelCatalog);
+    expect(typeof result.acquireQueryRuntime).toBe('function');
+    expect(queryLoads).toBe(0);
+    const firstQuery = result.acquireQueryRuntime(); const concurrentQuery = result.acquireQueryRuntime();
+    expect(firstQuery).toBe(concurrentQuery);
+    await expect(firstQuery).rejects.toMatchObject({ code: 'runtime-initialization-failed' });
+    expect(queryLoads).toBe(1);
+    expect(await result.acquireQueryRuntime()).toBe(queryValue);
+    expect(await result.acquireQueryRuntime()).toBe(queryValue); expect(queryLoads).toBe(2);
     expect(() => locationService.push()).toThrow(Grafana13NavigationUnsupportedError);
     expect(() => history.replace()).toThrow(Grafana13NavigationUnsupportedError);
   });

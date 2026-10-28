@@ -46,6 +46,12 @@ const providerArtifactChunkPrefixes = Object.freeze([
   ['Trans-', 'provider-i18n'],
   ['implementation-', 'provider-implementation'],
   ['textPlugin-', 'feature-text'],
+  ['testDataPlugin-', 'feature-testdata-runtime'],
+  ['installQueryRuntime-', 'provider-query-runtime'],
+  ['queryServices-', 'provider-query-services'],
+  ['queryData-', 'provider-query-data'],
+  ['queryMonitoring-', 'provider-query-monitoring'],
+  ['provider-query-dependencies-', 'provider-query-dependencies'],
 ] as const);
 
 export function providerArtifactChunk(id: string): string | undefined {

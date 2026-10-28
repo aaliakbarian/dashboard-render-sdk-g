@@ -2,7 +2,7 @@ import { gzipSync } from 'node:zlib';
 
 import type { Plugin, Rolldown } from 'vite';
 
-import { GRAFANA_13_APPLICATION_SOURCES } from './sourceIdentity.ts';
+import { GRAFANA_13_APPLICATION_SOURCES, GRAFANA_13_TESTDATA_SOURCES } from './sourceIdentity.ts';
 
 export interface ProviderBundleChunkEvidence {
   readonly dynamicImports: readonly string[];
@@ -107,6 +107,21 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     .filter((id) => id.startsWith('<grafana-source>/public/app/'))
     .map((id) => id.slice('<grafana-source>/'.length))
     .sort();
+  const hasQuerySource = applicationSources.some(id => id.includes('/datasource/'));
+  const expectedSources = [...GRAFANA_13_APPLICATION_SOURCES, ...(hasQuerySource ? GRAFANA_13_TESTDATA_SOURCES : [])].sort();
+  const byFile = new Map(report.chunks.map(chunk => [chunk.fileName, chunk]));
+  const textClosure = new Set<string>();
+  const visit = (file: string) => {
+    if (textClosure.has(file)) return;
+    textClosure.add(file);
+    for (const imported of byFile.get(file)?.imports ?? []) visit(imported);
+  };
+  for (const chunk of report.chunks) {
+    if (chunk.modules.some(id => /\/src\/(?:runtime\/cohort\.ts|panels\/textPlugin\.ts)$/.test(id) ||
+        /\/node_modules\/@grafana\/(?:data|runtime|scenes|ui)\/dist\/esm\/index\.(?:m?js)$/.test(id))) visit(chunk.fileName);
+  }
+  const eagerQuerySources = report.chunks.filter(chunk => textClosure.has(chunk.fileName)).flatMap(chunk => chunk.modules)
+    .filter(id => id.includes('<grafana-source>/public/app/plugins/datasource/') || /\/src\/(?:datasource\/|query\/|runtime\/installQueryRuntime\.ts)/.test(id));
   const bundledImplementations = {
     jsxDevRuntime: modules.filter((id) => /node_modules\/react\/(?:cjs\/)?react-jsx-dev-runtime/.test(id)).length,
     jsxRuntime: modules.filter((id) => /node_modules\/react\/(?:cjs\/)?react-jsx-runtime/.test(id)).length,
@@ -120,7 +135,8 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     /(?:monaco|codicon|systemjs|(?:^|\/)[^/]*editor[^/]*(?:\/|$)|public\/app\/(?:routes|core\/navigation|core\/components\/AppChrome))/i.test(id)
   );
   const executableQueryModules = modules.filter((id) =>
-    /(?:\/querying\/(?:SceneQueryRunner|RuntimeDataSource)\.(?:m?js)|\/services\/dataSourceSrv\.mjs)$/.test(id)
+    /\/querying\/(?:SceneQueryRunner|RuntimeDataSource)\.(?:m?js)$/.test(id) ||
+    (!hasQuerySource && /\/services\/dataSourceSrv\.mjs$/.test(id))
   );
   const inertEntryGrafanaModules = report.chunks
     .filter((chunk) => chunk.isEntry)
@@ -184,7 +200,8 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     if (roots.size > 1) duplicateCohortOwners.push(packageName);
   }
   if (
-    applicationSources.join('\n') !== [...GRAFANA_13_APPLICATION_SOURCES].sort().join('\n') ||
+    applicationSources.join('\n') !== expectedSources.join('\n') ||
+    eagerQuerySources.length > 0 ||
     Object.values(bundledImplementations).some((count) => count !== 0) ||
     forbidden.length > 0 ||
     executableQueryModules.length > 0 ||
@@ -200,6 +217,7 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
   }
   return Object.freeze({
     applicationSources,
+    eagerQuerySources,
     bundledImplementations,
     duplicateCohortOwners,
     executableQueryModules,
@@ -218,6 +236,10 @@ function evidenceId(id: string, repositoryRoot: string, grafanaSourceRoot: strin
   const repository = repositoryRoot.replaceAll('\\', '/').replace(/\/$/, '');
   const grafana = grafanaSourceRoot.replaceAll('\\', '/').replace(/\/$/, '');
   const virtualPrefix = 'provider-13-pinned-grafana-source:text:';
+  const queryPrefix = 'provider-13-pinned-grafana-source:testdata:';
+  if (normalized.startsWith(queryPrefix)) {
+    return `<grafana-source>/public/app/plugins/datasource/grafana-testdata-datasource/${normalized.slice(queryPrefix.length).replace(/\.js$/, '')}`;
+  }
   if (normalized.startsWith(virtualPrefix)) {
     return `<grafana-source>/public/app/plugins/panel/text/${normalized
       .slice(virtualPrefix.length)

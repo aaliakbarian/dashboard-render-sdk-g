@@ -18,6 +18,104 @@ function capability(execute: HostTransportCapability['execute']): HostTransportC
 }
 
 describe('createGrafana13BackendSrv', () => {
+  it.each([
+    { series: [null] }, { tables: [null] }, { series: { length: 1 } }, { tables: 'legacy' },
+    { series: [{ target: 'legacy', datapoints: [[1, 1]] }] },
+    { tables: [{ columns: [], rows: [] }] },
+  ])('rejects material legacy decoder branches even with empty frames: %j', async legacy => {
+    const backend = createGrafana13BackendSrv(capability(async request => ({ kind: 'response', requestId: request.requestId,
+      response: { body: JSON.stringify({ results: { A: { frames: [], ...legacy } } }), headers: [], status: 200 } })));
+    await expect(firstValueFrom(backend.fetch({ method: 'POST', url: '/api/ds/query' })))
+      .rejects.toMatchObject({ code: 'transport-response-malformed', status: 500 });
+  });
+  it.each([{}, { series: [], tables: [] }, { series: null, tables: null }])('keeps native empty frames valid without material legacy data: %j', async legacy => {
+    const data = { results: { A: { frames: [], ...legacy } } };
+    const backend = createGrafana13BackendSrv(capability(async request => ({ kind: 'response', requestId: request.requestId,
+      response: { body: JSON.stringify(data), headers: [], status: 200 } })));
+    expect((await firstValueFrom(backend.fetch({ method: 'POST', url: '/api/ds/query' }))).data).toEqual(data);
+  });
+  it('rejects noniterable notices consumed by the pinned cache-hit decoder branch', async () => {
+    const data = { results: { A: { frames: [{ schema: { meta: { notices: 1 }, fields: [{ name: 'Value', type: 'number' }] }, data: { values: [[1]] } }] } } };
+    const backend = createGrafana13BackendSrv(capability(async request => ({ kind: 'response', requestId: request.requestId,
+      response: { body: JSON.stringify(data), headers: [['X-Cache', 'HIT']], status: 200 } })));
+    await expect(firstValueFrom(backend.fetch({ method: 'POST', url: '/api/ds/query' })))
+      .rejects.toMatchObject({ code: 'transport-response-malformed', status: 500 });
+  });
+  it.each(['/api/x/../ds/query', '/api/%64s/query', '/api//ds/query', '/api\\ds/query',
+    '/api/ds/qu\tery', '/api/ds/qu\nery', '/api/ds/qu\rery', '/api/ds/query\u0000',
+    '/api/ds/query?ds_type=grafana-testdata-data\tsource',
+  ])('rejects ambiguous raw URL %s before normalization can hide it', async url => {
+    let calls = 0;
+    const backend = createGrafana13BackendSrv(capability(async request => { calls++; return { kind: 'cancelled', requestId: request.requestId }; }));
+    await expect(backend.request({ method: 'POST', url })).rejects.toMatchObject({ code: 'transport-policy-error' });
+    expect(calls).toBe(0);
+  });
+  it.each([
+    { entities: [{ NaN: 1 }] }, { entities: { 0: { NaN: [0] } } },
+    { entities: [{ NaN: [0.5] }] }, { entities: [{ NaN: [1] }] },
+    { entities: [{ unexpected: [0] }] }, { entities: [{ NaN: 'private' }] },
+    { enums: [1] }, { enums: { 0: ['one'] } }, { enums: [[{}]] },
+    { nanos: [1] }, { nanos: [[-1]] }, { nanos: [[0, 0]] },
+  ])('rejects malformed decoder-consumed optional wire data %j', async optional => {
+    const body = JSON.stringify({ results: { A: { frames: [{ schema: { fields: [{ name: 'Value', type: 'number' }] },
+      data: { values: [[1]], ...optional } }] } } });
+    const backend = createGrafana13BackendSrv(capability(async request => ({ kind: 'response', requestId: request.requestId,
+      response: { body, headers: [], status: 200 } })));
+    await expect(firstValueFrom(backend.fetch({ method: 'POST', url: '/api/ds/query' })))
+      .rejects.toMatchObject({ code: 'transport-response-malformed', status: 500 });
+  });
+  it('admits bounded valid decoder entities, enum strings and nanoseconds without decoding them', async () => {
+    const data = { results: { A: { frames: [{ schema: { fields: [{ name: 'Value', type: 'number' }] },
+      data: { values: [[0]], entities: [{ NaN: [0] }], enums: [['one']], nanos: [[1]] } }] } } };
+    const backend = createGrafana13BackendSrv(capability(async request => ({ kind: 'response', requestId: request.requestId,
+      response: { body: JSON.stringify(data), headers: [], status: 200 } })));
+    expect((await firstValueFrom(backend.fetch({ method: 'POST', url: '/api/ds/query' }))).data).toEqual(data);
+  });
+  it('preserves exact POST request identity, signal, body and safe routing headers', async () => {
+    let observed: any;
+    const backend = createGrafana13BackendSrv(capability(async request => {
+      observed = request;
+      return { kind: 'response', requestId: request.requestId,
+        response: { status: 200, headers: [], body: '{"results":{"A":{"frames":[]}}}' } };
+    }));
+    const signal = new AbortController().signal;
+    const data = { queries: [], from: '1', to: '2' };
+    await firstValueFrom(backend.fetch({ url: '/api/ds/query?ds_type=grafana-testdata-datasource&requestId=drsdk-1-A', method: 'POST',
+      data, requestId: 'drsdk-1-A', abortSignal: signal, headers: { 'X-Datasource-Uid': 'grsdk-testdata' } }));
+    expect(observed).toMatchObject({ method: 'POST', path: '/api/ds/query', requestId: 'drsdk-1-A', body: JSON.stringify(data), headers: [['X-Datasource-Uid', 'grsdk-testdata']] });
+    expect(observed.signal).toBe(signal);
+  });
+  it('aborts an owned observable request when its subscription is released', async () => {
+    let signal: AbortSignal | undefined;
+    const backend = createGrafana13BackendSrv(capability(request => {
+      signal = request.signal; return new Promise(resolve => request.signal.addEventListener('abort', () => resolve({ kind: 'cancelled', requestId: request.requestId })));
+    }));
+    const subscription = backend.fetch({ url: '/api/ds/query?ds_type=grafana-testdata-datasource', method: 'POST' }).subscribe();
+    expect(signal?.aborted).toBe(false); subscription.unsubscribe(); expect(signal?.aborted).toBe(true);
+  });
+  it.each(['{}', 'null', '{"results":[]}', '{"results":{"B":{"frames":[]}}}',
+    '{"results":{"A":{"frames":[{}]}}}',
+    '{"results":{"A":{"error":"synthetic failure","frames":[{}]}}}',
+    '{"results":{"A":{"frames":[{"schema":{"fields":[{"name":"Value","type":"number"}]},"data":{"values":[]}}]}}}',
+  ])('rejects a malformed successful query envelope %s', async body => {
+    const backend = createGrafana13BackendSrv(capability(async request => ({ kind: 'response', requestId: request.requestId,
+      response: { body, headers: [], status: 200 } })));
+    await expect(firstValueFrom(backend.fetch({ method: 'POST', url: '/api/ds/query' }))).rejects.toMatchObject({ code: 'transport-response-malformed', status: 500 });
+  });
+  it('sanitizes observable signal reflection without invoking transport', async () => {
+    let calls = 0;
+    const backend = createGrafana13BackendSrv(capability(async request => { calls++; return { kind: 'cancelled', requestId: request.requestId }; }));
+    const error = await firstValueFrom(backend.fetch({ url: '/api/ds/query', get abortSignal(): AbortSignal { throw new Error('private signal'); } })).catch(error => error);
+    expect(error.code).toBe('transport-policy-error'); expect(String(error)).not.toContain('private'); expect(calls).toBe(0);
+  });
+  it.each([401, 403, 500, 'network'] as const)('exposes a decoder-visible sanitized failure for %s', async outcome => {
+    const backend = createGrafana13BackendSrv(capability(async request => outcome === 'network'
+      ? { kind: 'network-error', requestId: request.requestId }
+      : { kind: 'response', requestId: request.requestId, response: { body: 'private auth token', headers: [], status: outcome } }));
+    const error = await firstValueFrom(backend.fetch({ method: 'POST', url: '/api/ds/query' })).catch(value => value);
+    expect(error.status).toBe(outcome === 'network' ? 500 : outcome);
+    expect(error).not.toHaveProperty('cause'); expect(JSON.stringify(error)).not.toMatch(/private|token/);
+  });
   it('delegates a permitted relative request with the exact signal and request ID', async () => {
     const execute = vi.fn(async (request) => ({
       kind: 'response' as const,

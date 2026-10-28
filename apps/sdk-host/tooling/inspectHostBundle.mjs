@@ -11,7 +11,6 @@ const exactOnePrefixes = Object.freeze({
 });
 
 const forbiddenSourcePatterns = Object.freeze([
-  /\/api\/ds\/query/i,
   /GrafanaApp\.init\s*\(/,
   /\bSystem(?:JS)?\.import\s*\(/i,
   /\bsystemjs\b/i,
@@ -93,6 +92,15 @@ export function inspectHostBundleFiles(files, evidence) {
     .map(([, source]) => source)
     .join('\n');
   if (forbiddenSourcePatterns.some((pattern) => pattern.test(emittedSource))) valid = false;
+  const queryRuntime = filesWithPrefix(files, 'assets/provider-query-runtime-');
+  const testdataRuntime = filesWithPrefix(files, 'assets/feature-testdata-runtime-');
+  const hasQueryRuntime = queryRuntime.length === 1 && testdataRuntime.length === 1 &&
+    hasDynamicImport(files.get(implementationFile), queryRuntime[0]) &&
+    hasDynamicImport(files.get(queryRuntime[0]), testdataRuntime[0]);
+  for (const [fileName, source] of files) {
+    if (/\/api\/ds\/query/i.test(source) &&
+      !(hasQueryRuntime && (fileName === entryFile || fileName === implementationFile || /^assets\/provider-grafana-[^/]+\.js$/.test(fileName)))) valid = false;
+  }
 
   const modules = allModuleIds(evidence);
   const reactRoots = physicalPackageRoots(modules, 'react');
