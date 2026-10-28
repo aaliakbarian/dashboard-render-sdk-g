@@ -2,7 +2,7 @@
 
 Private, experimental core skeleton for Dashboard Render SDK G.
 
-This workspace is `AGPL-3.0-only`, is not published, and does not render dashboards. It contains only the initial provider-neutral configuration, metadata-inspection, and pure compatibility-evaluation boundaries for Phase 2.
+This workspace is `AGPL-3.0-only` and is not published. It contains provider-neutral configuration, metadata inspection, compatibility evaluation, host transport, and a thin React shell for an explicitly configured provider renderer.
 
 ## Current API
 
@@ -31,7 +31,7 @@ if (inspection.valid) {
 }
 ```
 
-The evaluator does not acquire observations. Server probing, React object-identity checks, loaded-cohort verification, runtime admission and identity, transport, provider execution, and rendering remain deferred. A matching result is comparison evidence only; it does not establish that the provider can safely initialize or render.
+The evaluator does not acquire observations. Server probing, React object-identity checks, loaded-cohort verification, and runtime admission remain provider responsibilities. A matching result is comparison evidence only; it does not establish that the provider can safely initialize or render.
 
 ## Host transport capability
 
@@ -86,21 +86,27 @@ Cancellation preserves the exact host/provider `AbortSignal`. A cancellation res
 
 Binary and streaming bodies, provider-13 and Grafana API adaptation, dashboard retrieval, retries, caching, runtime binding, and observability services remain deferred.
 
-The package currently exports no SDK factory, provider registry, runtime acquisition API, React component, hook, calendar implementation, or renderer.
+## React rendering shell
 
-## Future React-first API
+`createDashboardRenderSdk(configuration)` accepts the existing `provider` plus a
+`renderer`, `hostReact`, and `transport`, with an optional `namespace` (default
+`default`). Creation delegates manifest inspection once, retains its canonical
+validated snapshot, and returns either typed creation errors or a frozen SDK
+handle exposing `providerId` and `providerBuildId`. Creation executes no renderer,
+network request, or runtime initialization. Host module identities and transport
+remain opaque references; the provider owns physical runtime admission.
 
-The intended integration is conceptually:
+After successful creation, render the configured provider through React:
 
 ```tsx
-<GrafanaDashboard sdk={sdk} uid={uid} calendar="jalali" />
+<GrafanaDashboard sdk={result.sdk} uid={uid} onStatusChange={onStatusChange} />
 ```
 
-This snippet documents future design intent and is not runnable with the current package.
+Changing `uid` or the SDK replaces the provider subtree and its opaque instance
+identifier. Status callbacks from replaced or unmounted renderers are suppressed,
+including callbacks from provider cleanup. The provider owns request cancellation,
+runtime leases, and scene cleanup. React `19.2.8` is an exact host-owned peer;
+core does not depend on ReactDOM or a concrete provider.
 
-- React is the first planned integration surface.
-- `uid` represents a normal Grafana dashboard UID and may be changed dynamically through React props.
-- `calendar` will accept `gregorian` or `jalali`, with `gregorian` as the default.
-- Jalali support will affect only the dashboard date/time picker. It will not change panel date formatting and will not automatically select a timezone.
-- The concrete SDK handle/factory, component, hooks, rendering and session behavior, and calendar implementation are deferred.
-- An imperative DOM mounting API is also deferred.
+No registry, runtime acquisition, session, calendar, or imperative mounting API is
+exposed by this shell. Gregorian/Jalali calendar support remains deferred.

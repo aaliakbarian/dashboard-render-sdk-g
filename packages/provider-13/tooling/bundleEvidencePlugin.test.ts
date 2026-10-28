@@ -1,0 +1,430 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+  assertNoBrowserReactRuntimeRequires,
+  inspectProviderBundleEvidence,
+  type ProviderBundleEvidence,
+} from './bundleEvidencePlugin';
+
+describe('provider-13 emitted browser chunks', () => {
+  it('rejects a browser-time CommonJS React require in a non-runtime chunk', () => {
+    expect(() =>
+      assertNoBrowserReactRuntimeRequires([
+        {
+          code: 'import{i as loadExternal,t as wrap}from"./rolldown-runtime-abc.js";const React=loadExternal(`react`);',
+          fileName: 'assets/provider-scenes-abc.js',
+        },
+      ])
+    ).toThrow(/browser-time React require/i);
+  });
+
+  it('accepts explicit external ESM React imports and the runtime helper implementation', () => {
+    expect(() =>
+      assertNoBrowserReactRuntimeRequires([
+        {
+          code: 'import * as React from "react";import { createRoot } from "react-dom/client";',
+          fileName: 'assets/provider-scenes-abc.js',
+        },
+        {
+          code: 'const runtimeRequire = (id) => { throw new Error(`Calling require for ${id}`); };',
+          fileName: 'assets/rolldown-runtime-abc.js',
+        },
+      ])
+    ).not.toThrow();
+  });
+});
+
+describe('provider-13 bundle evidence inspection', () => {
+  it('accepts exact Text source provenance and external React references', () => {
+    const report: ProviderBundleEvidence = {
+      assets: [],
+      chunks: [
+        {
+          dynamicImports: ['assets/text.js'],
+          fileName: 'provider.js',
+          gzipSize: 10,
+          imports: ['react', 'react-dom', 'react-dom/client', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+          isEntry: true,
+          modules: ['<repo>/packages/provider-13/src/index.ts'],
+          rawSize: 20,
+        },
+        {
+          dynamicImports: [],
+          fileName: 'assets/text.js',
+          gzipSize: 100,
+          imports: ['react'],
+          isEntry: false,
+          modules: [
+            '<grafana-source>/public/app/plugins/panel/text/panelcfg.gen.ts',
+            '<grafana-source>/public/app/plugins/panel/text/v1/TextPanel.tsx',
+          ],
+          rawSize: 200,
+        },
+      ],
+      moduleIds: [],
+    };
+
+    expect(inspectProviderBundleEvidence(report)).toMatchObject({
+      applicationSources: [
+        'public/app/plugins/panel/text/panelcfg.gen.ts',
+        'public/app/plugins/panel/text/v1/TextPanel.tsx',
+      ],
+      bundledImplementations: {
+        jsxDevRuntime: 0,
+        jsxRuntime: 0,
+        react: 0,
+        reactDom: 0,
+      },
+    });
+  });
+
+  it('rejects bundled React implementations and source provenance drift', () => {
+    const report: ProviderBundleEvidence = {
+      assets: [],
+      chunks: [{
+        dynamicImports: [], fileName: 'provider.js', gzipSize: 1, imports: [], isEntry: true,
+        modules: [
+          '<repo>/node_modules/react/index.js',
+          '<grafana-source>/public/app/plugins/panel/text/module.tsx',
+        ], rawSize: 1,
+      }],
+      moduleIds: [],
+    };
+
+    expect(() => inspectProviderBundleEvidence(report)).toThrow(/bundle boundary/i);
+  });
+
+  it('rejects Grafana modules in the inert entry and duplicate cohort ownership', () => {
+    const sourceModules = [
+      '<grafana-source>/public/app/plugins/panel/text/panelcfg.gen.ts',
+      '<grafana-source>/public/app/plugins/panel/text/v1/TextPanel.tsx',
+    ];
+    const report: ProviderBundleEvidence = {
+      assets: [],
+      chunks: [
+        {
+          dynamicImports: ['assets/text.js'], fileName: 'provider.js', gzipSize: 1,
+          imports: [], isEntry: true,
+          modules: ['<repo>/node_modules/@grafana/runtime/dist/esm/index.mjs'], rawSize: 1,
+        },
+        {
+          dynamicImports: [], fileName: 'assets/text.js', gzipSize: 1,
+          imports: [], isEntry: false,
+          modules: [...sourceModules, '<repo>/node_modules/@grafana/data/dist/esm/panel/PanelPlugin.mjs'], rawSize: 1,
+        },
+        {
+          dynamicImports: [], fileName: 'assets/duplicate.js', gzipSize: 1,
+          imports: [], isEntry: false,
+          modules: ['<repo>/node_modules/@grafana/data/dist/esm/panel/PanelPlugin.mjs'], rawSize: 1,
+        },
+      ],
+      moduleIds: [],
+    };
+
+    expect(() => inspectProviderBundleEvidence(report)).toThrow(/bundle boundary/i);
+  });
+
+  it('rejects deferred panel/runtime modules folded into the inert browser entry', () => {
+    const report: ProviderBundleEvidence = {
+      assets: [],
+      chunks: [
+        {
+          dynamicImports: ['assets/implementation.js', 'assets/text.js'],
+          fileName: 'provider.js',
+          gzipSize: 1,
+          imports: ['react'],
+          isEntry: true,
+          modules: [
+            '<repo>/packages/provider-13/src/artifactEntry.ts',
+            '<repo>/packages/provider-13/src/panels/catalog.ts',
+          ],
+          rawSize: 1,
+        },
+        {
+          dynamicImports: [],
+          fileName: 'assets/text.js',
+          gzipSize: 1,
+          imports: ['react'],
+          isEntry: false,
+          modules: [
+            '<grafana-source>/public/app/plugins/panel/text/panelcfg.gen.ts',
+            '<grafana-source>/public/app/plugins/panel/text/v1/TextPanel.tsx',
+          ],
+          rawSize: 1,
+        },
+      ],
+      moduleIds: [],
+    };
+
+    expect(() => inspectProviderBundleEvidence(report)).toThrow(/bundle boundary/i);
+  });
+
+  it('rejects tslib ownership inside the dynamic implementation chunk', () => {
+    const report: ProviderBundleEvidence = {
+      assets: [],
+      chunks: [
+        {
+          dynamicImports: ['assets/implementation.js', 'assets/text.js'],
+          fileName: 'provider.js',
+          gzipSize: 1,
+          imports: ['react'],
+          isEntry: true,
+          modules: ['<repo>/packages/provider-13/src/artifactEntry.ts'],
+          rawSize: 1,
+        },
+        {
+          dynamicImports: [],
+          fileName: 'assets/implementation.js',
+          gzipSize: 1,
+          imports: [],
+          isEntry: false,
+          modules: ['<repo>/node_modules/tslib/tslib.es6.mjs'],
+          rawSize: 1,
+        },
+        {
+          dynamicImports: [],
+          fileName: 'assets/text.js',
+          gzipSize: 1,
+          imports: ['react'],
+          isEntry: false,
+          modules: [
+            '<grafana-source>/public/app/plugins/panel/text/panelcfg.gen.ts',
+            '<grafana-source>/public/app/plugins/panel/text/v1/TextPanel.tsx',
+          ],
+          rawSize: 1,
+        },
+      ],
+      moduleIds: [],
+    };
+
+    expect(() => inspectProviderBundleEvidence(report)).toThrow(/bundle boundary/i);
+  });
+
+  it('rejects UUID ownership inside the cyclic Scenes facade chunk', () => {
+    const report: ProviderBundleEvidence = {
+      assets: [],
+      chunks: [
+        {
+          dynamicImports: ['assets/esm.js', 'assets/text.js'],
+          fileName: 'provider.js',
+          gzipSize: 1,
+          imports: ['react'],
+          isEntry: true,
+          modules: ['<repo>/packages/provider-13/src/artifactEntry.ts'],
+          rawSize: 1,
+        },
+        {
+          dynamicImports: [],
+          fileName: 'assets/esm.js',
+          gzipSize: 1,
+          imports: ['assets/provider-scenes.js'],
+          isEntry: false,
+          modules: ['<repo>/node_modules/uuid/dist/esm-browser/v4.js'],
+          rawSize: 1,
+        },
+        {
+          dynamicImports: [],
+          fileName: 'assets/text.js',
+          gzipSize: 1,
+          imports: ['react'],
+          isEntry: false,
+          modules: [
+            '<grafana-source>/public/app/plugins/panel/text/panelcfg.gen.ts',
+            '<grafana-source>/public/app/plugins/panel/text/v1/TextPanel.tsx',
+          ],
+          rawSize: 1,
+        },
+      ],
+      moduleIds: [],
+    };
+
+    expect(() => inspectProviderBundleEvidence(report)).toThrow(/bundle boundary/i);
+  });
+
+  it('rejects react-grid-layout ownership inside the cyclic Scenes facade chunk', () => {
+    const report: ProviderBundleEvidence = {
+      assets: [],
+      chunks: [
+        {
+          dynamicImports: ['assets/esm.js', 'assets/text.js'],
+          fileName: 'provider.js',
+          gzipSize: 1,
+          imports: ['react'],
+          isEntry: true,
+          modules: ['<repo>/packages/provider-13/src/artifactEntry.ts'],
+          rawSize: 1,
+        },
+        {
+          dynamicImports: [],
+          fileName: 'assets/esm.js',
+          gzipSize: 1,
+          imports: ['assets/provider-scenes.js'],
+          isEntry: false,
+          modules: ['<repo>/node_modules/react-grid-layout/build/ReactGridLayout.js'],
+          rawSize: 1,
+        },
+        {
+          dynamicImports: [],
+          fileName: 'assets/text.js',
+          gzipSize: 1,
+          imports: ['react'],
+          isEntry: false,
+          modules: [
+            '<grafana-source>/public/app/plugins/panel/text/panelcfg.gen.ts',
+            '<grafana-source>/public/app/plugins/panel/text/v1/TextPanel.tsx',
+          ],
+          rawSize: 1,
+        },
+      ],
+      moduleIds: [],
+    };
+
+    expect(() => inspectProviderBundleEvidence(report)).toThrow(/bundle boundary/i);
+  });
+
+  it('rejects a ReactDOM external wrapper that is merged with the Scenes facade', () => {
+    const report: ProviderBundleEvidence = {
+      assets: [],
+      chunks: [
+        {
+          dynamicImports: ['assets/implementation.js', 'assets/text.js'],
+          fileName: 'provider.js',
+          gzipSize: 1,
+          imports: ['react'],
+          isEntry: true,
+          modules: ['<repo>/packages/provider-13/src/artifactEntry.ts'],
+          rawSize: 1,
+        },
+        {
+          dynamicImports: [],
+          fileName: 'assets/esm.js',
+          gzipSize: 1,
+          imports: ['assets/provider-scenes.js', 'react-dom'],
+          isEntry: false,
+          modules: ['builtin:esm-external-require-react-dom'],
+          rawSize: 1,
+        },
+        {
+          dynamicImports: [],
+          fileName: 'assets/text.js',
+          gzipSize: 1,
+          imports: ['react'],
+          isEntry: false,
+          modules: [
+            '<grafana-source>/public/app/plugins/panel/text/panelcfg.gen.ts',
+            '<grafana-source>/public/app/plugins/panel/text/v1/TextPanel.tsx',
+          ],
+          rawSize: 1,
+        },
+      ],
+      moduleIds: [],
+    };
+
+    expect(() => inspectProviderBundleEvidence(report)).toThrow(/bundle boundary/i);
+  });
+
+  it.each([
+    [
+      '<repo>/node_modules/@grafana/data/dist/esm/a.mjs',
+      '<repo>/node_modules/transitive/node_modules/@grafana/data/dist/esm/b.mjs',
+    ],
+    [
+      '<repo>/node_modules/.pnpm/@grafana+data@13.2.3/node_modules/@grafana/data/dist/esm/a.mjs',
+      '<repo>/node_modules/.pnpm/@grafana+data@13.2.4/node_modules/@grafana/data/dist/esm/b.mjs',
+    ],
+  ])('rejects distinct physical roots for one logical cohort package', (first, second) => {
+    const report: ProviderBundleEvidence = {
+      assets: [],
+      chunks: [
+        {
+          dynamicImports: ['assets/text.js'],
+          fileName: 'provider.js',
+          gzipSize: 1,
+          imports: [],
+          isEntry: true,
+          modules: ['<repo>/packages/provider-13/src/index.ts'],
+          rawSize: 1,
+        },
+        {
+          dynamicImports: [],
+          fileName: 'assets/text.js',
+          gzipSize: 1,
+          imports: [],
+          isEntry: false,
+          modules: [
+            '<grafana-source>/public/app/plugins/panel/text/panelcfg.gen.ts',
+            '<grafana-source>/public/app/plugins/panel/text/v1/TextPanel.tsx',
+            first,
+            second,
+          ],
+          rawSize: 1,
+        },
+      ],
+      moduleIds: [],
+    };
+
+    expect(() => inspectProviderBundleEvidence(report)).toThrow(/bundle boundary/i);
+  });
+
+  it('rejects a generic editor leaf in generated bundle evidence', () => {
+    const report: ProviderBundleEvidence = {
+      assets: [],
+      chunks: [
+        {
+          dynamicImports: ['assets/text.js'],
+          fileName: 'provider.js',
+          gzipSize: 1,
+          imports: [],
+          isEntry: true,
+          modules: ['<repo>/packages/provider-13/src/index.ts'],
+          rawSize: 1,
+        },
+        {
+          dynamicImports: [],
+          fileName: 'assets/text.js',
+          gzipSize: 1,
+          imports: [],
+          isEntry: false,
+          modules: [
+            '<grafana-source>/public/app/plugins/panel/text/panelcfg.gen.ts',
+            '<grafana-source>/public/app/plugins/panel/text/v1/TextPanel.tsx',
+            '<repo>/node_modules/@grafana/ui/dist/esm/components/DataLinks/DataLinksInlineEditor.mjs',
+          ],
+          rawSize: 1,
+        },
+      ],
+      moduleIds: [],
+    };
+
+    expect(() => inspectProviderBundleEvidence(report)).toThrow(/bundle boundary/i);
+  });
+
+  it.each([
+    '<repo>/node_modules/@grafana/scenes/dist/esm/querying/SceneQueryRunner.js',
+    '<repo>/node_modules/@grafana/runtime/dist/esm/services/dataSourceSrv.mjs',
+    '<repo>/node_modules/@grafana/scenes/dist/esm/querying/RuntimeDataSource.js',
+  ])('rejects executable query or datasource service %s', (moduleId) => {
+    const report: ProviderBundleEvidence = {
+      assets: [],
+      chunks: [
+        {
+          dynamicImports: ['assets/runtime.js'], fileName: 'provider.js', gzipSize: 1,
+          imports: [], isEntry: true,
+          modules: ['<repo>/packages/provider-13/src/index.ts'], rawSize: 1,
+        },
+        {
+          dynamicImports: [], fileName: 'assets/runtime.js', gzipSize: 1,
+          imports: [], isEntry: false,
+          modules: [
+            '<grafana-source>/public/app/plugins/panel/text/panelcfg.gen.ts',
+            '<grafana-source>/public/app/plugins/panel/text/v1/TextPanel.tsx',
+            moduleId,
+          ], rawSize: 1,
+        },
+      ],
+      moduleIds: [],
+    };
+
+    expect(() => inspectProviderBundleEvidence(report)).toThrow(/bundle boundary/i);
+  });
+});

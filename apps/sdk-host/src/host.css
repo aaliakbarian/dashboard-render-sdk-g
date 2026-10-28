@@ -1,0 +1,7 @@
+:root { font-family: Inter, system-ui, sans-serif; color: #17243e; background: #eef2f7; }
+body { margin: 8px; min-width: 760px; }
+button { font: inherit; }
+.sdk-host-header { border: 2px solid #17243e; background: #fff; padding: 12px; }
+.sdk-host-header nav { display: flex; gap: 8px; }
+.sdk-dashboard-slot { margin-top: 12px; min-height: 520px; position: relative; }
+[data-dashboard-render-sdk-g-surface] { min-height: 520px; }

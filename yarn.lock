@@ -358,11 +358,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dashboard-render-sdk-g/core@workspace:packages/core":
+"@dashboard-render-sdk-g/core@workspace:*, @dashboard-render-sdk-g/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@dashboard-render-sdk-g/core@workspace:packages/core"
   dependencies:
     "@dashboard-render-sdk-g/provider-contract": "workspace:*"
+  peerDependencies:
+    react: 19.2.8
   languageName: unknown
   linkType: soft
 
@@ -433,17 +435,50 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@dashboard-render-sdk-g/provider-13@workspace:packages/provider-13":
+"@dashboard-render-sdk-g/provider-13@workspace:*, @dashboard-render-sdk-g/provider-13@workspace:packages/provider-13":
   version: 0.0.0-use.local
   resolution: "@dashboard-render-sdk-g/provider-13@workspace:packages/provider-13"
   dependencies:
     "@dashboard-render-sdk-g/provider-contract": "workspace:*"
+    "@emotion/css": "npm:11.13.5"
+    "@emotion/react": "npm:11.14.0"
+    "@grafana/data": "npm:13.2.3"
+    "@grafana/e2e-selectors": "npm:13.2.3"
+    "@grafana/i18n": "npm:13.2.3"
+    "@grafana/runtime": "npm:13.2.3"
+    "@grafana/scenes": "npm:8.13.5"
+    "@grafana/schema": "npm:13.2.3"
+    "@grafana/ui": "npm:13.2.3"
+    dangerously-set-html-content: "npm:1.1.1"
+    react-router-dom: "npm:6.30.3"
+    react-use: "npm:17.6.1"
+    rxjs: "npm:7.8.2"
+    uplot: "npm:1.6.32"
+  peerDependencies:
+    react: 19.2.8
+    react-dom: 19.2.8
   languageName: unknown
   linkType: soft
 
 "@dashboard-render-sdk-g/provider-contract@workspace:*, @dashboard-render-sdk-g/provider-contract@workspace:packages/provider-contract":
   version: 0.0.0-use.local
   resolution: "@dashboard-render-sdk-g/provider-contract@workspace:packages/provider-contract"
+  languageName: unknown
+  linkType: soft
+
+"@dashboard-render-sdk-g/sdk-host@workspace:apps/sdk-host":
+  version: 0.0.0-use.local
+  resolution: "@dashboard-render-sdk-g/sdk-host@workspace:apps/sdk-host"
+  dependencies:
+    "@dashboard-render-sdk-g/core": "workspace:*"
+    "@dashboard-render-sdk-g/provider-13": "workspace:*"
+    "@dashboard-render-sdk-g/provider-contract": "workspace:*"
+    "@types/react": "npm:19.2.18"
+    "@types/react-dom": "npm:19.2.4"
+    "@vitejs/plugin-react": "npm:6.1.1"
+    react: "npm:19.2.8"
+    react-dom: "npm:19.2.8"
+    vite: "npm:8.2.0"
   languageName: unknown
   linkType: soft
 

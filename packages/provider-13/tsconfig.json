@@ -8,11 +8,14 @@
     "types": []
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.tsx"
   ],
   "exclude": [
     "src/**/*.test.ts",
-    "src/**/*.type-test.ts"
+    "src/**/*.test.tsx",
+    "src/**/*.type-test.ts",
+    "src/**/*.type-test.tsx"
   ],
   "references": [
     {

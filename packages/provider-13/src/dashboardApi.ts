@@ -186,7 +186,7 @@ function readVersionEntry(value: Grafana13JsonValue): { groupVersion: string; ve
   return { groupVersion, version };
 }
 
-function validRequestId(value: unknown): value is string {
+export function validRequestId(value: unknown): value is string {
   return (
     typeof value === 'string' &&
     value.length > 0 &&

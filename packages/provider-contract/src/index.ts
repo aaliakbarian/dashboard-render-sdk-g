@@ -16,6 +16,13 @@ export {
 } from './contracts';
 export { isExactVersion } from './exactVersion';
 export {
+  type DashboardRenderFailure,
+  type DashboardRenderFailureCode,
+  type DashboardRenderStatus,
+  type HostReactRuntime,
+  type ProviderDashboardRendererProps,
+} from './rendering';
+export {
   type ManifestValidationError,
   type ManifestValidationErrorCode,
   type ManifestValidationFailure,
