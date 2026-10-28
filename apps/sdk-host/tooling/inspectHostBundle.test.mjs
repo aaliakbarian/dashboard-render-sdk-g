@@ -9,8 +9,10 @@ function validBundle() {
     ['assets/host-react-runtime.js', '/* one host-owned React and ReactDOM implementation */'],
     ['assets/provider-react-external-runtime.js', 'import "./host-react-runtime.js";'],
     ['assets/provider-react-dom-external-runtime.js', 'import "./host-react-runtime.js";'],
-    ['assets/provider-implementation-runtime.js', 'import("./feature-text-runtime.js");'],
+    ['assets/provider-implementation-runtime.js', 'import("./feature-text-runtime.js");import("./feature-stat-runtime.js");import("./feature-timeseries-runtime.js");'],
     ['assets/feature-text-runtime.js', 'import "./provider-react-external-runtime.js";'],
+    ['assets/feature-stat-runtime.js', '/* pinned Stat renderer */'],
+    ['assets/feature-timeseries-runtime.js', '/* pinned Time series renderer */'],
   ]);
 }
 
@@ -32,6 +34,32 @@ function validModuleEvidence() {
 }
 
 describe('SDK host post-build inspection', () => {
+  it.each(['stat', 'timeseries'])('rejects the missing admitted %s renderer chunk', (id) => {
+    const bundle = validBundle();
+    bundle.delete(`assets/feature-${id}-runtime.js`);
+
+    expect(() => inspectHostBundleFiles(bundle, validModuleEvidence())).toThrow(
+      'SDK host bundle boundary'
+    );
+  });
+  it.each(['stat', 'timeseries'])('rejects duplicate %s chunks even when both have explicit lazy edges', (id) => {
+    const bundle = validBundle();
+    bundle.set(`assets/feature-${id}-copy.js`, '/* duplicate native renderer */');
+    bundle.set('assets/provider-implementation-runtime.js', bundle.get('assets/provider-implementation-runtime.js') + `import("./feature-${id}-copy.js");`);
+
+    expect(() => inspectHostBundleFiles(bundle, validModuleEvidence())).toThrow(
+      'SDK host bundle boundary'
+    );
+  });
+  it('accepts independent native chunks only behind explicit lazy catalogue edges', () => {
+    const bundle = validBundle();
+    bundle.set('assets/provider-implementation-runtime.js', bundle.get('assets/provider-implementation-runtime.js') + 'import("./feature-stat-runtime.js");import("./feature-timeseries-runtime.js");');
+    bundle.set('assets/feature-stat-runtime.js', '/* pinned Stat renderer */');
+    bundle.set('assets/feature-timeseries-runtime.js', '/* pinned Time series renderer */');
+    expect(() => inspectHostBundleFiles(bundle, validModuleEvidence())).not.toThrow();
+    bundle.set('assets/feature-table-runtime.js', '/* still unadmitted */');
+    expect(() => inspectHostBundleFiles(bundle, validModuleEvidence())).toThrow();
+  });
   it('accepts the controlled endpoint only in reviewed host/cohort chunks alongside a lazy datasource entry', () => {
     const bundle = validBundle();
     bundle.set('assets/index-entry.js', bundle.get('assets/index-entry.js') + 'const policyPath="/api/ds/query";');
@@ -41,7 +69,7 @@ describe('SDK host post-build inspection', () => {
     bundle.set('assets/feature-testdata-runtime-runtime.js', '/* exact datasource.ts */');
     expect(() => inspectHostBundleFiles(bundle, validModuleEvidence())).not.toThrow();
   });
-  it('accepts the closed production-shaped Text bundle', () => {
+  it('accepts the closed production-shaped admitted renderer bundle', () => {
     expect(inspectHostBundleFiles(validBundle(), validModuleEvidence())).toEqual({
       featureTextChunks: 1,
       hostReactChunks: 1,

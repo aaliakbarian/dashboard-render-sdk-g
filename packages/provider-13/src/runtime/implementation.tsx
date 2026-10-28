@@ -14,6 +14,7 @@ import { createGrafana13ProviderElement, type Grafana13ProviderValues } from './
 type MountInput = Parameters<Grafana13RuntimeImplementation['mountDashboard']>[0];
 
 interface RuntimeMounterDependencies {
+  readonly loadQueryScenes?: () => Promise<Partial<Parameters<typeof convertPartialDashboardToGrafana13Scene>[1]>>;
   readonly acquire: (request: Grafana13RuntimeAcquireRequest) => Promise<Grafana13RuntimeLease>;
   readonly convert: typeof convertPartialDashboardToGrafana13Scene;
   readonly createProviderElement: typeof createGrafana13ProviderElement;
@@ -72,16 +73,28 @@ export function createGrafana13RuntimeDashboardMounter(
         readonly scenes: Parameters<typeof convertPartialDashboardToGrafana13Scene>[1];
       };
       const catalog = cohort.runtime.getPluginImportUtils();
-      try {
-        await catalog.importPanelPlugin('text');
-      } catch {
-        throw new Grafana13TextPanelPreparationError();
+      const ids = [...new Set(dashboard.panels.filter(panel => panel.kind === 'supported').map(panel => panel.panelType))];
+      let sceneConstructors = cohort.scenes;
+      let nativeCss: string | undefined;
+      if (ids.some(id => id !== 'text')) {
+        if (!lease.acquireQueryRuntime) throw new Grafana13TextPanelPreparationError();
+        await lease.acquireQueryRuntime();
+        const queryScenes = await (dependencies.loadQueryScenes ?? (() => import('grafana-provider13-query-scenes')))();
+        sceneConstructors = { ...cohort.scenes, ...queryScenes };
+        nativeCss = (await import('./nativeStyles')).nativeVisualizationCss;
       }
-      if (!catalog.getPanelPluginFromCache('text')) {
-        throw new Grafana13TextPanelPreparationError();
+      const failedPluginIds: string[] = [];
+      for (const id of ids) {
+        try {
+          await catalog.importPanelPlugin(id);
+          if (!catalog.getPanelPluginFromCache(id)) throw new Error();
+        } catch {
+          if (id === 'text') throw new Grafana13TextPanelPreparationError();
+          failedPluginIds.push(id);
+        }
       }
       scope = lease.acquireSceneScope(instanceId);
-      const graph = dependencies.convert(dashboard, cohort.scenes, { onPanelRenderFailure });
+      const graph = dependencies.convert(dashboard, sceneConstructors, { failedPluginIds, onPanelRenderFailure });
       deactivate = graph.scene.activate();
       const Scene = graph.scene.Component;
       const sceneElement = createElement(
@@ -92,6 +105,7 @@ export function createGrafana13RuntimeDashboardMounter(
           'data-dashboard-render-status': 'ready',
           'data-dashboard-render-uid': dashboard.uid,
         },
+        nativeCss ? createElement('style', { 'data-dashboard-native-styles': instanceId }, nativeCss) : null,
         createElement(Scene, { model: graph.scene })
       );
       const element = dependencies.createProviderElement(

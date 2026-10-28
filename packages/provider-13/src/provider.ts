@@ -2,8 +2,8 @@ import { validateProviderCompatibilityManifest, type RendererProvider } from '@d
 
 const validation = validateProviderCompatibilityManifest({
   capabilities: {
-    datasources: [], panels: ['text'],
-    transformations: { allowEmptyPipeline: true, ids: [], maxChainLength: 0 },
+    datasources: ['grafana-testdata-datasource'], panels: ['text', 'stat', 'timeseries'],
+    transformations: { allowEmptyPipeline: true, ids: ['renameByRegex'], maxChainLength: 1 },
   },
   dashboards: {
     apis: [{ group: 'dashboard.grafana.app', version: 'v1' }], lookup: 'uid',
@@ -12,7 +12,7 @@ const validation = validateProviderCompatibilityManifest({
   host: { reactDomVersion: '19.2.8', reactVersion: '19.2.8' },
   provenance: { recordId: 'provider-13-grafana-13.2.3-pinned-source' },
   provider: {
-    buildId: 'provider-13-grafana-13.2.3-text-markdown-view-v1',
+    buildId: 'provider-13-grafana-13.2.3-native-stat-timeseries-view-v1',
     id: '@dashboard-render-sdk-g/provider-13', supportTier: 'experimental', version: '0.0.0-private',
   },
   runtimeDependencies: [

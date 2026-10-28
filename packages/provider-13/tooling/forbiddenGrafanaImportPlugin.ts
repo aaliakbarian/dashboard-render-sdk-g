@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite';
-import { GRAFANA_13_TESTDATA_SOURCES } from './sourceIdentity.ts';
+import { GRAFANA_13_TESTDATA_SOURCES, GRAFANA_13_NATIVE_SOURCES } from './sourceIdentity.ts';
 
 export interface Provider13ForbiddenImport {
   readonly category: string;
@@ -10,12 +10,18 @@ const allowedApplicationSources = [
   'public/app/plugins/panel/text/panelcfg.gen.ts',
   'public/app/plugins/panel/text/v1/TextPanel.tsx',
   ...GRAFANA_13_TESTDATA_SOURCES,
+  ...GRAFANA_13_NATIVE_SOURCES,
 ] as const;
 
 function normalizedApplicationSource(source: string): string | undefined {
   const normalized = source.replace(/^\0+/, '').replaceAll('\\', '/').split('?')[0] ?? source;
   const virtualPrefix = 'provider-13-pinned-grafana-source:text:';
   const testdataPrefix = 'provider-13-pinned-grafana-source:testdata:';
+  const nativePrefix = 'provider-13-pinned-grafana-source:native:';
+  if (normalized.startsWith(nativePrefix)) {
+    const file = normalized.slice(nativePrefix.length).replace(/\.js$/, '');
+    return file.startsWith('public/app/') ? file : undefined;
+  }
   if (normalized.startsWith(testdataPrefix)) {
     return `public/app/plugins/datasource/grafana-testdata-datasource/${normalized.slice(testdataPrefix.length).replace(/\.js$/, '')}`;
   }

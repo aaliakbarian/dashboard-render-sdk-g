@@ -4,20 +4,26 @@ export const TEXT_PANEL_MODULE_IDENTITY =
   'public/app/plugins/panel/text/v1/TextPanel.tsx' as const;
 export const GRAFANA_13_SOURCE_REVISION =
   '6193dc03311b631b9727b560d24369e683dc396e' as const;
+export const PANEL_MODULE_IDENTITIES = Object.freeze({
+  text: TEXT_PANEL_MODULE_IDENTITY,
+  stat: 'public/app/plugins/panel/stat/StatPanel.tsx',
+  timeseries: 'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx',
+} as const);
+type PanelId = keyof typeof PANEL_MODULE_IDENTITIES;
 
 export type Grafana13PanelPluginLoadEvent =
   | {
       readonly cache: 'miss';
-      readonly moduleIdentity: typeof TEXT_PANEL_MODULE_IDENTITY;
-      readonly pluginId: 'text';
+      readonly moduleIdentity: typeof PANEL_MODULE_IDENTITIES[PanelId];
+      readonly pluginId: PanelId;
       readonly sourceCategory: 'grafana-application-source';
       readonly sourceRevision: typeof GRAFANA_13_SOURCE_REVISION;
       readonly type: 'start';
     }
-  | { readonly pluginId: 'text'; readonly type: 'cache-hit' }
+  | { readonly pluginId: PanelId; readonly type: 'cache-hit' }
   | {
-      readonly moduleIdentity: typeof TEXT_PANEL_MODULE_IDENTITY;
-      readonly pluginId: 'text';
+      readonly moduleIdentity: typeof PANEL_MODULE_IDENTITIES[PanelId];
+      readonly pluginId: PanelId;
       readonly type: 'success';
       readonly version: '13.2.3';
     }
@@ -49,30 +55,29 @@ export class Grafana13UnsupportedPanelPluginError extends Error {
 export class Grafana13PanelPluginLoadError extends Error {
   override readonly name = 'Grafana13PanelPluginLoadError';
   readonly code = 'panel-plugin-load-failed' as const;
-  readonly pluginId = 'text' as const;
-
-  constructor() {
-    super('The pinned Grafana 13 Text panel module could not be loaded.');
+  constructor(readonly pluginId: PanelId = 'text') {
+    super('The pinned Grafana 13 panel module could not be loaded.');
   }
 }
 
-function attachTextMetadata(plugin: PanelPlugin): PanelPlugin {
+function attachMetadata(plugin: PanelPlugin, id: PanelId): PanelPlugin {
+  const name = { text: 'Text', stat: 'Stat', timeseries: 'Time series' }[id];
   plugin.meta = {
     ...plugin.meta,
     baseUrl: '',
-    id: 'text',
+    id,
     info: {
       author: { name: 'Grafana Labs' },
-      description: 'Built-in Grafana Text panel.',
+      description: `Built-in Grafana ${name} panel.`,
       links: [],
       logos: { large: '', small: '' },
       screenshots: [],
       updated: '',
       version: '13.2.3',
     } as PluginMetaInfo,
-    module: TEXT_PANEL_MODULE_IDENTITY,
-    name: 'Text',
-    skipDataQuery: true,
+    module: PANEL_MODULE_IDENTITIES[id],
+    name,
+    skipDataQuery: id === 'text',
     suggestions: true,
     type: 'panel',
     version: '13.2.3',
@@ -83,16 +88,23 @@ function attachTextMetadata(plugin: PanelPlugin): PanelPlugin {
 export function createGrafana13TextPanelCatalog(options: {
   readonly evidence?: Grafana13PanelPluginEvidence;
   readonly loadTextPlugin?: () => Promise<PanelPlugin>;
+  readonly loadStatPlugin?: () => Promise<PanelPlugin>;
+  readonly loadTimeSeriesPlugin?: () => Promise<PanelPlugin>;
 }): Grafana13TextPanelCatalog {
-  let pending: Promise<PanelPlugin> | undefined;
-  let resolved: PanelPlugin | undefined;
+  const pending = new Map<PanelId, Promise<PanelPlugin>>();
+  const resolved = new Map<PanelId, PanelPlugin>();
+  const loaders = {
+    text: options.loadTextPlugin ?? (() => import('./textPlugin').then(m => m.grafana13TextPanelPlugin)),
+    stat: options.loadStatPlugin ?? (() => import('./statPlugin').then(m => m.grafana13StatPanelPlugin)),
+    timeseries: options.loadTimeSeriesPlugin ?? (() => import('./timeSeriesPlugin').then(m => m.grafana13TimeSeriesPanelPlugin)),
+  };
 
   return {
     getPanelPluginFromCache(id) {
-      return id === 'text' ? resolved : undefined;
+      return resolved.get(id as PanelId);
     },
     importPanelPlugin(id) {
-      if (id !== 'text') {
+      if (!Object.hasOwn(PANEL_MODULE_IDENTITIES, id)) {
         options.evidence?.record({
           category: 'unknown-plugin',
           pluginId: '<unsupported>',
@@ -101,43 +113,44 @@ export function createGrafana13TextPanelCatalog(options: {
         return Promise.reject(new Grafana13UnsupportedPanelPluginError());
       }
 
-      if (pending) {
-        options.evidence?.record({ pluginId: 'text', type: 'cache-hit' });
-        return pending;
+      const panelId = id as PanelId;
+      const cached = pending.get(panelId);
+      if (cached) {
+        options.evidence?.record({ pluginId: panelId, type: 'cache-hit' });
+        return cached;
       }
 
       options.evidence?.record({
         cache: 'miss',
-        moduleIdentity: TEXT_PANEL_MODULE_IDENTITY,
-        pluginId: 'text',
+        moduleIdentity: PANEL_MODULE_IDENTITIES[panelId],
+        pluginId: panelId,
         sourceCategory: 'grafana-application-source',
         sourceRevision: GRAFANA_13_SOURCE_REVISION,
         type: 'start',
       });
-      const loadTextPlugin =
-        options.loadTextPlugin ??
-        (() => import('./textPlugin').then((module) => module.grafana13TextPanelPlugin));
-      pending = loadTextPlugin()
+      const loading = Promise.resolve().then(loaders[panelId])
         .then((plugin) => {
-          resolved = attachTextMetadata(plugin);
+          const value = attachMetadata(plugin, panelId);
+          resolved.set(panelId, value);
           options.evidence?.record({
-            moduleIdentity: TEXT_PANEL_MODULE_IDENTITY,
-            pluginId: 'text',
+            moduleIdentity: PANEL_MODULE_IDENTITIES[panelId],
+            pluginId: panelId,
             type: 'success',
             version: '13.2.3',
           });
-          return resolved;
+          return value;
         })
         .catch(() => {
-          pending = undefined;
+          pending.delete(panelId);
           options.evidence?.record({
             category: 'module-load-failed',
-            pluginId: 'text',
+            pluginId: panelId,
             type: 'failure',
           });
-          throw new Grafana13PanelPluginLoadError();
+          throw new Grafana13PanelPluginLoadError(panelId);
         });
-      return pending;
+      pending.set(panelId, loading);
+      return loading;
     },
   };
 }

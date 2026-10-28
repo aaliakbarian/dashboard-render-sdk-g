@@ -1,7 +1,7 @@
 import type { Grafana13PartialPreflightResult } from '../partialContracts';
 import type { Grafana13ScenesModule } from '../runtime/cohort';
 import { Grafana13FallbackPanel } from './FallbackPanel';
-import { Grafana13TextPanelScene } from './TextPanelScene';
+import { Grafana13NativePanelScene, Grafana13PanelPreparationFailure } from './NativePanelScene';
 import { createElement } from 'react';
 
 type RenderableDashboard = Grafana13PartialPreflightResult & { readonly kind: 'renderable' };
@@ -11,8 +11,14 @@ export interface Grafana13DashboardSceneGraph {
   readonly scene: any;
 }
 
-function createRoot(scenes: Grafana13ScenesModule, state: Record<string, unknown>): any {
+type QueryIdentity = { readonly dashboardUID: string; readonly panelId: number };
+let nextSceneGeneration = 0;
+
+function createRoot(scenes: Grafana13ScenesModule, state: Record<string, unknown>, queryIdentities: WeakMap<object, QueryIdentity>): any {
   class Grafana13DashboardScene extends scenes.SceneObjectBase {
+    enrichDataRequest(source: object) {
+      return queryIdentities.get(source) ?? null;
+    }
     static Component = ({ model }: { readonly model: any }) => {
       const body = model.state.body;
       return createElement(body.Component ?? body.constructor.Component, { model: body });
@@ -21,24 +27,28 @@ function createRoot(scenes: Grafana13ScenesModule, state: Record<string, unknown
   return new Grafana13DashboardScene(state);
 }
 
-function createTextPanelBody(
+function createNativePanelBody(
   scenes: Grafana13ScenesModule,
   state: Record<string, unknown>
 ): any {
   // Keep VizPanel as a direct SceneObject state child. Scenes deliberately does
   // not traverse arbitrary nested props objects, and a detached VizPanel cannot
   // inherit the dashboard variable/time-range context used by the real plugin.
-  class Grafana13TextPanelBody extends scenes.SceneObjectBase {
-    static Component = Grafana13TextPanelScene;
+  class Grafana13NativePanelBody extends scenes.SceneObjectBase {
+    static Component = Grafana13NativePanelScene;
   }
-  return new Grafana13TextPanelBody(state);
+  return new Grafana13NativePanelBody(state);
 }
 
 export function convertPartialDashboardToGrafana13Scene(
   dashboard: RenderableDashboard,
   scenes: Grafana13ScenesModule,
-  options: { readonly onPanelRenderFailure?: (panelId: number) => void } = {}
+  options: { readonly onPanelRenderFailure?: (panelId: number) => void; readonly failedPluginIds?: readonly string[] } = {}
 ): Grafana13DashboardSceneGraph {
+  // One fresh prefix per scene generation, never derived from caller text or
+  // React IDs. The pinned runner appends its own monotonic request counter.
+  const generation = ++nextSceneGeneration;
+  const queryIdentities = new WeakMap<object, QueryIdentity>();
   const variables = dashboard.constantVariables.map((variable) =>
     new scenes.ConstantVariable({
       hide: 2,
@@ -50,17 +60,36 @@ export function convertPartialDashboardToGrafana13Scene(
     })
   );
   const children = dashboard.panels.map((panel) => {
-    const body = panel.kind === 'supported'
+    const body = panel.kind === 'supported' && options.failedPluginIds?.includes(panel.panelType)
+      ? new scenes.SceneReactObject({ component: Grafana13PanelPreparationFailure, props: {
+          id: panel.id, title: panel.title, onFailure: options.onPanelRenderFailure ?? (() => {}),
+        } })
+      : panel.kind === 'supported'
       ? (() => {
           const vizPanel = new scenes.VizPanel({
+          ...(panel.model.type === 'text' ? {} : (() => {
+            if (!scenes.SceneQueryRunner) throw new Error('Query scene constructors are unavailable.');
+            const runner = new scenes.SceneQueryRunner({
+              datasource: structuredClone(panel.model.query.datasource),
+              queries: structuredClone(panel.model.query.targets),
+              maxDataPoints: 300,
+              requestIdPrefix: `sdk13-g${generation}-p${panel.id}`,
+            });
+            queryIdentities.set(runner, Object.freeze({ dashboardUID: dashboard.uid, panelId: panel.id }));
+            if (panel.model.type === 'timeseries' && panel.model.transformations.length) {
+              if (!scenes.SceneDataTransformer) throw new Error('Transform scene constructor is unavailable.');
+              return { $data: new scenes.SceneDataTransformer({ $data: runner, transformations: structuredClone(panel.model.transformations) }) };
+            }
+            return { $data: runner };
+          })()),
           fieldConfig: structuredClone(panel.model.fieldConfig),
           key: `panel-${panel.id}`,
           options: structuredClone(panel.model.options),
-          pluginId: 'text',
+          pluginId: panel.model.type,
           pluginVersion: panel.model.pluginVersion,
           title: panel.title,
           });
-          return createTextPanelBody(scenes, {
+          return createNativePanelBody(scenes, {
             onFailure: options.onPanelRenderFailure ?? (() => {}),
             panel: vizPanel,
             panelId: panel.id,
@@ -102,7 +131,7 @@ export function convertPartialDashboardToGrafana13Scene(
       body,
       title: dashboard.title,
       uid: dashboard.uid,
-    }),
+    }, queryIdentities),
   });
 }
 
@@ -125,7 +154,7 @@ export function inspectGrafana13Scene(
         title: supportedPanel?.state.title ?? body.state.title ?? body.state.props.title,
       };
       if (supportedPanel instanceof scenes.VizPanel) {
-        return { ...common, executable: true, kind: 'text', pluginId: supportedPanel.state.pluginId };
+        return { ...common, executable: true, kind: supportedPanel.state.pluginId, pluginId: supportedPanel.state.pluginId };
       }
       return {
         ...common,

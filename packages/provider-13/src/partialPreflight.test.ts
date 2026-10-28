@@ -16,28 +16,41 @@ function manifest() {
   return result;
 }
 
-describe('Text-only partial preflight', () => {
-  it('keeps all four real fixture panels in order with their exact layout and Text-only capabilities', () => {
+describe('closed native partial preflight', () => {
+  it('admits only native Stat/Time series candidate profiles with explicit manifest coverage', () => {
+    const candidate = validateProviderCompatibilityManifest({ ...provider.grafana13Provider.manifest, capabilities: {
+      panels: ['text', 'stat', 'timeseries'], datasources: ['grafana-testdata-datasource'],
+      transformations: { allowEmptyPipeline: true, ids: ['renameByRegex'], maxChainLength: 1 },
+    } });
+    if (!candidate.valid) throw new Error('Expected candidate manifest');
+    const result = provider.partialPreflightGrafana13DashboardV1(fixtureDashboard('drsdk-g-phase2-visualizations'), candidate);
+    expect(result.kind).toBe('renderable');
+    if (result.kind !== 'renderable') throw new Error('Expected renderable');
+    expect(result.panels.filter(p => p.kind === 'supported').map(p => p.panelType)).toEqual(['text', 'stat', 'timeseries']);
+    expect(result.panels.filter(p => p.kind === 'unsupported').map(p => p.panelType)).toEqual(['table', 'gauge', 'bargauge', 'piechart', 'barchart']);
+    for (const panel of result.panels.filter(p => p.kind === 'unsupported')) expect(JSON.stringify(panel)).not.toMatch(/query|targets|datasource|transformations/);
+  });
+  it('keeps all four real fixture panels in order with their exact layout and closed native capabilities', () => {
     expect(provider.grafana13Provider).toBeDefined();
     const result = provider.partialPreflightGrafana13DashboardV1(fixtureDashboard('grsdk-phase0-poc'), manifest());
     expect(result.kind).toBe('renderable');
     if (result.kind !== 'renderable') throw new Error('Expected renderable fixture');
     expect(result).toMatchObject({
       constantVariables: [{ label: 'Environment', name: 'environment', value: 'phase0' }],
-      supportedPanelCount: 1, unsupportedPanelCount: 3,
+      supportedPanelCount: 3, unsupportedPanelCount: 1,
       timeRange: { from: 'now-1h', to: 'now' }, timezone: 'browser',
       title: 'Dashboard Render SDK G Phase 0 POC', uid: 'grsdk-phase0-poc',
     });
     expect(result.panels.map(({ id, index, kind, panelType, grid }) => ({ id, index, kind, panelType, grid }))).toEqual([
       { grid: { height: 6, width: 8, x: 0, y: 0 }, id: 1, index: 0, kind: 'supported', panelType: 'text' },
-      { grid: { height: 6, width: 8, x: 8, y: 0 }, id: 2, index: 1, kind: 'unsupported', panelType: 'stat' },
-      { grid: { height: 10, width: 16, x: 0, y: 6 }, id: 3, index: 2, kind: 'unsupported', panelType: 'timeseries' },
+      { grid: { height: 6, width: 8, x: 8, y: 0 }, id: 2, index: 1, kind: 'supported', panelType: 'stat' },
+      { grid: { height: 10, width: 16, x: 0, y: 6 }, id: 3, index: 2, kind: 'supported', panelType: 'timeseries' },
       { grid: { height: 10, width: 8, x: 16, y: 0 }, id: 4, index: 3, kind: 'unsupported', panelType: 'table' },
     ]);
     expect(provider.grafana13Provider.manifest.capabilities).toEqual({
-      datasources: [], panels: ['text'], transformations: { allowEmptyPipeline: true, ids: [], maxChainLength: 0 },
+      datasources: ['grafana-testdata-datasource'], panels: ['text', 'stat', 'timeseries'], transformations: { allowEmptyPipeline: true, ids: ['renameByRegex'], maxChainLength: 1 },
     });
-    for (const panel of result.panels.slice(1)) {
+    for (const panel of result.panels.filter(p => p.kind === 'unsupported')) {
       expect(Object.keys(panel).sort()).toEqual(['diagnostics', 'grid', 'id', 'index', 'kind', 'panelType', 'title']);
       expect(JSON.stringify(panel)).not.toMatch(/predictable_pulse|renameByRegex|table_static|grsdk-testdata/);
     }
@@ -59,12 +72,12 @@ describe('Text-only partial preflight', () => {
   });
 
   it.each([
-    ['grsdk-phase0-poc', 3], ['grsdk-phase0-poc-alt', 0],
-  ] as const)('uses canonical metadata identity when %s omits spec.uid', (uid, unsupportedPanelCount) => {
+    ['grsdk-phase0-poc', 3, 1], ['grsdk-phase0-poc-alt', 1, 0],
+  ] as const)('uses canonical metadata identity when %s omits spec.uid', (uid, supportedPanelCount, unsupportedPanelCount) => {
     const dashboard = structuredClone(fixtureDashboard(uid));
     const { uid: _uid, ...spec } = dashboard.spec;
     const result = provider.partialPreflightGrafana13DashboardV1({ ...dashboard, spec }, manifest());
-    expect(result).toMatchObject({ kind: 'renderable', uid, supportedPanelCount: 1, unsupportedPanelCount });
+    expect(result).toMatchObject({ kind: 'renderable', uid, supportedPanelCount, unsupportedPanelCount });
   });
 
   it.each([
@@ -79,7 +92,7 @@ describe('Text-only partial preflight', () => {
     ['unknown panel feature', (panel: any) => { panel.unknown = 'secret-value'; }],
   ] as const)('retains a placeholder for Text with unsupported %s', (_label, mutate) => {
     const result = provider.partialPreflightGrafana13DashboardV1(changed((dashboard) => mutate(dashboard.spec.panels[0])), manifest());
-    expect(result).toMatchObject({ kind: 'renderable', supportedPanelCount: 0, unsupportedPanelCount: 4 });
+    expect(result).toMatchObject({ kind: 'renderable', supportedPanelCount: 2, unsupportedPanelCount: 2 });
     if (result.kind !== 'renderable') throw new Error('Expected panel fallback');
     expect(result.panels[0]).toMatchObject({ grid: { height: 6, width: 8, x: 0, y: 0 }, id: 1, kind: 'unsupported', title: 'Text — $environment' });
     expect(JSON.stringify(result)).not.toContain('secret-');
@@ -140,9 +153,9 @@ describe('Text-only partial preflight', () => {
       .toMatchObject({ kind: 'unsupported-dashboard', reason: 'dashboard-schema' });
   });
 
-  it('does not upgrade unsupported panels when a broader valid manifest declares their capabilities', () => {
+  it('does not upgrade unadmitted Table profiles when a broader valid manifest declares their capabilities', () => {
     expect(provider.partialPreflightGrafana13DashboardV1(fixtureDashboard('grsdk-phase0-poc'), canonicalManifest()))
-      .toMatchObject({ kind: 'renderable', supportedPanelCount: 1, unsupportedPanelCount: 3 });
+      .toMatchObject({ kind: 'renderable', supportedPanelCount: 3, unsupportedPanelCount: 1 });
   });
 
   it('cannot lose a fatal final layout failure after many panel diagnostics', () => {

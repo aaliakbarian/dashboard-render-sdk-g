@@ -409,7 +409,11 @@ export async function exerciseActualCatalogueFailure() {
   const Renderer = createGrafana13DashboardRenderer({
     admitAndLoad: (_host, load) => load(),
     loadImplementation: async () => ({ mountDashboard }),
-    retrieve: async () => renderable('catalogue-failure'),
+    retrieve: async () => {
+      const result = renderable('catalogue-failure');
+      if (result.kind === 'renderable') return { ...result, dashboard: { ...result.dashboard, panels: [{ kind: 'supported', panelType: 'text' }] } } as never;
+      return result;
+    },
   });
   const container = document.createElement('div');
   document.body.append(container);

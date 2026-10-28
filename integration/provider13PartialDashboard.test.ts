@@ -17,7 +17,7 @@ const targetOrigin = 'http://grafana:3000';
 
 describe.skipIf(!credentialsAvailable)('provider-13 real partial dashboard path', () => {
   it.each([
-    ['grsdk-phase0-poc', 1, 3, ['text', 'stat', 'table', 'timeseries']],
+    ['grsdk-phase0-poc', 3, 1, ['text', 'stat', 'table', 'timeseries']],
     ['grsdk-phase0-poc-alt', 1, 0, ['text']],
   ] as const)('retrieves and classifies %s through health, discovery, and V1 DTO', async (
     uid,

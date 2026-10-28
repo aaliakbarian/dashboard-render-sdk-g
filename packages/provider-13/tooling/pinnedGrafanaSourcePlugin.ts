@@ -4,7 +4,7 @@ import { relative, resolve, sep } from 'node:path';
 import { transformWithOxc, type Plugin } from 'vite';
 
 export interface PinnedGrafanaSourcePluginOptions {
-  readonly feature?: 'text' | 'testdata';
+  readonly feature?: 'text' | 'testdata' | 'native';
   readonly reviewedFiles?: readonly string[];
   readonly entryAlias: string;
   readonly entrypoint: string;

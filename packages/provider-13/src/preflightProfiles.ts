@@ -140,7 +140,19 @@ export function classifyGrafana13PanelProfile(value: unknown): Grafana13PanelPro
   if (typeof panel.type !== 'string' || !Object.hasOwn(queryPanelProfiles, panel.type)) return unsupported;
   const type = panel.type as Grafana13QueryPanelType;
   const config = queryPanelProfiles[type];
-  if (!equal(panel.options, config.options) || !equal(panel.fieldConfig, config.fieldConfig) || !equal(panel.datasource, datasource) ||
+  let fieldConfig = panel.fieldConfig;
+  // Grafana's V1 DTO omits the JSON null representing the base (-Infinity)
+  // threshold. Canonicalize only that exact omitted value, never later steps.
+  if ((type === 'stat' || type === 'timeseries') && object(fieldConfig) && object(fieldConfig.defaults)) {
+    const defaults = fieldConfig.defaults;
+    const thresholds = defaults.thresholds;
+    if (object(thresholds) && Array.isArray(thresholds.steps) && object(thresholds.steps[0]) && !Object.hasOwn(thresholds.steps[0], 'value')) {
+      fieldConfig = Object.freeze({ ...fieldConfig, defaults: Object.freeze({ ...defaults, thresholds: Object.freeze({
+        ...thresholds, steps: Object.freeze([Object.freeze({ ...thresholds.steps[0], value: null }), ...thresholds.steps.slice(1)]),
+      }) }) });
+    }
+  }
+  if (!equal(panel.options, config.options) || !equal(fieldConfig, config.fieldConfig) || !equal(panel.datasource, datasource) ||
       !Array.isArray(panel.targets) || panel.targets.length !== 1) return unsupported;
   const target = panel.targets[0];
   if (!object(target) || !isGrafana13PulseAlias(target.alias) || !equal(target, {
@@ -150,7 +162,7 @@ export function classifyGrafana13PanelProfile(value: unknown): Grafana13PanelPro
   if (!equal(transformations, []) && !(type === 'timeseries' && equal(transformations, rename))) return unsupported;
   // Every material value is verified above; all retained nested objects come from the frozen snapshot.
   const model = Object.freeze({
-    ...identity, type, options: panel.options, fieldConfig: panel.fieldConfig,
+    ...identity, type, options: panel.options, fieldConfig,
     query: Object.freeze({ datasource: panel.datasource, targets: Object.freeze([Object.freeze({
       alias: target.alias, refId: 'A', scenarioId: 'predictable_pulse', pulseWave: target.pulseWave,
     })]) }), transformations: panel.transformations ?? Object.freeze([]),

@@ -13,7 +13,7 @@ describe.skipIf(!username || !password)('provider-13 actual TestData runtime', (
     const loaded = await loadConfigFromFile({ command: 'serve', mode: 'test' }, 'packages/provider-13/vite.config.ts');
     if (!loaded) throw new Error('Missing pinned provider configuration.');
     const outDir = mkdtempSync(join(tmpdir(), 'provider13-query-integration-'));
-    const allowedPlugins = ['provider-13-runtime-view-only-barrels', 'provider-13-query-runtime-imports', 'provider-13-text-renderer-only-imports', 'provider-13-forbidden-grafana-imports', 'provider-13-pinned-grafana-source'];
+    const allowedPlugins = ['provider-13-runtime-view-only-barrels', 'provider-13-query-runtime-imports', 'provider-13-native-renderer-only-imports', 'provider-13-text-renderer-only-imports', 'provider-13-forbidden-grafana-imports', 'provider-13-pinned-grafana-source'];
     await build({ ...loaded.config, configFile: false,
       plugins: loaded.config.plugins?.flat(Infinity).filter((plugin: any) => allowedPlugins.includes(plugin?.name)) as any,
       build: { outDir, emptyOutDir: false, minify: false, rollupOptions: { input: resolve('integration/provider13QueryRuntime.browser.ts'), output: { entryFileNames: 'probe.js' }, preserveEntrySignatures: 'strict' } },

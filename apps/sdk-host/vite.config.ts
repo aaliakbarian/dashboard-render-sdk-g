@@ -26,6 +26,12 @@ function hostReactChunk(id: string): string | undefined {
 }
 
 const providerArtifactChunkPrefixes = Object.freeze([
+  ['provider-stat-', 'feature-stat'],
+  ['provider-timeseries-', 'feature-timeseries'],
+  ['provider-native-visualization-', 'provider-native-visualization'],
+  ['provider-visualization-dependencies-', 'provider-visualization-dependencies'],
+  ['queryScenes-', 'provider-query-scenes'],
+  ['index.esm-', 'provider-ui-dependencies'],
   ['provider-react-dom-external-', 'provider-react-dom-external'],
   ['provider-react-external-', 'provider-react-external'],
   ['provider-scenes-dependencies-', 'provider-scenes-dependencies'],

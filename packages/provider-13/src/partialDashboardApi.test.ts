@@ -49,13 +49,14 @@ describe('partial dashboard load facade', () => {
     const { input, requests } = setup();
     const result = await provider.retrieveAndClassifyGrafana13DashboardV1(input);
     expect(result).toMatchObject({ kind: 'renderable', requestIds: input.requestIds,
-      dashboard: { supportedPanelCount: 1, unsupportedPanelCount: 3, uid: 'grsdk-phase0-poc' } });
+      dashboard: { supportedPanelCount: 3, unsupportedPanelCount: 1, uid: 'grsdk-phase0-poc' } });
     expect(requests).toEqual([
       { headers: [['Accept', 'application/json']], method: 'GET', path: '/api/health', requestId: 'health-id', signal: input.signal },
       { headers: [['Accept', 'application/json']], method: 'GET', path: '/apis/dashboard.grafana.app/', requestId: 'discovery-id', signal: input.signal },
       { headers: [['Accept', 'application/json']], method: 'GET', path: '/apis/dashboard.grafana.app/v1/namespaces/default/dashboards/grsdk-phase0-poc/dto', requestId: 'dashboard-id', signal: input.signal },
     ]);
-    expect(JSON.stringify(result)).not.toMatch(/secret-header|Docker-BuildCommit|predictable_pulse|table_static|renameByRegex/);
+    expect(JSON.stringify(result)).not.toMatch(/secret-header|Docker-BuildCommit|table_static/);
+    if (result.kind === 'renderable') expect(JSON.stringify(result.dashboard.panels.filter(p => p.kind === 'unsupported'))).not.toMatch(/predictable_pulse|renameByRegex/);
     expect(Object.isFrozen(result)).toBe(true);
     expect(Object.isFrozen(result.kind === 'renderable' && result.requestIds)).toBe(true);
   });
@@ -68,13 +69,13 @@ describe('partial dashboard load facade', () => {
   });
 
   it.each([
-    ['grsdk-phase0-poc', 3], ['grsdk-phase0-poc-alt', 0],
-  ] as const)('loads canonical metadata identity when %s omits spec.uid', async (uid, unsupportedPanelCount) => {
+    ['grsdk-phase0-poc', 3, 1], ['grsdk-phase0-poc-alt', 1, 0],
+  ] as const)('loads canonical metadata identity when %s omits spec.uid', async (uid, supportedPanelCount, unsupportedPanelCount) => {
     const body = dto(uid);
     const { uid: _uid, ...spec } = body.spec;
     const { input } = setup({ 'dashboard-v1': response({ ...body, spec }) });
     expect(await provider.retrieveAndClassifyGrafana13DashboardV1({ ...input, uid })).toMatchObject({
-      kind: 'renderable', dashboard: { uid, supportedPanelCount: 1, unsupportedPanelCount },
+      kind: 'renderable', dashboard: { uid, supportedPanelCount, unsupportedPanelCount },
     });
   });
 

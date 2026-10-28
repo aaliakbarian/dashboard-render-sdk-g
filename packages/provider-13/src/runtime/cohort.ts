@@ -52,6 +52,8 @@ export interface Grafana13I18nModule {
 }
 
 export interface Grafana13ScenesModule {
+  readonly SceneQueryRunner?: new (state: Record<string, unknown>) => any;
+  readonly SceneDataTransformer?: new (state: Record<string, unknown>) => any;
   readonly ConstantVariable: new (state: Record<string, unknown>) => any;
   readonly SceneGridItem: new (state: Record<string, unknown>) => any;
   readonly SceneGridLayout: new (state: Record<string, unknown>) => any;

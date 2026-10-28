@@ -61,7 +61,7 @@ interface PanelBoundaryProps {
 
 interface PanelBoundaryState { readonly failed: boolean }
 
-/** Panel-local boundary: a Text failure does not remove sibling grid fallbacks. */
+/** Panel-local boundary: a native renderer failure leaves sibling panels intact. */
 export class Grafana13PanelRenderBoundary extends Component<
   PanelBoundaryProps,
   PanelBoundaryState

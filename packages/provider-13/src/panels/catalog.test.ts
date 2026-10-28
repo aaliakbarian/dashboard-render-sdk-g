@@ -14,6 +14,44 @@ function panelPlugin(): PanelPlugin {
 }
 
 describe('Grafana 13 closed Text catalogue', () => {
+  it.each(['stat', 'timeseries'] as const)('loads and caches only the fixed %s renderer identity independently', async (id) => {
+    const plugin = panelPlugin();
+    const other = panelPlugin();
+    const catalogue = createGrafana13TextPanelCatalog({
+      loadStatPlugin: async () => id === 'stat' ? plugin : other,
+      loadTimeSeriesPlugin: async () => id === 'timeseries' ? plugin : other,
+    });
+    const first = catalogue.importPanelPlugin(id);
+    const second = catalogue.importPanelPlugin(id);
+    // Observe both rejections before asserting identity, even during RED.
+    const results = await Promise.allSettled([first, second]);
+    expect(second).toBe(first);
+    expect(results).toEqual([{ status: 'fulfilled', value: plugin }, { status: 'fulfilled', value: plugin }]);
+    expect(catalogue.getPanelPluginFromCache(id)).toBe(plugin);
+    expect(plugin.meta).toMatchObject({ id, skipDataQuery: false, version: '13.2.3' });
+    const otherId = id === 'stat' ? 'timeseries' : 'stat';
+    expect(catalogue.getPanelPluginFromCache(otherId)).toBeUndefined();
+    await expect(catalogue.importPanelPlugin(otherId)).resolves.toBe(other);
+    for (const unsupported of ['table', 'gauge', 'bargauge', 'piechart', 'barchart']) {
+      await expect(catalogue.importPanelPlugin(unsupported)).rejects.toBeInstanceOf(Grafana13UnsupportedPanelPluginError);
+    }
+  });
+
+  it.each(['stat', 'timeseries'] as const)('evicts a rejected %s load without poisoning its sibling or leaking the cause', async (id) => {
+    let attempts = 0;
+    const plugin = panelPlugin();
+    const load = async () => { if (++attempts === 1) throw new Error('Bearer secret-canary'); return plugin; };
+    const catalogue = createGrafana13TextPanelCatalog({
+      loadStatPlugin: id === 'stat' ? load : async () => panelPlugin(),
+      loadTimeSeriesPlugin: id === 'timeseries' ? load : async () => panelPlugin(),
+    });
+    const failure = await catalogue.importPanelPlugin(id).catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(Grafana13PanelPluginLoadError);
+    expect(JSON.stringify(failure)).not.toContain('secret-canary');
+    expect(catalogue.getPanelPluginFromCache(id)).toBeUndefined();
+    await expect(catalogue.importPanelPlugin(id)).resolves.toBe(plugin);
+  });
+
   it('records miss/success/hit and reuses one stable plugin identity', async () => {
     const plugin = panelPlugin();
     const events: Grafana13PanelPluginLoadEvent[] = [];

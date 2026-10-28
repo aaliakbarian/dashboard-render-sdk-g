@@ -16,6 +16,7 @@ export interface Grafana13RuntimeAcquireRequest {
 }
 
 export interface Grafana13RuntimeInitialization {
+  readonly acquireQueryRuntime?: () => Promise<unknown>;
   readonly cohort: unknown;
   readonly providerValues: unknown;
 }
