@@ -59,9 +59,13 @@ for (const type of ['stat', 'timeseries'] as const) {
         await expect(panel).toContainText(`${last}%`);
         const gradients = await panel.locator('[style]').evaluateAll(nodes => nodes.map(n => (n as HTMLElement).style.background).filter(v => v.includes('linear-gradient')));
         expect(gradients.length).toBeGreaterThan(0);
-        const color = /rgb\((\d+), (\d+), (\d+)\)/.exec(gradients[0])!.slice(1).map(Number);
-        expect(color[last === 90 ? 0 : 1]).toBeGreaterThan(color[last === 90 ? 1 : 0]);
-        expect(color[last === 90 ? 0 : 1]).toBeGreaterThan(color[2]);
+        const [gradient] = gradients;
+        if (!gradient) throw new Error('Expected a native Stat background gradient');
+        const color = /rgb\((\d+), (\d+), (\d+)\)/.exec(gradient)?.slice(1).map(Number);
+        const [red, green, blue] = color ?? [];
+        if (red === undefined || green === undefined || blue === undefined) throw new Error('Expected native Stat RGB gradient channels');
+        expect(last === 90 ? red : green).toBeGreaterThan(last === 90 ? green : red);
+        expect(last === 90 ? red : green).toBeGreaterThan(blue);
       } else {
         await expect(panel.locator('.uplot canvas')).not.toHaveCount(0);
         await expect(panel.locator('.u-over').first()).toHaveCSS('position', 'absolute');
@@ -171,7 +175,7 @@ test('cancels held native query generations and consumes late real responses aft
   } finally { release(); await session.cleanup(); }
 });
 
-test('keeps the other five expanded fixture renderers inert while native panels query independently', async ({ page }) => {
+test('keeps Table, Pie and Bar chart inert while all four admitted native query panels render independently', async ({ page }) => {
   const session = await authenticateGrafanaFixture(page);
   try {
     const guard = await installConsoleGuard(page); let queries = 0;
@@ -180,8 +184,10 @@ test('keeps the other five expanded fixture renderers inert while native panels 
     await expect(page.getByRole('region', { name: 'Time series — predictable pulse' }).locator('.uplot canvas')).not.toHaveCount(0, { timeout: 15_000 });
     await page.getByTestId('sdk-expanded-uid').click();
     await expect(page.getByText('Phase 2 Pulse Signal', { exact: true })).toBeVisible();
-    await expect(page.locator('[data-dashboard-panel-kind="not-supported"]')).toHaveCount(5);
-    expect(queries).toBe(4);
+    await expect(page.getByRole('region', { name: 'Gauge — predictable pulse' }).getByRole('img', { name: 'Gauge', exact: true })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Bar gauge — predictable pulse' })).toContainText('%');
+    await expect(page.locator('[data-dashboard-panel-kind="not-supported"]')).toHaveCount(3);
+    expect(queries).toBe(6);
     await guard.assertClean();
   } finally { await session.cleanup(); }
 });

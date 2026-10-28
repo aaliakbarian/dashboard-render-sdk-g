@@ -17,6 +17,20 @@ function manifest() {
 }
 
 describe('closed native partial preflight', () => {
+  it.each(['gauge', 'bargauge'])('describes a rejected %s profile without misidentifying it as Text', (type) => {
+    const dashboard: any = structuredClone(fixtureDashboard('drsdk-g-phase2-visualizations'));
+    const panel = dashboard.spec.panels.find((panel: any) => panel.type === type);
+    if (!panel) throw new Error('Expected native single-value fixture panel');
+    panel.options.unsupported = true;
+    const result = provider.partialPreflightGrafana13DashboardV1(dashboard, manifest());
+    if (result.kind !== 'renderable') throw new Error('Expected panel-only fallback');
+    expect(result.panels.find(panel => panel.panelType === type)).toMatchObject({
+      kind: 'unsupported',
+      diagnostics: [{ code: 'panel.unsupported', message: 'The panel is outside the verified view profile.' }],
+    });
+    expect(result.supportedPanelCount).toBe(4);
+    expect(result.unsupportedPanelCount).toBe(4);
+  });
   it('admits only native Stat/Time series candidate profiles with explicit manifest coverage', () => {
     const candidate = validateProviderCompatibilityManifest({ ...provider.grafana13Provider.manifest, capabilities: {
       panels: ['text', 'stat', 'timeseries'], datasources: ['grafana-testdata-datasource'],
@@ -48,7 +62,7 @@ describe('closed native partial preflight', () => {
       { grid: { height: 10, width: 8, x: 16, y: 0 }, id: 4, index: 3, kind: 'unsupported', panelType: 'table' },
     ]);
     expect(provider.grafana13Provider.manifest.capabilities).toEqual({
-      datasources: ['grafana-testdata-datasource'], panels: ['text', 'stat', 'timeseries'], transformations: { allowEmptyPipeline: true, ids: ['renameByRegex'], maxChainLength: 1 },
+      datasources: ['grafana-testdata-datasource'], panels: ['text', 'stat', 'timeseries', 'gauge', 'bargauge'], transformations: { allowEmptyPipeline: true, ids: ['renameByRegex'], maxChainLength: 1 },
     });
     for (const panel of result.panels.filter(p => p.kind === 'unsupported')) {
       expect(Object.keys(panel).sort()).toEqual(['diagnostics', 'grid', 'id', 'index', 'kind', 'panelType', 'title']);

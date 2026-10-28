@@ -35,6 +35,7 @@ function assertPinnedSourceIdentity(identity: GrafanaRuntimeViewSource, source: 
 
 const requiredExports: Readonly<Record<GrafanaRuntimeBarrel, readonly string[]>> = {
   data: [
+    'GAUGE_DEFAULT_MAXIMUM', 'GAUGE_DEFAULT_MINIMUM', 'getActiveThreshold', 'getFieldColorMode',
     'alignTimeRangeCompareData', 'shouldAlignTimeCompare', 'DataFrameType', 'useDataLinksContext',
     'getDisplayValueAlignmentFactors', 'getFieldDisplayValues', 'getFieldColorModeForField', 'getFieldSeriesColor',
     'cacheFieldDisplayNames', 'getLinksSupplier', 'outerJoinDataFrames', 'applyNullInsertThreshold', 'roundDecimals',

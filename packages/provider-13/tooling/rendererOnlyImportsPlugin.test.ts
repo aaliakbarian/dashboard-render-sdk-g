@@ -20,4 +20,12 @@ describe('native renderer import closure', () => {
     expect(resolve('../variables/DrilldownDependenciesManager.js', '/repo/node_modules/@grafana/scenes/dist/esm/querying/SceneQueryRunner.js')).toContain('/viewOnly/queryInert.ts');
     expect(resolve('../variables/DrilldownDependenciesManager.js', '/unrelated.ts')).toBeNull();
   });
+  it('resolves single-value renderers to exact leaves without making Time series their dependency', () => {
+    const gauge = '\0provider-13-pinned-grafana-source:native:public/app/plugins/panel/gauge/GaugePanel.tsx.js';
+    expect(resolve('@grafana/ui/internal', gauge)).toContain('/viewOnly/gaugeUiInternal.ts');
+    expect(resolve('grafana-provider13-native-radial-gauge', '/repo/packages/provider-13/tooling/viewOnly/gaugeUiInternal.ts')).toBe('\0provider-13-pinned-grafana-source:native:packages/grafana-ui/src/components/RadialGauge/RadialGauge.tsx.js');
+    expect(resolve('grafana-provider13-data-panel-plugin', '/repo/packages/provider-13/src/panels/gaugePlugin.ts')).toContain('/panel/PanelPlugin.mjs');
+    expect(resolve('grafana-provider13-data-panel-plugin', '/repo/packages/provider-13/src/panels/barGaugePlugin.ts')).toContain('/panel/PanelPlugin.mjs');
+    expect(resolve('app/features/table/hooks', gauge)).toBeNull();
+  });
 });

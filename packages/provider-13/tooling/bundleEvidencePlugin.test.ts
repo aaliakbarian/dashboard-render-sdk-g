@@ -1,11 +1,93 @@
 import { describe, expect, it } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 import {
   assertNoBrowserReactRuntimeRequires,
   inspectProviderBundleEvidence,
   type ProviderBundleEvidence,
 } from './bundleEvidencePlugin';
-import { GRAFANA_13_APPLICATION_SOURCES, GRAFANA_13_NATIVE_SOURCES, GRAFANA_13_TESTDATA_SOURCES } from './sourceIdentity';
+import { GRAFANA_13_APPLICATION_SOURCES, GRAFANA_13_NATIVE_SOURCES, GRAFANA_13_NATIVE_UI_SOURCES, GRAFANA_13_TESTDATA_SOURCES } from './sourceIdentity';
+
+const radialPrefix = '<grafana-source>/packages/grafana-ui/src/components/RadialGauge/';
+
+function nativeBundleEvidence(): ProviderBundleEvidence {
+  const chunk = (fileName: string, modules: string[]) => ({ fileName, modules, dynamicImports: [], imports: [] as string[], gzipSize: 1, rawSize: 1, isEntry: false });
+  return { assets: [], moduleIds: [
+    ...GRAFANA_13_APPLICATION_SOURCES, ...GRAFANA_13_NATIVE_SOURCES,
+    ...GRAFANA_13_TESTDATA_SOURCES, ...GRAFANA_13_NATIVE_UI_SOURCES,
+  ].map(file => `<grafana-source>/${file}`), chunks: [
+    { ...chunk('provider.js', ['<repo>/packages/provider-13/src/artifactEntry.ts']), isEntry: true },
+    chunk('assets/text.js', GRAFANA_13_APPLICATION_SOURCES.map(file => `<grafana-source>/${file}`)),
+    chunk('assets/stat.js', GRAFANA_13_NATIVE_SOURCES.filter(file => file.includes('/stat/')).map(file => `<grafana-source>/${file}`)),
+    chunk('assets/timeseries.js', GRAFANA_13_NATIVE_SOURCES.filter(file => !/\/panel\/(?:stat|gauge|bargauge)\//.test(file)).map(file => `<grafana-source>/${file}`)),
+    chunk('assets/gauge.js', [...GRAFANA_13_NATIVE_SOURCES.filter(file => file.includes('/gauge/')),
+      ...GRAFANA_13_NATIVE_UI_SOURCES.filter(file => !file.endsWith('/constants.ts'))].map(file => `<grafana-source>/${file}`)),
+    chunk('assets/bargauge.js', GRAFANA_13_NATIVE_SOURCES.filter(file => file.includes('/bargauge/')).map(file => `<grafana-source>/${file}`)),
+    chunk('assets/query.js', GRAFANA_13_TESTDATA_SOURCES.map(file => `<grafana-source>/${file}`)),
+  ] };
+}
+
+function standaloneInspection(report: ProviderBundleEvidence) {
+  const directory = mkdtempSync(join(tmpdir(), 'provider13-provenance-'));
+  try {
+    const file = join(directory, 'evidence.json');
+    writeFileSync(file, JSON.stringify(report));
+    return spawnSync(process.execPath, [resolve('packages/provider-13/tooling/inspectProviderBundle.mjs'), file], { encoding: 'utf8' });
+  } finally { rmSync(directory, { force: true, recursive: true }); }
+}
+
+describe.each(['build', 'standalone'] as const)('%s emitted radial provenance', inspector => {
+  function inspect(report: ProviderBundleEvidence) {
+    if (inspector === 'build') return inspectProviderBundleEvidence(report);
+    const result = standaloneInspection(report);
+    if (result.status !== 0) throw new Error(result.stderr);
+    return JSON.parse(result.stdout);
+  }
+  it('accepts 13 loaded sources with 12 emitted and only constants folded away', () => {
+    expect(() => inspect(nativeBundleEvidence())).not.toThrow();
+  });
+  it.each(['stat', 'timeseries', 'bargauge'])('rejects radial source in a shared chunk statically reached by %s', sibling => {
+    const report = nativeBundleEvidence();
+    const gauge = report.chunks.find(chunk => chunk.fileName === 'assets/gauge.js')!;
+    const radial = gauge.modules.filter(id => id.startsWith(radialPrefix));
+    const changed = { ...report, chunks: [
+      ...report.chunks.map(chunk => chunk === gauge ? { ...chunk, modules: chunk.modules.filter(id => !id.startsWith(radialPrefix)), imports: ['assets/shared-radial.js'] }
+        : chunk.fileName === `assets/${sibling}.js` ? { ...chunk, imports: ['assets/shared-radial.js'] } : chunk),
+      { ...gauge, fileName: 'assets/shared-radial.js', modules: radial },
+    ] };
+    expect(() => inspect(changed)).toThrow();
+  });
+  it('rejects duplicate emitted radial owners even when both are Gauge-reachable', () => {
+    const report = nativeBundleEvidence();
+    const gauge = report.chunks.find(chunk => chunk.fileName === 'assets/gauge.js')!;
+    expect(() => inspect({ ...report, chunks: [
+      ...report.chunks.map(chunk => chunk === gauge ? { ...chunk, imports: ['assets/radial-copy.js'] } : chunk),
+      { ...gauge, fileName: 'assets/radial-copy.js', modules: gauge.modules.filter(id => id.startsWith(radialPrefix)) },
+    ] })).toThrow();
+  });
+  it('requires emitted RadialBar even when the loaded module inventory retains it', () => {
+    const report = nativeBundleEvidence();
+    expect(report.moduleIds).toContain(`${radialPrefix}RadialBar.tsx`);
+    expect(() => inspect({ ...report, chunks: report.chunks.map(chunk => ({
+      ...chunk, modules: chunk.modules.filter(id => id !== `${radialPrefix}RadialBar.tsx`),
+    })) })).toThrow();
+  });
+  it('rejects loaded-only radial provenance with no emitted renderer', () => {
+    const report = nativeBundleEvidence();
+    expect(() => inspect({ ...report, chunks: report.chunks.map(chunk => ({
+      ...chunk, modules: chunk.modules.filter(id => !id.startsWith(radialPrefix)),
+    })) })).toThrow();
+  });
+  it('rejects missing native UI provenance in both emitted and loaded inventories', () => {
+    const report = nativeBundleEvidence();
+    expect(() => inspect({ ...report, moduleIds: report.moduleIds.filter(id => !id.startsWith(radialPrefix)),
+      chunks: report.chunks.map(chunk => ({ ...chunk, modules: chunk.modules.filter(id => !id.startsWith(radialPrefix)) })),
+    })).toThrow();
+  });
+});
 
 describe('provider-13 emitted browser chunks', () => {
   it('rejects a browser-time CommonJS React require in a non-runtime chunk', () => {
@@ -41,12 +123,21 @@ describe('provider-13 bundle evidence inspection', () => {
     const report: ProviderBundleEvidence = { assets: [], moduleIds: [], chunks: [
       chunk('assets/text.js', GRAFANA_13_APPLICATION_SOURCES.map(f => `<grafana-source>/${f}`)),
       chunk('assets/statPlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/stat/')).map(f => `<grafana-source>/${f}`)),
-      chunk('assets/timeSeriesPlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => !f.includes('/stat/')).map(f => `<grafana-source>/${f}`)),
+      chunk('assets/timeSeriesPlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => !/\/panel\/(?:stat|gauge|bargauge)\//.test(f)).map(f => `<grafana-source>/${f}`)),
+      chunk('assets/gaugePlugin.js', [...GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/gauge/')), ...GRAFANA_13_NATIVE_UI_SOURCES].map(f => `<grafana-source>/${f}`)),
+      chunk('assets/barGaugePlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/bargauge/')).map(f => `<grafana-source>/${f}`)),
       chunk('assets/query.js', [...GRAFANA_13_TESTDATA_SOURCES.map(f => `<grafana-source>/${f}`), '<repo>/node_modules/@grafana/scenes/dist/esm/querying/SceneQueryRunner.js']),
     ] };
     expect(() => inspectProviderBundleEvidence(report)).not.toThrow();
     expect(() => inspectProviderBundleEvidence({ ...report, chunks: [...report.chunks, chunk('assets/unreviewed.js', ['<grafana-source>/public/app/plugins/panel/stat/module.tsx'])] })).toThrow();
     expect(() => inspectProviderBundleEvidence({ ...report, chunks: report.chunks.map(c => c.fileName.includes('statPlugin') ? { ...c, imports: ['assets/timeSeriesPlugin.js'] } : c) })).toThrow();
+    expect(() => inspectProviderBundleEvidence({ ...report, chunks: report.chunks.map(c => c.fileName.includes('gaugePlugin') ? { ...c, imports: ['assets/barGaugePlugin.js'] } : c) })).toThrow();
+    expect(() => inspectProviderBundleEvidence({ ...report, chunks: report.chunks.map(c => c.fileName.includes('gaugePlugin') ? { ...c, modules: c.modules.filter(id => !id.endsWith('/RadialBar.tsx')) } : c) })).toThrow();
+    const movedRadialRenderer: ProviderBundleEvidence = { ...report, chunks: [
+      ...report.chunks.map(c => c.fileName.includes('gaugePlugin') ? { ...c, modules: c.modules.filter(id => !id.includes('/packages/grafana-ui/')) } : c),
+      { ...chunk('provider.js', GRAFANA_13_NATIVE_UI_SOURCES.map(file => `<grafana-source>/${file}`)), isEntry: true },
+    ] };
+    expect(() => inspectProviderBundleEvidence(movedRadialRenderer)).toThrow();
   });
   it('admits the complete lazy runtime-only TestData closure but keeps scene query activation forbidden', () => {
     const testdata = ['LogIpsum.ts', 'constants.ts', 'dataquery.ts', 'datasource.ts', 'metricTree.ts', 'nodeGraphUtils.ts',

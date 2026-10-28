@@ -70,7 +70,8 @@ test('renders real Grafana Text, Stat and Time series with one inert Table throu
       page.locator('[data-dashboard-panel-id="4"]').boundingBox(),
     ]);
     expect(boxes.every(Boolean)).toBe(true);
-    const [textBox, statBox, timeSeriesBox, tableBox] = boxes as Array<NonNullable<(typeof boxes)[number]>>;
+    const [textBox, statBox, timeSeriesBox, tableBox] = boxes;
+    if (!textBox || !statBox || !timeSeriesBox || !tableBox) throw new Error('Expected bounding boxes for all four fixture panels');
     expect(statBox.x).toBeGreaterThan(textBox.x);
     expect(timeSeriesBox.y).toBeGreaterThan(textBox.y);
     expect(tableBox.x).toBeGreaterThan(statBox.x);

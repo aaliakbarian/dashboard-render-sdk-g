@@ -1,10 +1,12 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { inspectNativeUiProvenance } from './nativeUiProvenance.mjs';
 
 const reportPath = path.resolve(
   process.argv[2] ?? 'artifacts/sdk/provider-13/evidence/bundle-evidence.json'
 );
 const report = JSON.parse(await readFile(reportPath, 'utf8'));
+const nativeUiProvenance = inspectNativeUiProvenance(report);
 const modules = [...new Set([
   ...(Array.isArray(report.moduleIds) ? report.moduleIds : []),
   ...report.chunks.flatMap((chunk) => chunk.modules),
@@ -17,6 +19,10 @@ const expectedSources = [
   'public/app/plugins/panel/text/panelcfg.gen.ts',
   'public/app/plugins/panel/text/v1/TextPanel.tsx',
   'public/app/plugins/panel/stat/StatPanel.tsx',
+  'public/app/plugins/panel/gauge/GaugePanel.tsx',
+  'public/app/plugins/panel/bargauge/BarGaugePanel.tsx',
+  'public/app/plugins/panel/bargauge/BarGaugeLegend.tsx',
+  'public/app/plugins/panel/bargauge/panelcfg.gen.ts',
   'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx',
   'public/app/plugins/panel/timeseries/TimeSeriesTooltip.tsx',
   'public/app/plugins/panel/timeseries/plugins/OutsideRangePlugin.tsx',
@@ -45,7 +51,7 @@ const executableQueryModules = modules.filter((id) =>
 const inertEntryGrafanaModules = report.chunks
   .filter((chunk) => chunk.isEntry)
   .flatMap((chunk) => chunk.modules)
-  .filter((id) => /(?:\/node_modules\/@grafana\/|<grafana-source>\/public\/app\/)/.test(id));
+  .filter((id) => /(?:\/node_modules\/@grafana\/|<grafana-source>\/)/.test(id));
 const owners = new Map();
 for (const chunk of report.chunks) {
   for (const moduleId of chunk.modules) {
@@ -106,6 +112,7 @@ const sizes = Object.fromEntries(
 );
 console.log(JSON.stringify({
   applicationSources,
+  nativeUiProvenance,
   externalReactReferences: [...new Set(report.chunks.flatMap((chunk) => chunk.imports))]
     .filter((id) => /^react(?:-dom)?(?:\/|$)/.test(id))
     .sort(),

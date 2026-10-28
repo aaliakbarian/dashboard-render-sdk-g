@@ -143,7 +143,7 @@ export function classifyGrafana13PanelProfile(value: unknown): Grafana13PanelPro
   let fieldConfig = panel.fieldConfig;
   // Grafana's V1 DTO omits the JSON null representing the base (-Infinity)
   // threshold. Canonicalize only that exact omitted value, never later steps.
-  if ((type === 'stat' || type === 'timeseries') && object(fieldConfig) && object(fieldConfig.defaults)) {
+  if (['stat', 'timeseries', 'gauge', 'bargauge'].includes(type) && object(fieldConfig) && object(fieldConfig.defaults)) {
     const defaults = fieldConfig.defaults;
     const thresholds = defaults.thresholds;
     if (object(thresholds) && Array.isArray(thresholds.steps) && object(thresholds.steps[0]) && !Object.hasOwn(thresholds.steps[0], 'value')) {
