@@ -15,7 +15,7 @@ function frozenTree(value: unknown): void {
 }
 
 describe('provider-private exact panel profiles', () => {
-  it.each(['stat', 'timeseries'])('accepts the V1 DTO omitted base threshold value only for %s and returns the exact canonical field profile', type => {
+  it.each(['stat', 'timeseries', 'gauge', 'bargauge'])('accepts the V1 DTO omitted base threshold value only for %s and returns the exact canonical field profile', type => {
     const raw: any = structuredClone(fixtureDashboard('drsdk-g-phase2-visualizations').spec.panels.find(p => p.type === type));
     const expected = structuredClone(raw.fieldConfig);
     delete raw.fieldConfig.defaults.thresholds.steps[0].value;
@@ -75,6 +75,13 @@ describe('provider-private exact panel profiles', () => {
   });
 
   const mutations: Array<[string, (p: any) => void]> = [
+    ['sort', p => { p.options.sortBy = [{ displayName: 'Time', desc: true }]; }],
+    ['pagination', p => { p.options.enablePagination = true; }],
+    ['cell actions', p => { p.fieldConfig.defaults.actions = [{ type: 'fetch' }]; }],
+    ['cell links', p => { p.fieldConfig.defaults.links = [{ url: '/target' }]; }],
+    ['cell filtering', p => { p.fieldConfig.defaults.custom.filterable = true; }],
+    ['inspection', p => { p.fieldConfig.defaults.custom.inspect = true; }],
+    ['frame selection', p => { p.options.frameIndex = 1; }],
     ['unknown option', (p) => { p.options.secret = true; }],
     ['changed option', (p) => { p.options.showHeader = false; }],
     ['unknown field', (p) => { p.fieldConfig.defaults.secret = true; }],
@@ -127,6 +134,32 @@ describe('provider-private exact panel profiles', () => {
     delete raw.options.extra;
     raw.fieldConfig.defaults.extra = true;
     expect(classifyGrafana13PanelProfile(raw).kind).toBe('unsupported');
+  });
+
+  it.each(['gauge', 'bargauge'])('keeps every unverified %s option, datasource, target and transformation profile inert', type => {
+    const changes: Array<(panel: any) => void> = [
+      p => { p.options.reduceOptions.calcs = ['mean']; },
+      p => { p.options.reduceOptions.values = true; },
+      p => { p.options.orientation = 'horizontal'; },
+      p => { p.options.sizing = 'manual'; },
+      p => { p.options.extra = true; },
+      p => { p.fieldConfig.defaults.links = [{ url: '/target' }]; },
+      p => { p.fieldConfig.defaults.actions = [{ type: 'fetch' }]; },
+      p => { p.fieldConfig.defaults.min = -1; },
+      p => { p.fieldConfig.defaults.max = 200; },
+      p => { p.fieldConfig.defaults.thresholds.steps[1].value = 49; },
+      p => { p.fieldConfig.overrides = [{ matcher: { id: 'byName' }, properties: [] }]; },
+      p => { p.datasource.uid = 'other'; },
+      p => { p.datasource.type = 'other'; },
+      p => { p.targets[0].scenarioId = 'table_static'; },
+      p => { p.targets.push(structuredClone(p.targets[0])); },
+      p => { p.transformations = [{ id: 'renameByRegex', options: { regex: '/Raw/', renamePattern: 'Signal' } }]; },
+    ];
+    for (const mutate of changes) {
+      const raw: any = structuredClone(fixtureDashboard('drsdk-g-phase2-visualizations').spec.panels.find(p => p.type === type));
+      mutate(raw);
+      expect(classifyGrafana13PanelProfile(raw)).toMatchObject({ kind: 'unsupported' });
+    }
   });
 
   it('admits an empty Time series pipeline and only the exact one-step rename', () => {

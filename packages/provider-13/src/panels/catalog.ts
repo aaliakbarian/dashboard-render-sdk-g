@@ -8,6 +8,8 @@ export const PANEL_MODULE_IDENTITIES = Object.freeze({
   text: TEXT_PANEL_MODULE_IDENTITY,
   stat: 'public/app/plugins/panel/stat/StatPanel.tsx',
   timeseries: 'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx',
+  gauge: 'public/app/plugins/panel/gauge/GaugePanel.tsx',
+  bargauge: 'public/app/plugins/panel/bargauge/BarGaugePanel.tsx',
 } as const);
 type PanelId = keyof typeof PANEL_MODULE_IDENTITIES;
 
@@ -61,7 +63,7 @@ export class Grafana13PanelPluginLoadError extends Error {
 }
 
 function attachMetadata(plugin: PanelPlugin, id: PanelId): PanelPlugin {
-  const name = { text: 'Text', stat: 'Stat', timeseries: 'Time series' }[id];
+  const name = { text: 'Text', stat: 'Stat', timeseries: 'Time series', gauge: 'Gauge', bargauge: 'Bar gauge' }[id];
   plugin.meta = {
     ...plugin.meta,
     baseUrl: '',
@@ -90,6 +92,8 @@ export function createGrafana13TextPanelCatalog(options: {
   readonly loadTextPlugin?: () => Promise<PanelPlugin>;
   readonly loadStatPlugin?: () => Promise<PanelPlugin>;
   readonly loadTimeSeriesPlugin?: () => Promise<PanelPlugin>;
+  readonly loadGaugePlugin?: () => Promise<PanelPlugin>;
+  readonly loadBarGaugePlugin?: () => Promise<PanelPlugin>;
 }): Grafana13TextPanelCatalog {
   const pending = new Map<PanelId, Promise<PanelPlugin>>();
   const resolved = new Map<PanelId, PanelPlugin>();
@@ -97,6 +101,8 @@ export function createGrafana13TextPanelCatalog(options: {
     text: options.loadTextPlugin ?? (() => import('./textPlugin').then(m => m.grafana13TextPanelPlugin)),
     stat: options.loadStatPlugin ?? (() => import('./statPlugin').then(m => m.grafana13StatPanelPlugin)),
     timeseries: options.loadTimeSeriesPlugin ?? (() => import('./timeSeriesPlugin').then(m => m.grafana13TimeSeriesPanelPlugin)),
+    gauge: options.loadGaugePlugin ?? (() => import('./gaugePlugin').then(m => m.grafana13GaugePanelPlugin)),
+    bargauge: options.loadBarGaugePlugin ?? (() => import('./barGaugePlugin').then(m => m.grafana13BarGaugePanelPlugin)),
   };
 
   return {

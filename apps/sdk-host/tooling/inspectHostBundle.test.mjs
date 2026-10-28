@@ -9,10 +9,12 @@ function validBundle() {
     ['assets/host-react-runtime.js', '/* one host-owned React and ReactDOM implementation */'],
     ['assets/provider-react-external-runtime.js', 'import "./host-react-runtime.js";'],
     ['assets/provider-react-dom-external-runtime.js', 'import "./host-react-runtime.js";'],
-    ['assets/provider-implementation-runtime.js', 'import("./feature-text-runtime.js");import("./feature-stat-runtime.js");import("./feature-timeseries-runtime.js");'],
+    ['assets/provider-implementation-runtime.js', 'import("./feature-text-runtime.js");import("./feature-stat-runtime.js");import("./feature-timeseries-runtime.js");import("./feature-gauge-runtime.js");import("./feature-bargauge-runtime.js");'],
     ['assets/feature-text-runtime.js', 'import "./provider-react-external-runtime.js";'],
     ['assets/feature-stat-runtime.js', '/* pinned Stat renderer */'],
     ['assets/feature-timeseries-runtime.js', '/* pinned Time series renderer */'],
+    ['assets/feature-gauge-runtime.js', '/* pinned Gauge renderer */'],
+    ['assets/feature-bargauge-runtime.js', '/* pinned Bar gauge renderer */'],
   ]);
 }
 
@@ -34,7 +36,7 @@ function validModuleEvidence() {
 }
 
 describe('SDK host post-build inspection', () => {
-  it.each(['stat', 'timeseries'])('rejects the missing admitted %s renderer chunk', (id) => {
+  it.each(['stat', 'timeseries', 'gauge', 'bargauge'])('rejects the missing admitted %s renderer chunk', (id) => {
     const bundle = validBundle();
     bundle.delete(`assets/feature-${id}-runtime.js`);
 
@@ -42,7 +44,7 @@ describe('SDK host post-build inspection', () => {
       'SDK host bundle boundary'
     );
   });
-  it.each(['stat', 'timeseries'])('rejects duplicate %s chunks even when both have explicit lazy edges', (id) => {
+  it.each(['stat', 'timeseries', 'gauge', 'bargauge'])('rejects duplicate %s chunks even when both have explicit lazy edges', (id) => {
     const bundle = validBundle();
     bundle.set(`assets/feature-${id}-copy.js`, '/* duplicate native renderer */');
     bundle.set('assets/provider-implementation-runtime.js', bundle.get('assets/provider-implementation-runtime.js') + `import("./feature-${id}-copy.js");`);

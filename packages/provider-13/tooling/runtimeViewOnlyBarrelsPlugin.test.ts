@@ -12,6 +12,12 @@ import {
 } from './runtimeViewOnlyBarrelsPlugin';
 
 describe('Grafana 13 runtime view-only barrel projection', () => {
+  it('retains only the additional standard Data symbols needed by the pinned radial renderer', () => {
+    const projected = projectGrafana13RuntimeBarrel('data', readFileSync('node_modules/@grafana/data/dist/esm/index.mjs', 'utf8'));
+    for (const symbol of ['GAUGE_DEFAULT_MAXIMUM', 'GAUGE_DEFAULT_MINIMUM', 'getActiveThreshold', 'getFieldColorMode']) {
+      expect(projected).toContain(symbol);
+    }
+  });
   it('requires exact pinned identities for every projected package barrel', () => {
     const barrels = {
       data: 'node_modules/@grafana/data/dist/esm/index.mjs',

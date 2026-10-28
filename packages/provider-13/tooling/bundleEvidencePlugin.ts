@@ -3,6 +3,7 @@ import { gzipSync } from 'node:zlib';
 import type { Plugin, Rolldown } from 'vite';
 
 import { GRAFANA_13_APPLICATION_SOURCES, GRAFANA_13_TESTDATA_SOURCES, GRAFANA_13_NATIVE_SOURCES } from './sourceIdentity.ts';
+import { inspectNativeUiProvenance } from './nativeUiProvenance.mjs';
 
 export interface ProviderBundleChunkEvidence {
   readonly dynamicImports: readonly string[];
@@ -109,6 +110,8 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     .sort();
   const hasQuerySource = applicationSources.some(id => id.includes('/datasource/'));
   const hasNativeSource = applicationSources.some(id => id.includes('/stat/') || id.includes('/timeseries/'));
+  const nativeUiProvenance = inspectNativeUiProvenance(report);
+  const nativeUiSources = nativeUiProvenance.loadedSources.map(id => id.slice('<grafana-source>/'.length));
   const expectedSources = [...GRAFANA_13_APPLICATION_SOURCES, ...(hasQuerySource ? GRAFANA_13_TESTDATA_SOURCES : []), ...(hasNativeSource ? GRAFANA_13_NATIVE_SOURCES : [])].sort();
   const byFile = new Map(report.chunks.map(chunk => [chunk.fileName, chunk]));
   const textClosure = new Set<string>();
@@ -124,7 +127,7 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
   const eagerQuerySources = report.chunks.filter(chunk => textClosure.has(chunk.fileName)).flatMap(chunk => chunk.modules)
     .filter(id => id.includes('<grafana-source>/public/app/plugins/datasource/') || /\/src\/(?:datasource\/|query\/|runtime\/installQueryRuntime\.ts)/.test(id));
   const eagerNativeModules = report.chunks.filter(chunk => textClosure.has(chunk.fileName)).flatMap(chunk => chunk.modules)
-    .filter(id => /\/node_modules\/(?:uplot\/|@grafana\/ui\/dist\/esm\/components\/(?:BigValue|Sparkline|uPlot)\/)/.test(id));
+    .filter(id => /<grafana-source>\/packages\/grafana-ui\/|\/node_modules\/(?:uplot\/|@grafana\/ui\/dist\/esm\/components\/(?:BigValue|BarGauge|Sparkline|uPlot)\/)/.test(id));
   const bundledImplementations = {
     jsxDevRuntime: modules.filter((id) => /node_modules\/react\/(?:cjs\/)?react-jsx-dev-runtime/.test(id)).length,
     jsxRuntime: modules.filter((id) => /node_modules\/react\/(?:cjs\/)?react-jsx-runtime/.test(id)).length,
@@ -141,7 +144,8 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     (!hasNativeSource && /\/querying\/(?:SceneQueryRunner|RuntimeDataSource)\.(?:m?js)$/.test(id)) ||
     (!hasQuerySource && /\/services\/dataSourceSrv\.mjs$/.test(id))
   );
-  const featureClosures = Object.fromEntries(['stat', 'timeseries'].map(feature => {
+  const nativeFeatures = ['stat', 'timeseries', 'gauge', 'bargauge'];
+  const featureClosures = Object.fromEntries(nativeFeatures.map(feature => {
     const files = new Set<string>();
     const visitFeature = (file: string) => {
       if (files.has(file)) return;
@@ -151,14 +155,12 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     for (const chunk of report.chunks) if (chunk.modules.some(id => id.includes(`/panel/${feature}/`))) visitFeature(chunk.fileName);
     return [feature, [...files].flatMap(file => byFile.get(file)?.modules ?? [])];
   }));
-  const crossedFeatureSources = [
-    ...(featureClosures.stat ?? []).filter(id => id.includes('/panel/timeseries/')),
-    ...(featureClosures.timeseries ?? []).filter(id => id.includes('/panel/stat/')),
-  ];
+  const crossedFeatureSources = nativeFeatures.flatMap(feature => (featureClosures[feature] ?? []).filter(id =>
+    nativeFeatures.some(other => other !== feature && id.includes(`/panel/${other}/`))));
   const inertEntryGrafanaModules = report.chunks
     .filter((chunk) => chunk.isEntry)
     .flatMap((chunk) => chunk.modules)
-    .filter((id) => /(?:\/node_modules\/@grafana\/|<grafana-source>\/public\/app\/)/.test(id));
+    .filter((id) => /(?:\/node_modules\/@grafana\/|<grafana-source>\/)/.test(id));
   const inertEntryDeferredModules = report.chunks
     .filter((chunk) => chunk.isEntry)
     .flatMap((chunk) => chunk.modules)
@@ -236,6 +238,8 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
   }
   return Object.freeze({
     applicationSources,
+    nativeUiSources,
+    nativeUiProvenance,
     crossedFeatureSources,
     eagerQuerySources,
     eagerNativeModules,

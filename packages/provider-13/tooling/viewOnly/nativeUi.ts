@@ -1,4 +1,6 @@
-export { Button, useTheme2, useStyles2, usePanelContext } from '@grafana/ui';
+export { Button, Stack, useTheme2, useStyles2, usePanelContext } from '@grafana/ui';
+export { BarGauge } from 'grafana-provider13-native-ui-bar-gauge';
+export { VizLegend } from 'grafana-provider13-native-ui-viz-legend';
 export { BigValue } from 'grafana-provider13-native-ui-big-value';
 export { DataLinksContextMenu } from 'grafana-provider13-native-ui-data-links-menu';
 export { VizRepeater } from 'grafana-provider13-native-ui-repeater';

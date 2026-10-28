@@ -9,7 +9,9 @@
   },
   "include": [
     "../../playwright.config.ts",
+    "../../playwright.sdk.config.ts",
     "../../packages/poc-grafana-bridge/src/grafana-source-modules.d.ts",
+    "../sdk-e2e/**/*.ts",
     "**/*.d.ts",
     "**/*.ts"
   ]

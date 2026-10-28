@@ -6,6 +6,10 @@ export const GRAFANA_13_APPLICATION_SOURCES = Object.freeze([
   'public/app/plugins/panel/text/v1/TextPanel.tsx',
 ] as const);
 export const GRAFANA_13_NATIVE_SOURCES = Object.freeze([
+  'public/app/plugins/panel/gauge/GaugePanel.tsx',
+  'public/app/plugins/panel/bargauge/BarGaugePanel.tsx',
+  'public/app/plugins/panel/bargauge/BarGaugeLegend.tsx',
+  'public/app/plugins/panel/bargauge/panelcfg.gen.ts',
   'public/app/plugins/panel/stat/StatPanel.tsx',
   'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx',
   'public/app/plugins/panel/timeseries/TimeSeriesTooltip.tsx',
@@ -16,6 +20,8 @@ export const GRAFANA_13_NATIVE_SOURCES = Object.freeze([
   'public/app/core/components/GraphNG/GraphNG.tsx',
   'public/app/core/components/GraphNG/utils.ts',
 ] as const);
+
+export { GRAFANA_13_NATIVE_UI_SOURCES } from './nativeUiProvenance.mjs';
 
 export const GRAFANA_13_TESTDATA_SOURCE_FILES = Object.freeze([
   'LogIpsum.ts', 'constants.ts', 'dataquery.ts', 'datasource.ts', 'metricTree.ts',

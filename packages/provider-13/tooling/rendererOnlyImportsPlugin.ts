@@ -4,6 +4,8 @@ import { GRAFANA_13_NATIVE_SOURCES } from './sourceIdentity.ts';
 
 const prefix = '\0provider-13-pinned-grafana-source:native:';
 const leaves: Readonly<Record<string, string>> = {
+  'ui-bar-gauge': '@grafana/ui/dist/esm/components/BarGauge/BarGauge.mjs',
+  'ui-viz-legend': '@grafana/ui/dist/esm/components/VizLegend/VizLegend.mjs',
   'ui-big-value': '@grafana/ui/dist/esm/components/BigValue/BigValue.mjs',
   'ui-data-links-menu': '@grafana/ui/dist/esm/components/DataLinks/DataLinksContextMenu.mjs',
   'ui-repeater': '@grafana/ui/dist/esm/components/VizRepeater/VizRepeater.mjs',
@@ -44,16 +46,30 @@ export function rendererOnlyImportsPlugin(options: { readonly providerRoot: stri
     if (id === resolve(options.repositoryRoot, 'node_modules/@grafana/scenes/dist/esm/querying/SceneQueryRunner.js').replaceAll('\\', '/') && [
       '../variables/adhoc/AdHocFiltersVariable.js', '../variables/groupby/GroupByVariable.js', '../variables/DrilldownDependenciesManager.js',
     ].includes(source)) return view('queryInert.ts');
-    if (source === 'grafana-provider13-data-panel-plugin' && /^.+\/src\/panels\/(?:statPlugin|timeSeriesPlugin)\.ts$/.test(id) && id.startsWith(`${provider}/`)) return resolve(options.repositoryRoot, 'node_modules/@grafana/data/dist/esm/panel/PanelPlugin.mjs');
+    if (source === 'grafana-provider13-data-panel-plugin' && /^.+\/src\/panels\/(?:statPlugin|timeSeriesPlugin|gaugePlugin|barGaugePlugin)\.ts$/.test(id) && id.startsWith(`${provider}/`)) return resolve(options.repositoryRoot, 'node_modules/@grafana/data/dist/esm/panel/PanelPlugin.mjs');
     if (source === 'grafana-provider13-query-scenes' && id === `${provider}/src/runtime/implementation.tsx`) return view('queryScenes.ts');
     if (id.startsWith(`${provider}/tooling/viewOnly/`)) {
+      if (source === 'grafana-provider13-native-radial-gauge') return `${prefix}packages/grafana-ui/src/components/RadialGauge/RadialGauge.tsx.js`;
       const leaf = leaves[source.replace(/^grafana-provider13-native-/, '')];
       if (source.startsWith('grafana-provider13-native-') && leaf) return resolve(options.repositoryRoot, 'node_modules', leaf);
     }
     if (!id.startsWith(prefix)) return null;
+    if (id.startsWith(`${prefix}packages/grafana-ui/src/components/RadialGauge/`)) {
+      const packageLeaves: Readonly<Record<string, string>> = {
+        '../../themes/ThemeContext': '@grafana/ui/dist/esm/themes/ThemeContext.mjs',
+        '../../utils/measureText': '@grafana/ui/dist/esm/utils/measureText.mjs',
+        '../Layout/Box/Box': '@grafana/ui/dist/esm/components/Layout/Box/Box.mjs',
+        '../Sparkline/Sparkline': '@grafana/ui/dist/esm/components/Sparkline/Sparkline.mjs',
+      };
+      if (packageLeaves[source]) return resolve(options.repositoryRoot, 'node_modules', packageLeaves[source]);
+    }
     if (absentIntegrations.has(source)) return view('nativeInert.tsx');
     if (source === '@grafana/data/internal') return view('nativeDataInternal.ts');
-    if (source === '@grafana/ui/internal') return view('nativeUiInternal.ts');
+    if (source === '@grafana/ui/internal') {
+      if (id.includes('native:public/app/plugins/panel/gauge/')) return view('gaugeUiInternal.ts');
+      if (id.includes('native:public/app/plugins/panel/bargauge/')) return view('barGaugeUiInternal.ts');
+      return view('nativeUiInternal.ts');
+    }
     if (source === '@grafana/ui') return view('nativeUi.ts');
     if (source.startsWith('app/')) {
       const file = GRAFANA_13_NATIVE_SOURCES.find(file => file.replace(/^public\//, '').replace(/\.tsx?$/, '') === source);

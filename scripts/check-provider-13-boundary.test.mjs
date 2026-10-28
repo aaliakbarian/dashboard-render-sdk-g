@@ -29,16 +29,18 @@ const allowedPeers = { react: '19.2.8', 'react-dom': '19.2.8' };
 test('allows only the exact native renderer and scoped stylesheet owners', async () => {
   await withFixture({
     'index.ts': 'export { load } from "./panels/catalog"; export { mount } from "./runtime/implementation";',
-    'panels/catalog.ts': 'export async function load() { await import("./statPlugin"); await import("./timeSeriesPlugin"); }',
+    'panels/catalog.ts': 'export async function load() { await import("./statPlugin"); await import("./timeSeriesPlugin"); await import("./gaugePlugin"); await import("./barGaugePlugin"); }',
     'panels/statPlugin.ts': 'import { PanelPlugin } from "grafana-provider13-data-panel-plugin"; import { StatPanel } from "grafana-provider13-stat-renderer"; export const plugin = new PanelPlugin(StatPanel);',
     'panels/timeSeriesPlugin.ts': 'import { PanelPlugin } from "grafana-provider13-data-panel-plugin"; import { TimeSeriesPanel } from "grafana-provider13-timeseries-renderer"; export const plugin = new PanelPlugin(TimeSeriesPanel);',
+    'panels/gaugePlugin.ts': 'import { PanelPlugin } from "grafana-provider13-data-panel-plugin"; import { GaugePanel } from "grafana-provider13-gauge-renderer"; export const plugin = new PanelPlugin(GaugePanel);',
+    'panels/barGaugePlugin.ts': 'import { PanelPlugin } from "grafana-provider13-data-panel-plugin"; import { BarGaugePanel } from "grafana-provider13-bargauge-renderer"; export const plugin = new PanelPlugin(BarGaugePanel);',
     'runtime/implementation.tsx': 'export async function mount() { await import("grafana-provider13-query-scenes"); await import("./nativeStyles"); }',
     'runtime/nativeStyles.ts': 'import css from "uplot/dist/uPlot.min.css?inline"; export { css };',
   }, async repositoryRoot => {
     assert.deepEqual((await inspectProvider13Boundary(repositoryRoot)).importFindings, []);
   });
-  await withFixture({ 'index.ts': 'import "grafana-provider13-stat-renderer"; import "uplot/dist/uPlot.min.css?inline"; const p = import("grafana-provider13-query-scenes");' }, async repositoryRoot => {
-    assert.equal((await inspectProvider13Boundary(repositoryRoot)).importFindings.length, 3);
+  await withFixture({ 'index.ts': 'import "grafana-provider13-stat-renderer"; import "grafana-provider13-gauge-renderer"; import "grafana-provider13-bargauge-renderer"; import "uplot/dist/uPlot.min.css?inline"; const p = import("grafana-provider13-query-scenes");' }, async repositoryRoot => {
+    assert.equal((await inspectProvider13Boundary(repositoryRoot)).importFindings.length, 5);
   });
 });
 

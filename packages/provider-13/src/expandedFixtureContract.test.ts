@@ -28,17 +28,18 @@ describe('all-eight private fixture contract', () => {
     expect(preflightGrafana13DashboardV1(fixture, expandedManifest()).kind).toBe('match');
   });
 
-  it('keeps active rendering closed to three proved renderers even under a broader test manifest', () => {
-    expect(grafana13Provider.manifest.capabilities).toEqual({ datasources: ['grafana-testdata-datasource'], panels: ['text', 'stat', 'timeseries'], transformations: { allowEmptyPipeline: true, ids: ['renameByRegex'], maxChainLength: 1 } });
+  it('keeps active rendering closed to five proved renderers even under a broader test manifest', () => {
+    expect(grafana13Provider.manifest.capabilities).toEqual({ datasources: ['grafana-testdata-datasource'], panels: ['text', 'stat', 'timeseries', 'gauge', 'bargauge'], transformations: { allowEmptyPipeline: true, ids: ['renameByRegex'], maxChainLength: 1 } });
     const validated = validateProviderCompatibilityManifest(grafana13Provider.manifest);
     if (!validated.valid) throw new Error('Invalid shipped manifest');
     const dashboard = fixtureDashboard('drsdk-g-phase2-visualizations');
     expect(preflightGrafana13DashboardV1(dashboard, validated).kind).toBe('unsupported');
     for (const manifest of [validated, expandedManifest()]) {
       const result = partialPreflightGrafana13DashboardV1(dashboard, manifest);
-      expect(result).toMatchObject({ kind: 'renderable', supportedPanelCount: 3, unsupportedPanelCount: 5 });
+      expect(result).toMatchObject({ kind: 'renderable', supportedPanelCount: 5, unsupportedPanelCount: 3 });
       if (result.kind !== 'renderable') throw new Error('Expected safe dashboard');
-      for (const p of result.panels.slice(3)) {
+      expect(result.panels.filter(p => p.kind === 'unsupported').map(p => p.panelType)).toEqual(['table', 'piechart', 'barchart']);
+      for (const p of result.panels.filter(p => p.kind === 'unsupported')) {
         expect(p.kind).toBe('unsupported');
         expect(p).not.toHaveProperty('model');
         expect(JSON.stringify(p)).not.toMatch(/predictable_pulse|grsdk-testdata|renameByRegex/);
@@ -51,7 +52,7 @@ describe('all-eight private fixture contract', () => {
     dashboard.spec.panels[0].options.mode = 'html';
     expect(preflightGrafana13DashboardV1(dashboard, expandedManifest()).kind).toBe('unsupported');
     const result = partialPreflightGrafana13DashboardV1(dashboard, expandedManifest());
-    expect(result).toMatchObject({ kind: 'renderable', supportedPanelCount: 2, unsupportedPanelCount: 6 });
+    expect(result).toMatchObject({ kind: 'renderable', supportedPanelCount: 4, unsupportedPanelCount: 4 });
     if (result.kind !== 'renderable') throw new Error('Expected safe fallback');
     expect(result.panels[0]).toMatchObject({ id: 1, grid: { x: 0, y: 0, width: 6, height: 6 }, kind: 'unsupported' });
   });
@@ -66,7 +67,7 @@ describe('all-eight private fixture contract', () => {
     expect(strict.kind).toBe('unsupported');
     expect(strict.inventory.panelCount).toBe(8);
     const partial = partialPreflightGrafana13DashboardV1(dashboard, expandedManifest());
-    expect(partial).toMatchObject({ kind: 'renderable', supportedPanelCount: 3, unsupportedPanelCount: 5 });
+    expect(partial).toMatchObject({ kind: 'renderable', supportedPanelCount: 5, unsupportedPanelCount: 3 });
     if (partial.kind !== 'renderable') throw new Error('Expected safe fallback');
     expect(partial.panels[0]).toMatchObject({ id: 1, kind: 'supported' });
     expect(partial.panels[3]).toMatchObject({ id: 4, kind: 'unsupported', grid: { x: 12, y: 6, width: 12, height: 9 } });

@@ -18,7 +18,7 @@ import {
 import { textRendererOnlyImportsPlugin } from './tooling/textRendererOnlyImportsPlugin.ts';
 import { queryRuntimeImportsPlugin } from './tooling/queryRuntimeImportsPlugin.ts';
 import { rendererOnlyImportsPlugin } from './tooling/rendererOnlyImportsPlugin.ts';
-import { GRAFANA_13_NATIVE_SOURCES } from './tooling/sourceIdentity.ts';
+import { GRAFANA_13_NATIVE_SOURCES, GRAFANA_13_NATIVE_UI_SOURCES } from './tooling/sourceIdentity.ts';
 
 const providerRoot = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(providerRoot, '../..');
@@ -30,7 +30,7 @@ if (!grafanaSourceRoot) {
   throw new Error('Provider-13 build requires GRAFANA_SOURCE_DIR.');
 }
 
-for (const source of [...GRAFANA_13_APPLICATION_SOURCES, ...GRAFANA_13_TESTDATA_SOURCES, ...GRAFANA_13_NATIVE_SOURCES]) {
+for (const source of [...GRAFANA_13_APPLICATION_SOURCES, ...GRAFANA_13_TESTDATA_SOURCES, ...GRAFANA_13_NATIVE_SOURCES, ...GRAFANA_13_NATIVE_UI_SOURCES]) {
   statSync(resolve(grafanaSourceRoot, source));
 }
 assertGrafana13SourceIdentity({
@@ -47,13 +47,15 @@ const textSourceRoot = resolve(grafanaSourceRoot, 'public/app/plugins/panel/text
 
 function providerCohortChunk(id: string): string | undefined {
   const normalized = id.replaceAll('\\', '/');
+  if (/\/(?:src\/panels\/gaugePlugin|tooling\/viewOnly\/gaugeUiInternal)\.ts$/.test(normalized) || normalized.includes('native:public/app/plugins/panel/gauge/') || normalized.includes('native:packages/grafana-ui/src/components/RadialGauge/')) return 'provider-gauge';
+  if (/\/(?:src\/panels\/barGaugePlugin|tooling\/viewOnly\/barGaugeUiInternal)\.ts$/.test(normalized) || normalized.includes('native:public/app/plugins/panel/bargauge/')) return 'provider-bargauge';
   if (/\/src\/panels\/statPlugin\.ts$/.test(normalized) || normalized.includes('native:public/app/plugins/panel/stat/')) return 'provider-stat';
   if (/\/src\/panels\/timeSeries(?:Plugin|Config)\.ts$/.test(normalized) || /native:public\/app\/(?:plugins\/panel\/timeseries\/|core\/components\/(?:TimeSeries|GraphNG)\/)/.test(normalized)) return 'provider-timeseries';
   if (/\/viewOnly\/native(?:Inert|UiInternal)\.tsx?$/.test(normalized)) return 'provider-timeseries';
   if (normalized.includes('native:packages/grafana-data/')) return 'provider-grafana';
   if (/\/viewOnly\/nativeDataInternal\.ts$/.test(normalized)) return 'provider-grafana';
   if (/\/viewOnly\/nativeUi\.ts$/.test(normalized)) return 'provider-native-visualization';
-  if (/\/node_modules\/@grafana\/ui\/dist\/esm\/(?:components\/(?:BigValue|Sparkline|VizRepeater|uPlot|VizLegend|VizLayout|VizTooltip|ColorPicker|ColorSwatch)\/|graveyard\/GraphNG\/)/.test(normalized)) return 'provider-native-visualization';
+  if (/\/node_modules\/@grafana\/ui\/dist\/esm\/(?:components\/(?:BigValue|BarGauge|Sparkline|VizRepeater|uPlot|VizLegend|VizLayout|VizTooltip|ColorPicker|ColorSwatch)\/|graveyard\/GraphNG\/)/.test(normalized)) return 'provider-native-visualization';
   if (/\/node_modules\/(?:react-aria|react-stately|react-colorful)\//.test(normalized)) return 'provider-visualization-dependencies';
   if (normalized.includes('builtin:esm-external-require-react-dom')) {
     return 'provider-react-dom-external';
@@ -128,10 +130,12 @@ export default defineConfig({
     ...[
       ['grafana-provider13-stat-renderer', 'public/app/plugins/panel/stat/StatPanel.tsx'],
       ['grafana-provider13-timeseries-renderer', 'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx'],
+      ['grafana-provider13-gauge-renderer', 'public/app/plugins/panel/gauge/GaugePanel.tsx'],
+      ['grafana-provider13-bargauge-renderer', 'public/app/plugins/panel/bargauge/BarGaugePanel.tsx'],
       ['grafana-provider13-native-null-to-undef', 'packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts'],
     ].map(([entryAlias, entrypoint]) => pinnedGrafanaSourcePlugin({
       feature: 'native', entryAlias: entryAlias!, entrypoint: entrypoint!, sourceRoot: grafanaSourceRoot,
-      reviewedFiles: [...GRAFANA_13_NATIVE_SOURCES, 'packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts'],
+      reviewedFiles: [...GRAFANA_13_NATIVE_SOURCES, ...GRAFANA_13_NATIVE_UI_SOURCES, 'packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts'],
     })),
     pinnedGrafanaSourcePlugin({
       feature: 'testdata', entryAlias: 'grafana-provider13-testdata-runtime', entrypoint: 'datasource.ts',
