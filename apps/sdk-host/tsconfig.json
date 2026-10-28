@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "tsBuildInfoFile": "./dist/sdk-host.tsbuildinfo",
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@dashboard-render-sdk-g/provider-13": ["./src/provider-artifact.d.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tooling/**/*.ts", "vite.config.ts"]
+}

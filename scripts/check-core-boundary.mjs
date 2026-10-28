@@ -9,7 +9,6 @@ const PROVIDER_CONTRACT_PACKAGE = '@dashboard-render-sdk-g/provider-contract';
 const REQUIRED_PROVIDER_CONTRACT_RANGE = 'workspace:*';
 const FORBIDDEN_DEPENDENCY_SECTIONS = [
   'devDependencies',
-  'peerDependencies',
   'peerDependenciesMeta',
   'optionalDependencies',
   'bundledDependencies',
@@ -50,6 +49,10 @@ function dependencyFinding(file, kind, pathName, message) {
 function inspectCoreManifest(manifest, file) {
   const findings = [];
   const dependencies = manifest.dependencies;
+  const peers = manifest.peerDependencies;
+  if (!isPlainRecord(peers) || Object.keys(peers).length !== 1 || peers.react !== '19.2.8') {
+    findings.push(dependencyFinding(file, 'invalid-peer-dependency', 'peerDependencies', 'Core requires only the exact host-owned React peer 19.2.8.'));
+  }
 
   if (!isPlainRecord(dependencies)) {
     findings.push(
@@ -111,7 +114,7 @@ function inspectCoreManifest(manifest, file) {
 
 function isAllowedReference({ kind, specifier }) {
   if (isRelativeSpecifier(specifier)) return RELATIVE_STATIC_KINDS.has(kind);
-  return specifier === PROVIDER_CONTRACT_PACKAGE && STATIC_IMPORT_KINDS.has(kind);
+  return (specifier === PROVIDER_CONTRACT_PACKAGE || specifier === 'react') && STATIC_IMPORT_KINDS.has(kind);
 }
 
 export async function inspectCoreBoundary(repositoryRoot = process.cwd()) {

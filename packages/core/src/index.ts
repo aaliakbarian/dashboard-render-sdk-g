@@ -5,6 +5,14 @@ export type {
 export { inspectConfiguredProvider } from './inspectConfiguredProvider';
 export { evaluateProviderCompatibility } from './evaluateProviderCompatibility';
 export {
+  createDashboardRenderSdk,
+  GrafanaDashboard,
+  type DashboardRenderSdk,
+  type DashboardRenderSdkConfiguration,
+  type DashboardRenderSdkCreationResult,
+  type GrafanaDashboardProps,
+} from './rendering';
+export {
   createHostTransportCapability,
   type HostTransportCapabilityCreationError,
   type HostTransportCapabilityCreationErrorCode,

@@ -1,0 +1,29 @@
+{
+  "name": "@dashboard-render-sdk-g/sdk-host",
+  "version": "0.0.0-private",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "description": "Private browser host for the first production-shaped native dashboard slice; never publish.",
+  "type": "module",
+  "scripts": {
+    "build": "yarn --cwd ../.. tsc6 -b apps/sdk-host/tsconfig.json --pretty false && yarn --cwd ../.. vite build --config apps/sdk-host/vite.config.ts && yarn inspect:bundle",
+    "dev": "vite --port 5173 --strictPort",
+    "inspect:bundle": "yarn --cwd ../.. node apps/sdk-host/tooling/inspectHostBundle.mjs artifacts/sdk/host",
+    "preview": "yarn --cwd ../.. vite preview --config apps/sdk-host/vite.config.ts --port 5173 --strictPort",
+    "test:unit": "yarn --cwd ../.. vitest run apps/sdk-host/src/transport.test.ts apps/sdk-host/vite.config.test.ts apps/sdk-host/tooling/inspectHostBundle.test.mjs --environment node",
+    "typecheck": "yarn --cwd ../.. tsc6 --project apps/sdk-host/tsconfig.json --noEmit --pretty false"
+  },
+  "dependencies": {
+    "@dashboard-render-sdk-g/core": "workspace:*",
+    "@dashboard-render-sdk-g/provider-13": "workspace:*",
+    "@dashboard-render-sdk-g/provider-contract": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "@vitejs/plugin-react": "6.1.1",
+    "vite": "8.2.0"
+  }
+}

@@ -36,6 +36,9 @@
       "path": "./packages/provider-13"
     },
     {
+      "path": "./apps/sdk-host"
+    },
+    {
       "path": "./apps/poc-host"
     },
     {

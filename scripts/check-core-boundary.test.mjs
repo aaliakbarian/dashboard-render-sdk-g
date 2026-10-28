@@ -23,6 +23,7 @@ async function withCoreBoundaryFixture(
       path.join(packageRoot, 'package.json'),
       JSON.stringify({
         dependencies: { [providerContractPackage]: 'workspace:*' },
+        peerDependencies: { react: '19.2.8' },
         name: '@dashboard-render-sdk-g/core',
         private: true,
         ...manifest,
@@ -92,7 +93,7 @@ test('rejects forbidden external value, type-only, dynamic, require, and import-
       'index.ts': `
         import '@grafana/data';
         import type { SceneObject } from '@grafana/scenes';
-        import type { ReactNode } from 'react';
+        import type { ReactNode } from 'react/internal';
         import type { Bridge } from '@dashboard-render-sdk-g/provider-13';
         import type { Poc } from '@dashboard-render-sdk-g/poc-compat';
         const lazy = import('react-dom');
@@ -111,7 +112,7 @@ test('rejects forbidden external value, type-only, dynamic, require, and import-
         [
           { kind: 'import', specifier: '@grafana/data' },
           { kind: 'import-type-declaration', specifier: '@grafana/scenes' },
-          { kind: 'import-type-declaration', specifier: 'react' },
+          { kind: 'import-type-declaration', specifier: 'react/internal' },
           {
             kind: 'import-type-declaration',
             specifier: '@dashboard-render-sdk-g/provider-13',
@@ -319,7 +320,7 @@ test('rejects baseUrl configuration that can redirect the allowed provider-contr
   );
 });
 
-test('enforces the exact provider-contract workspace dependency and no other sections', async () => {
+test('enforces exact provider-contract dependency and React peer with no other dependency sections', async () => {
   for (const [manifest, expectedKind] of [
     [{ dependencies: {} }, 'missing-required-dependency'],
     [
@@ -331,7 +332,9 @@ test('enforces the exact provider-contract workspace dependency and no other sec
       'forbidden-dependency',
     ],
     [{ devDependencies: {} }, 'forbidden-dependency-section'],
-    [{ peerDependencies: { react: '19.2.8' } }, 'forbidden-dependency-section'],
+    [{ peerDependencies: { react: '^19.2.8' } }, 'invalid-peer-dependency'],
+    [{ peerDependencies: {} }, 'invalid-peer-dependency'],
+    [{ peerDependencies: { react: '19.2.8', 'react-dom': '19.2.8' } }, 'invalid-peer-dependency'],
     [{ peerDependenciesMeta: {} }, 'forbidden-dependency-section'],
     [{ optionalDependencies: {} }, 'forbidden-dependency-section'],
     [{ bundledDependencies: ['react'] }, 'forbidden-dependency-section'],
@@ -350,6 +353,46 @@ test('enforces the exact provider-contract workspace dependency and no other sec
       },
       { manifest }
     );
+  }
+});
+
+test('allows only static imports from the host React public root with its exact peer', async () => {
+  await withCoreBoundaryFixture({ 'index.ts': `
+    import { createElement } from 'react';
+    import type { ComponentType } from 'react';
+    type Element = import('react').ReactElement;
+    export const value = createElement;
+  ` }, async (root) => {
+    assert.deepEqual(await inspectCoreBoundary(root), { dependencyFindings: [], importFindings: [] });
+  });
+});
+
+test('rejects React loader, re-export, subpath, alias, and metadata bypasses', async () => {
+  await withCoreBoundaryFixture({ 'index.ts': `
+    export { createElement } from 'react';
+    import 'react/jsx-runtime';
+    import 'react/jsx-dev-runtime';
+    import 'react-dom/client';
+    import '@dashboard-render-sdk-g/experiment';
+    const lazy = import('react');
+    const required = require('react');
+  ` }, async (root) => {
+    assert.equal((await inspectCoreBoundary(root)).importFindings.length, 7);
+  });
+  for (const compilerOptions of [{ paths: { react: ['../provider-13/src/index.ts'] } }, { paths: { 'rea*': ['../provider-13/src/*'] } }]) {
+    await withCoreBoundaryFixture({ 'index.ts': "import 'react';" }, async (root) => {
+      assert.ok((await inspectCoreBoundary(root)).dependencyFindings.some(({ path: name }) => name === 'compilerOptions.paths'));
+    }, { compilerOptions });
+  }
+  for (const manifest of [
+    { peerDependencies: undefined },
+    { peerDependencies: { react: 'npm:other@19.2.8' } },
+    { peerDependenciesMeta: { react: { optional: true } } },
+    { dependenciesMeta: { react: { built: true } } },
+  ]) {
+    await withCoreBoundaryFixture({ 'index.ts': "import 'react';" }, async (root) => {
+      assert.ok((await inspectCoreBoundary(root)).dependencyFindings.length > 0);
+    }, { manifest });
   }
 });
 

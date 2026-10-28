@@ -153,7 +153,7 @@ function datasourceIdentity(panel: ObjectValue): { type?: string; uid?: string }
   };
 }
 
-function validateGrid(
+export function validateGrid(
   panel: ObjectValue,
   index: number,
   occupied: Array<{ x: number; y: number; w: number; h: number }>,

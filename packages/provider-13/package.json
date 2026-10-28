@@ -9,11 +9,32 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "yarn --cwd ../.. tsc6 -b packages/provider-13/tsconfig.json --pretty false",
-    "test:unit": "yarn --cwd ../.. vitest run packages/provider-13/src/dashboardApi.test.ts packages/provider-13/src/dashboardDto.test.ts packages/provider-13/src/staticPreflight.test.ts --environment node",
+    "build": "yarn build:types && yarn build:provider && yarn inspect:provider-bundle",
+    "build:provider": "GRAFANA_SOURCE_DIR=.grafana-source/grafana-v13.2.3 yarn --cwd ../.. vite build --config packages/provider-13/vite.config.ts",
+    "build:types": "yarn --cwd ../.. tsc6 -b packages/provider-13/tsconfig.json --pretty false",
+    "inspect:provider-bundle": "yarn --cwd ../.. node packages/provider-13/tooling/inspectProviderBundle.mjs artifacts/sdk/provider-13/evidence/bundle-evidence.json",
+    "test:unit": "yarn --cwd ../.. vitest run packages/provider-13/src/dashboardApi.test.ts packages/provider-13/src/dashboardDto.test.ts packages/provider-13/src/staticPreflight.test.ts packages/provider-13/src/partialPreflight.test.ts packages/provider-13/src/partialDashboardApi.test.ts packages/provider-13/src/react/reactIdentity.test.ts packages/provider-13/src/react/Grafana13DashboardRenderer.test.ts packages/provider-13/src/panels/catalog.test.ts packages/provider-13/src/runtime/bootPrelude.test.ts packages/provider-13/tooling/runtimeBootPrelude.test.ts packages/provider-13/src/runtime/cohort.test.ts packages/provider-13/src/runtime/backendSrv.test.ts packages/provider-13/src/runtime/coordinator.test.ts packages/provider-13/src/runtime/initializeRuntime.test.ts packages/provider-13/src/runtime/implementation.test.ts packages/provider-13/src/runtime/providers.test.ts packages/provider-13/src/runtime/resources.test.ts packages/provider-13/src/scenes/sceneConversion.test.ts packages/provider-13/tooling/sourceIdentity.test.ts packages/provider-13/tooling/pinnedGrafanaSourcePlugin.test.ts packages/provider-13/tooling/textRendererOnlyImportsPlugin.test.ts packages/provider-13/tooling/forbiddenGrafanaImportPlugin.test.ts packages/provider-13/tooling/bundleEvidencePlugin.test.ts packages/provider-13/tooling/runtimeViewOnlyBarrelsPlugin.test.ts --environment node",
     "typecheck": "yarn --cwd ../.. tsc6 --project packages/provider-13/tsconfig.typecheck.json --pretty false"
   },
   "dependencies": {
-    "@dashboard-render-sdk-g/provider-contract": "workspace:*"
+    "@dashboard-render-sdk-g/provider-contract": "workspace:*",
+    "@emotion/css": "11.13.5",
+    "@emotion/react": "11.14.0",
+    "@grafana/data": "13.2.3",
+    "@grafana/e2e-selectors": "13.2.3",
+    "@grafana/i18n": "13.2.3",
+    "@grafana/runtime": "13.2.3",
+    "@grafana/scenes": "8.13.5",
+    "@grafana/schema": "13.2.3",
+    "@grafana/ui": "13.2.3",
+    "dangerously-set-html-content": "1.1.1",
+    "react-router-dom": "6.30.3",
+    "react-use": "17.6.1",
+    "rxjs": "7.8.2",
+    "uplot": "1.6.32"
+  },
+  "peerDependencies": {
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   }
 }

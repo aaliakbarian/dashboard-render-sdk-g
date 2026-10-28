@@ -1,4 +1,3 @@
-// @ts-expect-error production deliberately excludes Node types; this test-only helper reads committed fixtures.
 import { readFileSync } from 'node:fs';
 
 import {

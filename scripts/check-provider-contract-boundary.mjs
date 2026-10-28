@@ -343,7 +343,8 @@ export function inspectProductionTypeScriptBoundary(
     });
   }
   const jsxImportSource = compilerOptions.jsxImportSource ?? 'react';
-  const pendingFiles = rootFileNames.map((fileName) => path.resolve(fileName)).sort();
+  const configuredRootFiles = new Set(rootFileNames.map((fileName) => path.resolve(fileName)));
+  const pendingFiles = [...configuredRootFiles].sort();
   const visitedFiles = new Set();
 
   while (pendingFiles.length > 0) {
@@ -356,6 +357,17 @@ export function inspectProductionTypeScriptBoundary(
         column: 1,
         file: path.relative(repositoryRoot, fileName),
         kind: 'production-root-outside-package',
+        line: 1,
+        specifier: fileName,
+      });
+      continue;
+    }
+
+    if (configuredRootFiles.has(fileName) && isTestLikeModule(fileName)) {
+      importFindings.push({
+        column: 1,
+        file: path.relative(repositoryRoot, fileName),
+        kind: 'production-test-root',
         line: 1,
         specifier: fileName,
       });
