@@ -97,6 +97,7 @@ export function App() {
   const [uid, setUid] = useState(PRIMARY_UID);
   const [mounted, setMounted] = useState(true);
   const [twoInstances, setTwoInstances] = useState(false);
+  const [secondaryUid, setSecondaryUid] = useState(ALTERNATE_UID);
   const [useConflict, setUseConflict] = useState(false);
   const [status, setStatus] = useState<DashboardRenderStatus>();
   const [secondaryStatus, setSecondaryStatus] = useState<DashboardRenderStatus>();
@@ -118,6 +119,8 @@ export function App() {
           <button data-testid="sdk-switch-uid" onClick={() => setUid((value) => value === PRIMARY_UID ? ALTERNATE_UID : PRIMARY_UID)} type="button">Switch UID</button>
           <button data-testid="sdk-toggle-mount" onClick={() => setMounted((value) => !value)} type="button">Toggle dashboard</button>
           <button data-testid="sdk-toggle-second" onClick={() => setTwoInstances((value) => !value)} type="button">Toggle second dashboard</button>
+          <button data-testid="sdk-toggle-native-second" onClick={() => { setSecondaryUid(PRIMARY_UID); setTwoInstances((value) => !value); }} type="button">Toggle second native dashboard</button>
+          <button data-testid="sdk-expanded-uid" onClick={() => setUid('drsdk-g-phase2-visualizations')} type="button">Expanded fixture</button>
           <button data-testid="sdk-toggle-conflict" onClick={() => setUseConflict((value) => !value)} type="button">Toggle runtime conflict</button>
         </nav>
         <DashboardStatus status={status} />
@@ -130,7 +133,7 @@ export function App() {
       </section>
       {twoInstances ? (
         <section className="sdk-dashboard-slot" data-testid="sdk-secondary-slot">
-          <GrafanaDashboard sdk={sdk} uid={ALTERNATE_UID} onStatusChange={setSecondaryStatus} />
+          <GrafanaDashboard sdk={sdk} uid={secondaryUid} onStatusChange={setSecondaryStatus} />
         </section>
       ) : null}
     </main>

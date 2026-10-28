@@ -271,6 +271,13 @@ export async function installResourceEvidence(page: Page): Promise<void> {
 
     const nativeAddEventListener = EventTarget.prototype.addEventListener;
     const nativeRemoveEventListener = EventTarget.prototype.removeEventListener;
+    const activeEventListeners = new Set<{ type: string; target: string; stack: string }>();
+    const listenerTargets = new WeakMap<object, WeakRef<EventTarget>>();
+    const listenerReleases = new WeakMap<object, () => void>();
+    // Keep bookkeeping closures out of the native listener's lexical context:
+    // a shared V8 context can otherwise retain the original EventTarget itself.
+    const releaseObservedListener = (record: { type: string; target: string; stack: string }, releaseCount: () => void) =>
+      () => { activeEventListeners.delete(record); releaseCount(); };
     const listenerRecords = new WeakMap<
       EventTarget,
       Map<EventListenerOrEventListenerObject, Map<string, { release: () => void; wrapped: EventListener }>>
@@ -285,13 +292,25 @@ export async function installResourceEvidence(page: Page): Promise<void> {
       byListener.set(listener, byOption);
       const key = listenerKey(type, options);
       if (byOption.has(key)) return;
-      const release = acquire('eventListener');
+      const record = {
+        type,
+        target: this === window ? 'window' : this === document ? 'document' :
+          this instanceof Element ? `${this.tagName.toLowerCase()}.${this.className}` : this.constructor.name,
+        stack: (new Error('Event listener acquired').stack ?? '').split('\n').slice(1, 7).join('\n'),
+      };
+      activeEventListeners.add(record);
+      listenerTargets.set(record, new WeakRef(this));
+      const releaseCount = acquire('eventListener');
+      const release = releaseObservedListener(record, releaseCount);
+      listenerReleases.set(record, release);
       const wrapped: EventListener = (event) => {
         if (typeof listener === 'function') listener.call(this, event);
         else listener.handleEvent(event);
         if (typeof options === 'object' && options.once) {
           release();
           byOption.delete(key);
+          if (byOption.size === 0) byListener.delete(listener);
+          if (byListener.size === 0) listenerRecords.delete(this);
         }
       };
       byOption.set(key, { release, wrapped });
@@ -303,7 +322,11 @@ export async function installResourceEvidence(page: Page): Promise<void> {
       const record = listenerRecords.get(this)?.get(listener)?.get(key);
       if (record) {
         record.release();
-        listenerRecords.get(this)?.get(listener)?.delete(key);
+        const byListener = listenerRecords.get(this)!;
+        const byOption = byListener.get(listener)!;
+        byOption.delete(key);
+        if (byOption.size === 0) byListener.delete(listener);
+        if (byListener.size === 0) listenerRecords.delete(this);
         return nativeRemoveEventListener.call(this, type, record.wrapped, options);
       }
       return nativeRemoveEventListener.call(this, type, listener, options);
@@ -332,6 +355,20 @@ export async function installResourceEvidence(page: Page): Promise<void> {
           return acquire(kind, lifetime);
         },
         snapshot,
+        activeEventListeners() {
+          return [...activeEventListeners].map(record => {
+            const target = listenerTargets.get(record)?.deref();
+            return { ...record, connected: target instanceof Node ? target.isConnected : undefined };
+          });
+        },
+        // Removing a DOM subtree does not call removeEventListener on its
+        // children. Only retire a historical count after the browser has
+        // actually collected the target, never merely because it disconnected.
+        sweepCollectedEventListeners() {
+          for (const record of activeEventListeners) {
+            if (!listenerTargets.get(record)?.deref()) listenerReleases.get(record)?.();
+          }
+        },
         mutationObserverCreations() {
           return [...mutationObserverCreations];
         },

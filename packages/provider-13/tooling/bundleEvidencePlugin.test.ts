@@ -5,6 +5,7 @@ import {
   inspectProviderBundleEvidence,
   type ProviderBundleEvidence,
 } from './bundleEvidencePlugin';
+import { GRAFANA_13_APPLICATION_SOURCES, GRAFANA_13_NATIVE_SOURCES, GRAFANA_13_TESTDATA_SOURCES } from './sourceIdentity';
 
 describe('provider-13 emitted browser chunks', () => {
   it('rejects a browser-time CommonJS React require in a non-runtime chunk', () => {
@@ -35,6 +36,18 @@ describe('provider-13 emitted browser chunks', () => {
 });
 
 describe('provider-13 bundle evidence inspection', () => {
+  it('admits exact independent native closures and query scenes only when native provenance exists', () => {
+    const chunk = (fileName: string, modules: string[]) => ({ fileName, modules, dynamicImports: [], imports: [], gzipSize: 1, rawSize: 1, isEntry: false });
+    const report: ProviderBundleEvidence = { assets: [], moduleIds: [], chunks: [
+      chunk('assets/text.js', GRAFANA_13_APPLICATION_SOURCES.map(f => `<grafana-source>/${f}`)),
+      chunk('assets/statPlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/stat/')).map(f => `<grafana-source>/${f}`)),
+      chunk('assets/timeSeriesPlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => !f.includes('/stat/')).map(f => `<grafana-source>/${f}`)),
+      chunk('assets/query.js', [...GRAFANA_13_TESTDATA_SOURCES.map(f => `<grafana-source>/${f}`), '<repo>/node_modules/@grafana/scenes/dist/esm/querying/SceneQueryRunner.js']),
+    ] };
+    expect(() => inspectProviderBundleEvidence(report)).not.toThrow();
+    expect(() => inspectProviderBundleEvidence({ ...report, chunks: [...report.chunks, chunk('assets/unreviewed.js', ['<grafana-source>/public/app/plugins/panel/stat/module.tsx'])] })).toThrow();
+    expect(() => inspectProviderBundleEvidence({ ...report, chunks: report.chunks.map(c => c.fileName.includes('statPlugin') ? { ...c, imports: ['assets/timeSeriesPlugin.js'] } : c) })).toThrow();
+  });
   it('admits the complete lazy runtime-only TestData closure but keeps scene query activation forbidden', () => {
     const testdata = ['LogIpsum.ts', 'constants.ts', 'dataquery.ts', 'datasource.ts', 'metricTree.ts', 'nodeGraphUtils.ts',
       'runStreams.ts', 'testData/flameGraphResponse.ts', 'testData/serviceMapResponse.ts', 'testData/serviceMapResponseMedium.ts', 'variables.ts'];

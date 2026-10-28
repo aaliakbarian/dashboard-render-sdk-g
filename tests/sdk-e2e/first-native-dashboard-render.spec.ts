@@ -10,7 +10,7 @@ import {
 
 test.use({ locale: 'en-US', trace: 'off' });
 
-test('renders real Grafana Text and three inert placeholders through the SDK boundary', async ({ page }) => {
+test('renders real Grafana Text, Stat and Time series with one inert Table through the SDK boundary', async ({ page }) => {
   test.skip(
     !process.env.POC_GRAFANA_VERIFY_USER || !process.env.POC_GRAFANA_VERIFY_PASSWORD,
     'local disposable Grafana fixture credentials are required'
@@ -54,21 +54,19 @@ test('renders real Grafana Text and three inert placeholders through the SDK bou
     await expect(page.getByRole('region', { name: 'Text — phase0' })).toBeVisible();
 
     const fallbacks = page.locator('[data-dashboard-panel-kind="not-supported"]');
-    await expect(fallbacks).toHaveCount(3);
+    await expect(fallbacks).toHaveCount(1);
     await expect(fallbacks).toHaveText([
-      /Stat — predictable pulseNot-Supported/,
       /Table — static TestDataNot-Supported/,
-      /Time series — predictable pulseNot-Supported/,
     ]);
     await expect(page.locator('[data-dashboard-panel-id="1"], [data-viz-panel-key="panel-1"]')).toHaveCount(1);
-    await expect(page.locator('[data-dashboard-panel-id="2"]')).toHaveCount(1);
-    await expect(page.locator('[data-dashboard-panel-id="3"]')).toHaveCount(1);
+    await expect(page.locator('[data-viz-panel-key="panel-2"]')).toHaveCount(1);
+    await expect(page.locator('[data-viz-panel-key="panel-3"]')).toHaveCount(1);
     await expect(page.locator('[data-dashboard-panel-id="4"]')).toHaveCount(1);
 
     const boxes = await Promise.all([
       page.getByRole('region', { name: 'Text — phase0' }).boundingBox(),
-      page.locator('[data-dashboard-panel-id="2"]').boundingBox(),
-      page.locator('[data-dashboard-panel-id="3"]').boundingBox(),
+      page.locator('[data-viz-panel-key="panel-2"]').boundingBox(),
+      page.locator('[data-viz-panel-key="panel-3"]').boundingBox(),
       page.locator('[data-dashboard-panel-id="4"]').boundingBox(),
     ]);
     expect(boxes.every(Boolean)).toBe(true);
@@ -92,9 +90,11 @@ test('renders real Grafana Text and three inert placeholders through the SDK bou
     const network = await networkEvidence.snapshot();
     expect(network.some((entry) => entry.type === 'request' && entry.url.includes('/grafana/api/health'))).toBe(true);
     expect(network.some((entry) => entry.type === 'request' && entry.url.includes('/grafana/apis/dashboard.grafana.app/'))).toBe(true);
-    expect(network.some((entry) => entry.type === 'request' && entry.url.includes('/api/ds/query'))).toBe(false);
-    expect(network.some((entry) => entry.type === 'request' && entry.url.includes('/api/frontend/settings'))).toBe(false);
-    expect(network.some((entry) => entry.type === 'request' && /\/(?:feature-testdata-runtime|provider-query-runtime|provider-query-services)-/.test(entry.url))).toBe(false);
+    await expect(page.getByRole('region', { name: 'Stat — predictable pulse' })).toContainText(/(?:10|90)%/);
+    await expect(page.getByRole('region', { name: 'Time series — predictable pulse' }).locator('.uplot canvas')).not.toHaveCount(0);
+    expect(network.filter((entry) => entry.type === 'request' && entry.url.includes('/api/ds/query'))).toHaveLength(2);
+    expect(network.some((entry) => entry.type === 'request' && entry.url.includes('/api/frontend/settings'))).toBe(true);
+    expect(network.some((entry) => entry.type === 'request' && /\/(?:feature-testdata-runtime|provider-query-runtime|provider-query-services)-/.test(entry.url))).toBe(true);
     expect(JSON.stringify(network)).not.toMatch(/authorization|cookie|password|bearer\s/i);
 
     const resources = await captureResourceEvidence(page, 'sdk-primary-mounted');

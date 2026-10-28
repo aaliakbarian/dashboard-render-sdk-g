@@ -87,6 +87,7 @@ interface PanelIdentity {
 
 export type Grafana13RenderablePanel =
   | (PanelIdentity & { readonly kind: 'supported'; readonly profile: 'text-markdown-view-v1'; readonly panelType: 'text'; readonly model: Grafana13TextPanelModel })
+  | (PanelIdentity & { readonly kind: 'supported'; readonly profile: 'predictable-pulse-view-v1'; readonly panelType: 'stat' | 'timeseries'; readonly model: Grafana13StatPanelModel | Grafana13TimeSeriesPanelModel })
   | (PanelIdentity & { readonly kind: 'unsupported'; readonly diagnostics: readonly Grafana13PreflightDiagnostic[] });
 
 export type Grafana13PartialPreflightResult =

@@ -35,6 +35,14 @@ function assertPinnedSourceIdentity(identity: GrafanaRuntimeViewSource, source: 
 
 const requiredExports: Readonly<Record<GrafanaRuntimeBarrel, readonly string[]>> = {
   data: [
+    'alignTimeRangeCompareData', 'shouldAlignTimeCompare', 'DataFrameType', 'useDataLinksContext',
+    'getDisplayValueAlignmentFactors', 'getFieldDisplayValues', 'getFieldColorModeForField', 'getFieldSeriesColor',
+    'cacheFieldDisplayNames', 'getLinksSupplier', 'outerJoinDataFrames', 'applyNullInsertThreshold', 'roundDecimals',
+    'isBooleanUnit', 'nullToValue',
+    'VizOrientation', 'DataHoverEvent', 'DataHoverClearEvent', 'LegacyGraphHoverEvent', 'FALLBACK_COLOR', 'usePluginContext',
+    'DataSourceApi', 'extractFacetedLabels', 'resolveFacetedFilterNames', 'DefaultTimeZone', 'colorManipulator', 'ThresholdsMode',
+    'reduceField', 'fieldReducers', 'ReducerID', 'FIELD_NAME_FACET_KEY', 'InternalTimeZones', 'guessBrowserTimeZone',
+    'guessDecimals', 'incrRoundDn', 'incrRoundUp', 'isLikelyAscendingVector', 'sortDataFrame', 'fieldColorModeRegistry', 'locale',
     'AlertState',
     'applyFieldOverrides',
     'availableIconsIndex',
@@ -96,6 +104,8 @@ const requiredExports: Readonly<Record<GrafanaRuntimeBarrel, readonly string[]>>
   ],
   i18n: ['initPluginTranslations', 'LANGUAGES', 't', 'Trans'],
   runtime: [
+    'PanelDataErrorView',
+    'getRunRequest', 'toDataQueryError', 'isExpressionReference', 'getDataSourceSrv', 'getTemplateSrv',
     'config',
     'getAppEvents',
     'getBackendSrv',
@@ -119,6 +129,7 @@ const requiredExports: Readonly<Record<GrafanaRuntimeBarrel, readonly string[]>>
     'VizPanel',
   ],
   ui: [
+    'usePanelContext', 'ClickOutsideWrapper', 'Stack', 'Text', 'Popover', 'Spinner',
     'attachDebugger',
     'Button',
     'createLogger',

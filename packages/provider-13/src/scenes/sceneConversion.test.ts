@@ -6,6 +6,8 @@ import { grafana13Provider } from '../provider';
 import { fixtureDashboard } from '../testFixtures.test';
 import { validateProviderCompatibilityManifest } from '@dashboard-render-sdk-g/provider-contract';
 import { convertPartialDashboardToGrafana13Scene, inspectGrafana13Scene } from './sceneConversion';
+import { classifyGrafana13PanelProfile } from '../preflightProfiles';
+import { readFileSync } from 'node:fs';
 
 class FakeObject {
   parent: FakeObject | undefined;
@@ -27,6 +29,8 @@ class FakeTimeRange extends FakeObject {}
 class FakeVariableSet extends FakeObject {}
 class FakeConstantVariable extends FakeObject {}
 class FakeReactObject extends FakeObject {}
+class FakeQueryRunner extends FakeObject {}
+class FakeTransformer extends FakeObject {}
 
 const scenes = {
   ConstantVariable: FakeConstantVariable,
@@ -37,6 +41,8 @@ const scenes = {
   SceneTimeRange: FakeTimeRange,
   SceneVariableSet: FakeVariableSet,
   VizPanel: FakeVizPanel,
+  SceneQueryRunner: FakeQueryRunner,
+  SceneDataTransformer: FakeTransformer,
 };
 
 const primary: Extract<Grafana13PartialPreflightResult, { kind: 'renderable' }> = {
@@ -68,6 +74,45 @@ const primary: Extract<Grafana13PartialPreflightResult, { kind: 'renderable' }> 
 };
 
 describe('convertPartialDashboardToGrafana13Scene', () => {
+  it('parents independent real-query strategies under Stat and transformed Time series while preserving exact DTO state', () => {
+    const fixture = JSON.parse(readFileSync('dev/grafana/provisioning/dashboards/drsdk-g-phase2-visualizations.json', 'utf8'));
+    const queryPanels = fixture.panels.filter((p: any) => ['stat', 'timeseries'].includes(p.type)).map((p: any, index: number) => {
+      const profile = classifyGrafana13PanelProfile(p);
+      if (profile.kind !== 'supported') throw new Error('Expected admitted profile');
+      return { ...primary.panels[0], id: p.id, index, panelType: p.type, profile: profile.profile, model: profile.model, title: p.title };
+    });
+    const graph = convertPartialDashboardToGrafana13Scene({ ...primary, panels: [...queryPanels, primary.panels[1]] } as never, scenes as never);
+    const [stat, timeseries, fallback] = graph.scene.state.body.state.children.map((item: any) => item.state.body);
+    const statViz = stat.state.panel;
+    const tsViz = timeseries.state.panel;
+    expect(statViz.state.pluginId).toBe('stat');
+    expect(statViz.state.$data).toBeInstanceOf(FakeQueryRunner);
+    expect(statViz.state.$data.state).toMatchObject({ datasource: { uid: 'grsdk-testdata' }, queries: queryPanels[0].model.query.targets, maxDataPoints: 300 });
+    expect(tsViz.state.pluginId).toBe('timeseries');
+    expect(tsViz.state.$data).toBeInstanceOf(FakeTransformer);
+    expect(tsViz.state.$data.state.transformations).toEqual(queryPanels[1].model.transformations);
+    expect(tsViz.state.$data.state.$data).toBeInstanceOf(FakeQueryRunner);
+    expect(tsViz.state.$data.state.$data).not.toBe(statViz.state.$data);
+    const tsRunner = tsViz.state.$data.state.$data;
+    expect(statViz.state.$data.state.requestIdPrefix).toMatch(/^sdk13-g\d+-p2$/);
+    expect(tsRunner.state.requestIdPrefix).toMatch(/^sdk13-g\d+-p3$/);
+    expect(graph.scene.enrichDataRequest(statViz.state.$data)).toEqual({ dashboardUID: primary.uid, panelId: 2 });
+    expect(graph.scene.enrichDataRequest(tsRunner)).toEqual({ dashboardUID: primary.uid, panelId: 3 });
+    expect(graph.scene.enrichDataRequest({})).toBeNull();
+    for (const [index, viz] of [statViz, tsViz].entries()) {
+      expect(viz.state.options).toEqual(queryPanels[index].model.options);
+      expect(viz.state.fieldConfig).toEqual(queryPanels[index].model.fieldConfig);
+      expect(viz.state.options).not.toBe(queryPanels[index].model.options);
+      expect(viz.state.$data.parent).toBe(viz);
+    }
+    expect(JSON.stringify(fallback.state)).not.toMatch(/\$data|datasource|queries|transformations/);
+    const failed = convertPartialDashboardToGrafana13Scene({ ...primary, panels: queryPanels } as never, scenes as never, { failedPluginIds: ['stat'] });
+    expect(failed.scene.state.body.state.children[1].state.body.state.panel.state.$data.state.$data.state.requestIdPrefix).not.toBe(tsRunner.state.requestIdPrefix);
+    const failedStat = failed.scene.state.body.state.children[0].state.body;
+    expect(failedStat).toBeInstanceOf(FakeReactObject);
+    expect(failedStat.state.props).toMatchObject({ id: queryPanels[0].id, title: queryPanels[0].title });
+    expect(JSON.stringify(failedStat.state)).not.toMatch(/\$data|queries|targets|transformations/);
+  });
   it('preserves dashboard identity, range, constants, order, IDs and exact grid geometry', () => {
     const graph = convertPartialDashboardToGrafana13Scene(primary, scenes as never);
     expect(typeof graph.scene.constructor.Component).toBe('function');
@@ -84,7 +129,7 @@ describe('convertPartialDashboardToGrafana13Scene', () => {
   });
 
   it.each([
-    ['grsdk-phase0-poc', 4, 3],
+    ['grsdk-phase0-poc', 4, 1],
     ['grsdk-phase0-poc-alt', 1, 0],
   ] as const)('converts the real %s fixture model without activating unsupported panels', (uid, panelCount, fallbackCount) => {
     const manifest = validateProviderCompatibilityManifest(grafana13Provider.manifest);

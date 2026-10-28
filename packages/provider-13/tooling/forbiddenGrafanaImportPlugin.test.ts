@@ -5,7 +5,9 @@ import { classifyProvider13ForbiddenImport } from './forbiddenGrafanaImportPlugi
 describe('provider-13 Grafana import boundary', () => {
   it.each([
     'public/app/plugins/panel/text/v1/module.tsx',
-    'public/app/plugins/panel/stat/StatPanel.tsx',
+    'public/app/plugins/panel/stat/module.tsx',
+    'public/app/plugins/panel/timeseries/module.tsx',
+    'public/app/plugins/panel/stat/StatMigrations.ts',
     'app',
     '@grafana/ui/dist/esm/components/Monaco/MonacoEditor.mjs',
     '@grafana/ui/dist/esm/components/DataLinks/DataLinksInlineEditor.mjs',
@@ -23,6 +25,8 @@ describe('provider-13 Grafana import boundary', () => {
   it.each([
     'public/app/plugins/panel/text/v1/TextPanel.tsx',
     'public/app/plugins/panel/text/panelcfg.gen.ts',
+    'public/app/plugins/panel/stat/StatPanel.tsx',
+    'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx',
     '@grafana/data/dist/esm/field/standardFieldConfigEditorRegistry.mjs',
   ])('admits exact audited renderer source/module %s', (source) => {
     expect(classifyProvider13ForbiddenImport(source)).toBeUndefined();

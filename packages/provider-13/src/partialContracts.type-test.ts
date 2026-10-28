@@ -30,7 +30,7 @@ function inspect(panel: Grafana13RenderablePanel) {
     // @ts-expect-error unsupported panels contain no executable model
     return panel.model;
   }
-  return panel.model.options.content;
+  return panel.model.type === 'text' ? panel.model.options.content : panel.model.query;
 }
 
 // @ts-expect-error partial health stages do not widen the strict public contract

@@ -16,6 +16,15 @@ const applicationSources = modules
 const expectedSources = [
   'public/app/plugins/panel/text/panelcfg.gen.ts',
   'public/app/plugins/panel/text/v1/TextPanel.tsx',
+  'public/app/plugins/panel/stat/StatPanel.tsx',
+  'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx',
+  'public/app/plugins/panel/timeseries/TimeSeriesTooltip.tsx',
+  'public/app/plugins/panel/timeseries/plugins/OutsideRangePlugin.tsx',
+  'public/app/plugins/panel/timeseries/utils.ts',
+  'public/app/core/components/TimeSeries/TimeSeries.tsx',
+  'public/app/core/components/TimeSeries/utils.ts',
+  'public/app/core/components/GraphNG/GraphNG.tsx',
+  'public/app/core/components/GraphNG/utils.ts',
   ...['LogIpsum.ts', 'constants.ts', 'dataquery.ts', 'datasource.ts', 'metricTree.ts', 'nodeGraphUtils.ts', 'runStreams.ts',
     'testData/flameGraphResponse.ts', 'testData/serviceMapResponse.ts', 'testData/serviceMapResponseMedium.ts', 'variables.ts']
     .map(file => `public/app/plugins/datasource/grafana-testdata-datasource/${file}`),
@@ -31,7 +40,7 @@ const forbidden = modules.filter((id) =>
   /(?:monaco|codicon|systemjs|(?:^|\/)[^/]*editor[^/]*(?:\/|$)|public\/app\/(?:routes|core\/navigation|core\/components\/AppChrome))/i.test(id)
 );
 const executableQueryModules = modules.filter((id) =>
-  /\/querying\/(?:SceneQueryRunner|RuntimeDataSource)\.(?:m?js)$/.test(id)
+  /\/querying\/(?:SceneQueryRunner|RuntimeDataSource)\.(?:m?js)$/.test(id) && !applicationSources.includes('public/app/plugins/panel/stat/StatPanel.tsx')
 );
 const inertEntryGrafanaModules = report.chunks
   .filter((chunk) => chunk.isEntry)
@@ -103,7 +112,8 @@ console.log(JSON.stringify({
   forbiddenModuleCount: forbidden.length,
   inertEntryGrafanaModuleCount: inertEntryGrafanaModules.length,
   duplicateCohortOwnerCount: duplicateCohortOwners.length,
-  executableQueryModuleCount: executableQueryModules.length,
+  forbiddenQueryModuleCount: executableQueryModules.length,
+  admittedQueryModuleCount: modules.filter(id => /\/querying\/(?:SceneQueryRunner|RuntimeDataSource)\.(?:m?js)$/.test(id)).length,
   implementationCounts,
   sizes,
 }, null, 2));

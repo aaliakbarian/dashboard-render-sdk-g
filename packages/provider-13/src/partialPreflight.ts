@@ -75,12 +75,16 @@ export function partialPreflightGrafana13DashboardV1(
       grid: Object.freeze({ height: grid.h as number, width: grid.w as number, x: grid.x as number, y: grid.y as number }),
       id: panel.id as number, index, panelType: panel.type as string, title: panel.title as string,
     };
-    const checked = panel.type === 'text'
+    const checked = ['text', 'stat', 'timeseries'].includes(panel.type as string)
       ? preflightGrafana13DashboardV1({ ...dashboard, spec: { ...dashboard.spec, panels: [panel] } }, manifest)
       : undefined;
     const profile = checked?.kind === 'match' ? classifyGrafana13PanelProfile(panel) : undefined;
     if (profile?.kind === 'supported' && profile.profile === 'text-markdown-view-v1') {
       return Object.freeze({ ...identity, kind: 'supported', model: profile.model, panelType: 'text', profile: profile.profile });
+    }
+    if (profile?.kind === 'supported' && profile.profile === 'predictable-pulse-view-v1' &&
+        (profile.model.type === 'stat' || profile.model.type === 'timeseries')) {
+      return Object.freeze({ ...identity, kind: 'supported', model: profile.model, panelType: profile.model.type, profile: profile.profile });
     }
     const diagnostics: readonly Grafana13PreflightDiagnostic[] = Object.freeze([Object.freeze({
       code: panel.type === 'text' ? 'panel.profile-unsupported' : 'panel.unsupported',

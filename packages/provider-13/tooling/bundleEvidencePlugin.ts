@@ -2,7 +2,7 @@ import { gzipSync } from 'node:zlib';
 
 import type { Plugin, Rolldown } from 'vite';
 
-import { GRAFANA_13_APPLICATION_SOURCES, GRAFANA_13_TESTDATA_SOURCES } from './sourceIdentity.ts';
+import { GRAFANA_13_APPLICATION_SOURCES, GRAFANA_13_TESTDATA_SOURCES, GRAFANA_13_NATIVE_SOURCES } from './sourceIdentity.ts';
 
 export interface ProviderBundleChunkEvidence {
   readonly dynamicImports: readonly string[];
@@ -108,7 +108,8 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     .map((id) => id.slice('<grafana-source>/'.length))
     .sort();
   const hasQuerySource = applicationSources.some(id => id.includes('/datasource/'));
-  const expectedSources = [...GRAFANA_13_APPLICATION_SOURCES, ...(hasQuerySource ? GRAFANA_13_TESTDATA_SOURCES : [])].sort();
+  const hasNativeSource = applicationSources.some(id => id.includes('/stat/') || id.includes('/timeseries/'));
+  const expectedSources = [...GRAFANA_13_APPLICATION_SOURCES, ...(hasQuerySource ? GRAFANA_13_TESTDATA_SOURCES : []), ...(hasNativeSource ? GRAFANA_13_NATIVE_SOURCES : [])].sort();
   const byFile = new Map(report.chunks.map(chunk => [chunk.fileName, chunk]));
   const textClosure = new Set<string>();
   const visit = (file: string) => {
@@ -122,6 +123,8 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
   }
   const eagerQuerySources = report.chunks.filter(chunk => textClosure.has(chunk.fileName)).flatMap(chunk => chunk.modules)
     .filter(id => id.includes('<grafana-source>/public/app/plugins/datasource/') || /\/src\/(?:datasource\/|query\/|runtime\/installQueryRuntime\.ts)/.test(id));
+  const eagerNativeModules = report.chunks.filter(chunk => textClosure.has(chunk.fileName)).flatMap(chunk => chunk.modules)
+    .filter(id => /\/node_modules\/(?:uplot\/|@grafana\/ui\/dist\/esm\/components\/(?:BigValue|Sparkline|uPlot)\/)/.test(id));
   const bundledImplementations = {
     jsxDevRuntime: modules.filter((id) => /node_modules\/react\/(?:cjs\/)?react-jsx-dev-runtime/.test(id)).length,
     jsxRuntime: modules.filter((id) => /node_modules\/react\/(?:cjs\/)?react-jsx-runtime/.test(id)).length,
@@ -135,9 +138,23 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     /(?:monaco|codicon|systemjs|(?:^|\/)[^/]*editor[^/]*(?:\/|$)|public\/app\/(?:routes|core\/navigation|core\/components\/AppChrome))/i.test(id)
   );
   const executableQueryModules = modules.filter((id) =>
-    /\/querying\/(?:SceneQueryRunner|RuntimeDataSource)\.(?:m?js)$/.test(id) ||
+    (!hasNativeSource && /\/querying\/(?:SceneQueryRunner|RuntimeDataSource)\.(?:m?js)$/.test(id)) ||
     (!hasQuerySource && /\/services\/dataSourceSrv\.mjs$/.test(id))
   );
+  const featureClosures = Object.fromEntries(['stat', 'timeseries'].map(feature => {
+    const files = new Set<string>();
+    const visitFeature = (file: string) => {
+      if (files.has(file)) return;
+      files.add(file);
+      for (const imported of byFile.get(file)?.imports ?? []) visitFeature(imported);
+    };
+    for (const chunk of report.chunks) if (chunk.modules.some(id => id.includes(`/panel/${feature}/`))) visitFeature(chunk.fileName);
+    return [feature, [...files].flatMap(file => byFile.get(file)?.modules ?? [])];
+  }));
+  const crossedFeatureSources = [
+    ...(featureClosures.stat ?? []).filter(id => id.includes('/panel/timeseries/')),
+    ...(featureClosures.timeseries ?? []).filter(id => id.includes('/panel/stat/')),
+  ];
   const inertEntryGrafanaModules = report.chunks
     .filter((chunk) => chunk.isEntry)
     .flatMap((chunk) => chunk.modules)
@@ -202,6 +219,7 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
   if (
     applicationSources.join('\n') !== expectedSources.join('\n') ||
     eagerQuerySources.length > 0 ||
+    eagerNativeModules.length > 0 ||
     Object.values(bundledImplementations).some((count) => count !== 0) ||
     forbidden.length > 0 ||
     executableQueryModules.length > 0 ||
@@ -212,12 +230,15 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     misplacedScenesDependencyOwners.length > 0 ||
     cyclicReactDomExternalWrappers.length > 0 ||
     duplicateCohortOwners.length > 0
+    || crossedFeatureSources.length > 0
   ) {
-    throw new Error('Provider bundle boundary evidence did not match the exact audited closure.');
+    throw new Error(`Provider bundle boundary evidence did not match the exact audited closure. ${JSON.stringify({ eagerQuerySources, eagerNativeModules, forbidden, executableQueryModules, crossedFeatureSources, duplicateCohortOwners })}`);
   }
   return Object.freeze({
     applicationSources,
+    crossedFeatureSources,
     eagerQuerySources,
+    eagerNativeModules,
     bundledImplementations,
     duplicateCohortOwners,
     executableQueryModules,
@@ -237,6 +258,8 @@ function evidenceId(id: string, repositoryRoot: string, grafanaSourceRoot: strin
   const grafana = grafanaSourceRoot.replaceAll('\\', '/').replace(/\/$/, '');
   const virtualPrefix = 'provider-13-pinned-grafana-source:text:';
   const queryPrefix = 'provider-13-pinned-grafana-source:testdata:';
+  const nativePrefix = 'provider-13-pinned-grafana-source:native:';
+  if (normalized.startsWith(nativePrefix)) return `<grafana-source>/${normalized.slice(nativePrefix.length).replace(/\.js$/, '')}`;
   if (normalized.startsWith(queryPrefix)) {
     return `<grafana-source>/public/app/plugins/datasource/grafana-testdata-datasource/${normalized.slice(queryPrefix.length).replace(/\.js$/, '')}`;
   }

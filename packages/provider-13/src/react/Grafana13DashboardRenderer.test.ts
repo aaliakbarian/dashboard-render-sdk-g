@@ -9,6 +9,9 @@ let server: Awaited<ReturnType<typeof createServer>>;
 beforeAll(async () => {
   server = await createServer({
     appType: 'custom', cacheDir: '/tmp/provider13-renderer-vite-cache', configFile: false,
+    plugins: [{ name: 'unit-query-scenes-boundary', resolveId(id) {
+      if (id === 'grafana-provider13-query-scenes') return '\0unit-query-scenes-unused';
+    }, load(id) { if (id === '\0unit-query-scenes-unused') return 'export {};'; } }],
     optimizeDeps: { entries: [], include: ['react', 'react-dom', 'react-dom/client'] },
     server: { host: '127.0.0.1', port: 5198 },
   });

@@ -157,6 +157,15 @@ const EXACT_SOURCE_OWNERS = {
 function exceptionalReferenceKey({ file, kind, specifier }) {
   const normalizedFile = file.replaceAll('\\', '/');
   const queryEdges = [
+    [`${PACKAGE_PATH}/src/panels/catalog.ts`, 'dynamic-import', './statPlugin'],
+    [`${PACKAGE_PATH}/src/panels/catalog.ts`, 'dynamic-import', './timeSeriesPlugin'],
+    [`${PACKAGE_PATH}/src/panels/statPlugin.ts`, 'import', 'grafana-provider13-data-panel-plugin'],
+    [`${PACKAGE_PATH}/src/panels/statPlugin.ts`, 'import', 'grafana-provider13-stat-renderer'],
+    [`${PACKAGE_PATH}/src/panels/timeSeriesPlugin.ts`, 'import', 'grafana-provider13-data-panel-plugin'],
+    [`${PACKAGE_PATH}/src/panels/timeSeriesPlugin.ts`, 'import', 'grafana-provider13-timeseries-renderer'],
+    [`${PACKAGE_PATH}/src/runtime/implementation.tsx`, 'dynamic-import', 'grafana-provider13-query-scenes'],
+    [`${PACKAGE_PATH}/src/runtime/implementation.tsx`, 'dynamic-import', './nativeStyles'],
+    [`${PACKAGE_PATH}/src/runtime/nativeStyles.ts`, 'import', 'uplot/dist/uPlot.min.css?inline'],
     [`${PACKAGE_PATH}/src/runtime/initializeRuntime.ts`, 'dynamic-import', './installQueryRuntime'],
     [`${PACKAGE_PATH}/src/runtime/installQueryRuntime.ts`, 'dynamic-import', 'grafana-provider13-query-services'],
     [`${PACKAGE_PATH}/src/runtime/installQueryRuntime.ts`, 'dynamic-import', '../datasource/testDataPlugin'],

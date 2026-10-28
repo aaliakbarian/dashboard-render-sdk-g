@@ -5,6 +5,17 @@ export const GRAFANA_13_APPLICATION_SOURCES = Object.freeze([
   'public/app/plugins/panel/text/panelcfg.gen.ts',
   'public/app/plugins/panel/text/v1/TextPanel.tsx',
 ] as const);
+export const GRAFANA_13_NATIVE_SOURCES = Object.freeze([
+  'public/app/plugins/panel/stat/StatPanel.tsx',
+  'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx',
+  'public/app/plugins/panel/timeseries/TimeSeriesTooltip.tsx',
+  'public/app/plugins/panel/timeseries/plugins/OutsideRangePlugin.tsx',
+  'public/app/plugins/panel/timeseries/utils.ts',
+  'public/app/core/components/TimeSeries/TimeSeries.tsx',
+  'public/app/core/components/TimeSeries/utils.ts',
+  'public/app/core/components/GraphNG/GraphNG.tsx',
+  'public/app/core/components/GraphNG/utils.ts',
+] as const);
 
 export const GRAFANA_13_TESTDATA_SOURCE_FILES = Object.freeze([
   'LogIpsum.ts', 'constants.ts', 'dataquery.ts', 'datasource.ts', 'metricTree.ts',

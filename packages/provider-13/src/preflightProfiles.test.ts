@@ -15,6 +15,20 @@ function frozenTree(value: unknown): void {
 }
 
 describe('provider-private exact panel profiles', () => {
+  it.each(['stat', 'timeseries'])('accepts the V1 DTO omitted base threshold value only for %s and returns the exact canonical field profile', type => {
+    const raw: any = structuredClone(fixtureDashboard('drsdk-g-phase2-visualizations').spec.panels.find(p => p.type === type));
+    const expected = structuredClone(raw.fieldConfig);
+    delete raw.fieldConfig.defaults.thresholds.steps[0].value;
+    const result = classifyGrafana13PanelProfile(raw);
+    expect(result.kind).toBe('supported');
+    if (result.kind === 'supported') expect(result.model.fieldConfig).toEqual(expected);
+    expect(raw.fieldConfig.defaults.thresholds.steps[0]).not.toHaveProperty('value');
+    raw.fieldConfig.defaults.thresholds.steps[0].value = 0;
+    expect(classifyGrafana13PanelProfile(raw).kind).toBe('unsupported');
+    delete raw.fieldConfig.defaults.thresholds.steps[0].value;
+    delete raw.fieldConfig.defaults.thresholds.steps[1].value;
+    expect(classifyGrafana13PanelProfile(raw).kind).toBe('unsupported');
+  });
   const aliases: Array<[string, string, boolean]> = [
     ['plain', 'plain', true], ['empty', '', true], ['256 printable ASCII', '~'.repeat(256), true],
     ['257 characters', 'a'.repeat(257), false], ['dollar template', '$environment', false],

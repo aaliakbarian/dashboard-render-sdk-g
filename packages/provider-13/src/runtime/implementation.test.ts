@@ -10,7 +10,7 @@ if (!manifest.valid) throw new Error('Expected provider manifest.');
 
 function input() {
   return {
-    dashboard: { kind: 'renderable', uid: 'dashboard' },
+    dashboard: { kind: 'renderable', uid: 'dashboard', panels: [{ kind: 'supported', panelType: 'text' }] },
     hostReact: {
       identities: { jsxDevRuntime: {}, jsxRuntime: {}, react: {}, reactDom: {}, reactDomClient: {} },
       versions: { react: '19.2.8', reactDom: '19.2.8' },
@@ -57,6 +57,42 @@ function harness(failAt?: 'scope' | 'convert' | 'activate' | 'provider') {
 }
 
 describe('runtime dashboard mount ownership', () => {
+  it('keeps native plugin preparation failure local and still prepares the sibling', async () => {
+    const catalogue = createGrafana13TextPanelCatalog({ loadStatPlugin: async () => { throw new Error('secret loader cause'); }, loadTimeSeriesPlugin: async () => ({} as never) });
+    const convert = vi.fn((_dashboard: unknown, _scenes: unknown, _options?: unknown) => ({ panelIds: [], scene: { activate: () => () => {}, Component: () => null } }));
+    const mount = createGrafana13RuntimeDashboardMounter({
+      acquire: async () => ({ acquireQueryRuntime: async () => {}, acquireSceneScope: () => ({ release() {} }), cohort: { runtime: { getPluginImportUtils: () => catalogue }, scenes: {} }, release() {} } as never),
+      loadQueryScenes: async () => ({}), convert,
+      createProviderElement: (_values, child) => child as never,
+    });
+    const mounted = await mount({ ...input(), dashboard: { ...input().dashboard, panels: [{ kind: 'supported', panelType: 'stat' }, { kind: 'supported', panelType: 'timeseries' }] } } as never);
+    expect(convert.mock.calls[0]?.[2]).toMatchObject({ failedPluginIds: ['stat'] });
+    expect(catalogue.getPanelPluginFromCache('timeseries')).toBeDefined();
+    mounted.release();
+  });
+  it('acquires query services and inventories only admitted query plugin IDs before activation', async () => {
+    const order: string[] = [];
+    const catalogue = createGrafana13TextPanelCatalog({
+      loadTextPlugin: async () => { throw new Error('Text must remain unloaded'); },
+      loadStatPlugin: async () => { order.push('stat'); return {} as never; },
+      loadTimeSeriesPlugin: async () => { order.push('timeseries'); return {} as never; },
+    });
+    const acquireQueryRuntime = vi.fn(async () => { order.push('query'); });
+    const mount = createGrafana13RuntimeDashboardMounter({
+      acquire: async () => ({ acquireQueryRuntime, acquireSceneScope: () => ({ release() {} }), cohort: { runtime: { getPluginImportUtils: () => catalogue }, scenes: {} }, release() {} } as never),
+      loadQueryScenes: async () => ({}),
+      convert: () => ({ panelIds: [], scene: { activate: () => { order.push('activate'); return () => {}; }, Component: () => null } }),
+      createProviderElement: (_values, child) => child as never,
+    });
+    await mount({ ...input(), dashboard: { ...input().dashboard, panels: [
+      { kind: 'supported', panelType: 'stat' }, { kind: 'supported', panelType: 'timeseries' }, { kind: 'supported', panelType: 'stat' },
+      { kind: 'unsupported', panelType: 'table' },
+    ] } } as never);
+    expect(order).toEqual(['query', 'stat', 'timeseries', 'activate']);
+    expect(acquireQueryRuntime).toHaveBeenCalledOnce();
+    expect(catalogue.getPanelPluginFromCache('text')).toBeUndefined();
+    expect(catalogue.getPanelPluginFromCache('table')).toBeUndefined();
+  });
   it('deactivates the scene, releases its scope, then releases its lease exactly once', async () => {
     const { catalog, mount, order, plugin } = harness();
     const mounted = await mount(input() as never);
