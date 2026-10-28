@@ -10,10 +10,12 @@ import {
   type Grafana13PreflightDiagnostic,
   type Grafana13PreflightDiagnosticCode,
 } from './contracts';
+import { classifyGrafana13PanelProfile } from './preflightProfiles';
+import { cloneBoundedJson } from './dashboardApi';
 
 const MAX_DIAGNOSTICS = 100;
 const MAX_TRANSFORMATIONS = 256;
-const supportedPanels = new Set(['stat', 'text', 'timeseries']);
+const supportedPanels = new Set(['text', 'stat', 'timeseries', 'table', 'gauge', 'bargauge', 'piechart', 'barchart']);
 const dashboardKeys = new Set([
   'annotations', 'description', 'editable', 'fiscalYearStartMonth', 'graphTooltip', 'id',
   'links', 'liveNow', 'panels', 'preload', 'refresh', 'schemaVersion', 'tags', 'templating',
@@ -23,52 +25,11 @@ const commonPanelKeys = new Set([
   'datasource', 'fieldConfig', 'gridPos', 'id', 'options', 'pluginVersion', 'targets',
   'title', 'transformations', 'type',
 ]);
-const statOptionKeys = new Set([
-  'colorMode', 'graphMode', 'justifyMode', 'orientation', 'percentChangeColorMode',
-  'reduceOptions', 'showPercentChange', 'textMode', 'wideLayout',
-]);
-const timeSeriesOptionKeys = new Set(['legend', 'tooltip']);
-const statFieldKeys = new Set(['color', 'mappings', 'thresholds', 'unit']);
-const timeSeriesFieldKeys = new Set(['color', 'custom', 'max', 'min', 'thresholds', 'unit']);
-const timeSeriesCustomKeys = new Set([
-  'axisBorderShow', 'axisCenteredZero', 'axisColorMode', 'axisLabel', 'axisPlacement',
-  'barAlignment', 'drawStyle', 'fillOpacity', 'gradientMode', 'hideFrom', 'insertNulls',
-  'lineInterpolation', 'lineWidth', 'pointSize', 'scaleDistribution', 'showPoints',
-  'spanNulls', 'stacking', 'thresholdsStyle',
-]);
 const diagnosticTotals = new WeakMap<Grafana13PreflightDiagnostic[], number>();
 const diagnosticCodes = new WeakMap<Grafana13PreflightDiagnostic[], Set<Grafana13PreflightDiagnosticCode>>();
 const knownCapabilityIds = new Set([
-  'constant', 'grafana-testdata-datasource', 'renameByRegex', 'stat', 'table', 'text', 'timeseries',
+  'constant', 'grafana-testdata-datasource', 'renameByRegex', 'stat', 'table', 'text', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart',
 ]);
-const expectedStatOptions = {
-  colorMode: 'background', graphMode: 'area', justifyMode: 'auto', orientation: 'auto',
-  percentChangeColorMode: 'standard', reduceOptions: { calcs: ['lastNotNull'], fields: '', values: false },
-  showPercentChange: false, textMode: 'auto', wideLayout: true,
-};
-const expectedStatDefaults = {
-  color: { mode: 'thresholds' }, mappings: [],
-  thresholds: { mode: 'absolute', steps: [{ color: 'green', value: null }, { color: 'orange', value: 50 }, { color: 'red', value: 80 }] },
-  unit: 'percent',
-};
-const expectedTimeSeriesOptions = {
-  legend: { calcs: [], displayMode: 'list', placement: 'bottom', showLegend: true },
-  tooltip: { hideZeros: false, mode: 'single', sort: 'none' },
-};
-const expectedTimeSeriesDefaults = {
-  color: { mode: 'palette-classic' },
-  custom: {
-    axisBorderShow: false, axisCenteredZero: false, axisColorMode: 'text', axisLabel: '', axisPlacement: 'auto',
-    barAlignment: 0, drawStyle: 'line', fillOpacity: 15, gradientMode: 'none',
-    hideFrom: { legend: false, tooltip: false, viz: false }, insertNulls: false,
-    lineInterpolation: 'linear', lineWidth: 2, pointSize: 5, scaleDistribution: { type: 'linear' },
-    showPoints: 'auto', spanNulls: false, stacking: { group: 'A', mode: 'none' }, thresholdsStyle: { mode: 'line' },
-  },
-  max: 100, min: 0,
-  thresholds: { mode: 'absolute', steps: [{ color: 'green', value: null }, { color: 'red', value: 80 }] },
-  unit: 'percent',
-};
-
 export type Grafana13StaticPreflightResult =
   | { readonly kind: 'match'; readonly inventory: Grafana13DashboardInventory }
   | {
@@ -96,21 +57,6 @@ function own(value: ObjectValue, key: string): Grafana13JsonValue | undefined {
 
 function exactKeys(value: ObjectValue, keys: ReadonlySet<string>): boolean {
   return Object.keys(value).every((key) => keys.has(key));
-}
-
-function jsonEqual(actual: unknown, expected: unknown): boolean {
-  if (actual === expected) return true;
-  if (Array.isArray(actual) || Array.isArray(expected)) {
-    return Array.isArray(actual) && Array.isArray(expected) && actual.length === expected.length &&
-      actual.every((value, index) => jsonEqual(value, expected[index]));
-  }
-  if (typeof actual !== 'object' || actual === null || typeof expected !== 'object' || expected === null) return false;
-  const actualKeys = Object.keys(actual);
-  const expectedKeys = Object.keys(expected);
-  return actualKeys.length === expectedKeys.length && expectedKeys.every((key) =>
-    Object.prototype.hasOwnProperty.call(actual, key) &&
-    jsonEqual((actual as Record<string, unknown>)[key], (expected as Record<string, unknown>)[key])
-  );
 }
 
 function safeCapabilityId(value: unknown): string {
@@ -174,7 +120,7 @@ export function validateGrid(
   const y = values[1] as number;
   const w = values[2] as number;
   const h = values[3] as number;
-  if (x < 0 || y < 0 || w <= 0 || h <= 0 || x + w > 24) {
+  if (x < 0 || y < 0 || w <= 0 || h <= 0 || x + w > 24 || !Number.isSafeInteger(y + h)) {
     add(diagnostics, 'dashboard.layout-unsupported', path, 'The panel grid position is outside the 24-column profile.');
     return;
   }
@@ -271,46 +217,6 @@ function validateQueryPanel(
   ) add(diagnostics, 'datasource.profile-unsupported', `${path}.targets[0]`, 'The query target is outside the Predictable Pulse profile.', identity.type);
 }
 
-function validatePanelConfiguration(
-  panel: ObjectValue,
-  index: number,
-  type: string,
-  diagnostics: Grafana13PreflightDiagnostic[]
-): void {
-  const path = `$.spec.panels[${index}]`;
-  const options = object(own(panel, 'options'));
-  const fieldConfig = object(own(panel, 'fieldConfig'));
-  const defaults = fieldConfig && object(own(fieldConfig, 'defaults'));
-  const overrides = fieldConfig && own(fieldConfig, 'overrides');
-  if (!options || !fieldConfig || !defaults || !Array.isArray(overrides) || overrides.length !== 0 || !exactKeys(fieldConfig, new Set(['defaults', 'overrides']))) {
-    add(diagnostics, 'panel.profile-unsupported', path, 'Panel options and field configuration are outside the static profile.', type);
-    return;
-  }
-  if (type === 'stat') {
-    const reduce = object(own(options, 'reduceOptions'));
-    const calcs = reduce && own(reduce, 'calcs');
-    if (
-      !exactKeys(options, statOptionKeys) || !exactKeys(defaults, statFieldKeys) ||
-      !jsonEqual(options, expectedStatOptions) || !jsonEqual(defaults, expectedStatDefaults) ||
-      !reduce || !exactKeys(reduce, new Set(['calcs', 'fields', 'values'])) ||
-      !Array.isArray(calcs) || calcs.length !== 1 || calcs[0] !== 'lastNotNull' ||
-      own(defaults, 'unit') !== 'percent'
-    ) add(diagnostics, 'panel.profile-unsupported', path, 'The Stat options or field configuration are outside the verified profile.', type);
-  } else if (type === 'timeseries') {
-    const custom = object(own(defaults, 'custom'));
-    const legend = object(own(options, 'legend'));
-    const tooltip = object(own(options, 'tooltip'));
-    if (
-      !exactKeys(options, timeSeriesOptionKeys) || !exactKeys(defaults, timeSeriesFieldKeys) ||
-      !jsonEqual(options, expectedTimeSeriesOptions) || !jsonEqual(defaults, expectedTimeSeriesDefaults) ||
-      !custom || !exactKeys(custom, timeSeriesCustomKeys) ||
-      !legend || !exactKeys(legend, new Set(['calcs', 'displayMode', 'placement', 'showLegend'])) ||
-      !tooltip || !exactKeys(tooltip, new Set(['hideZeros', 'mode', 'sort'])) ||
-      own(defaults, 'unit') !== 'percent'
-    ) add(diagnostics, 'panel.profile-unsupported', path, 'The Time series options or field configuration are outside the verified profile.', type);
-  }
-}
-
 function validateTransforms(
   panel: ObjectValue,
   index: number,
@@ -362,7 +268,62 @@ function validateTransforms(
   }
 }
 
+/**
+ * Snapshot headers and each of at most 256 panels through the existing JSON guard.
+ * Per-panel budgets preserve the strict transformation-inventory boundary for
+ * large direct DTO callers; decoded/partial callers retain their whole-body budget.
+ */
+function snapshotDashboard(value: unknown): Grafana13DashboardV1 | undefined {
+  try {
+    if (typeof value !== 'object' || value === null) return undefined;
+    const rootDescriptors = Object.getOwnPropertyDescriptors(value);
+    const specDescriptor = rootDescriptors.spec;
+    if (!specDescriptor || !('value' in specDescriptor) || !specDescriptor.enumerable) return undefined;
+    const rawSpec = specDescriptor.value;
+    const specDescriptors = Object.getOwnPropertyDescriptors(rawSpec as object);
+    const panelsDescriptor = specDescriptors.panels;
+    if (!panelsDescriptor || !('value' in panelsDescriptor) || !panelsDescriptor.enumerable) return undefined;
+    const rawPanels = panelsDescriptor.value;
+    if (!Array.isArray(rawPanels) || Object.getPrototypeOf(rawPanels) !== Array.prototype) return undefined;
+    const panelDescriptors = Object.getOwnPropertyDescriptors(rawPanels as object);
+    const length = panelDescriptors.length?.value;
+    if (!Number.isSafeInteger(length) || length < 0 || length > 256 || Reflect.ownKeys(panelDescriptors).length !== length + 1) return undefined;
+    const panels: ObjectValue[] = [];
+    for (let index = 0; index < length; index += 1) {
+      const descriptor = panelDescriptors[String(index)];
+      if (!descriptor || !descriptor.enumerable || !('value' in descriptor)) return undefined;
+      const cloned = cloneBoundedJson(descriptor.value);
+      if (!cloned.ok || !object(cloned.value)) return undefined;
+      panels.push(cloned.value as ObjectValue);
+    }
+    specDescriptors.panels = { ...panelsDescriptor, value: [] };
+    rootDescriptors.spec = { ...specDescriptor, value: Object.create(Object.getPrototypeOf(rawSpec), specDescriptors) };
+    const header = cloneBoundedJson(Object.create(Object.getPrototypeOf(value), rootDescriptors));
+    const headerObject = header.ok ? object(header.value) : undefined;
+    const spec = headerObject && object(headerObject.spec);
+    if (!headerObject || !spec) return undefined;
+    return frozen({ ...headerObject, spec: frozen({ ...spec, panels: frozen(panels) }) }) as unknown as Grafana13DashboardV1;
+  } catch {
+    return undefined;
+  }
+}
+
 export function preflightGrafana13DashboardV1(
+  value: Grafana13DashboardV1,
+  manifest: ManifestValidationSuccess
+): Grafana13StaticPreflightResult {
+  const dashboard = snapshotDashboard(value);
+  if (dashboard) return preflightSnapshot(dashboard, manifest);
+  return frozen({
+    kind: 'unsupported', diagnostics: frozen([frozen({
+      code: 'dashboard.feature-unsupported' as const, path: '$', message: 'The dashboard is outside the bounded view profile.',
+    })]), diagnosticsTruncated: false,
+    inventory: frozen({ annotationPolicy: 'unsupported', datasourceTypes: frozen([]), layout: 'unsupported',
+      panelCount: 0, panels: frozen([]), panelTypes: frozen([]), transformationIds: frozen([]), variableKinds: frozen([]) }),
+  });
+}
+
+function preflightSnapshot(
   dashboard: Grafana13DashboardV1,
   manifest: ManifestValidationSuccess
 ): Grafana13StaticPreflightResult {
@@ -417,27 +378,16 @@ export function preflightGrafana13DashboardV1(
     if (!manifest.manifest.capabilities.panels.includes(type)) add(diagnostics, 'dashboard.manifest-declaration-missing', `$.spec.panels[${index}].type`, 'The manifest does not declare this panel type.', type);
     if (own(panel, 'pluginVersion') !== '13.2.3') add(diagnostics, 'panel.profile-unsupported', `$.spec.panels[${index}].pluginVersion`, 'The panel plugin version must match Grafana 13.2.3.', type);
 
-    if (type === 'text') {
-      const options = object(own(panel, 'options'));
-      const code = options && object(own(options, 'code'));
-      const fieldConfig = object(own(panel, 'fieldConfig'));
-      const defaults = fieldConfig && object(own(fieldConfig, 'defaults'));
-      const overrides = fieldConfig && own(fieldConfig, 'overrides');
-      const emptyFieldConfig = own(panel, 'fieldConfig') === undefined || (
-        fieldConfig !== undefined && exactKeys(fieldConfig, new Set(['defaults', 'overrides'])) &&
-        defaults !== undefined && Object.keys(defaults).length === 0 && Array.isArray(overrides) && overrides.length === 0
-      );
-      if (!options || !exactKeys(options, new Set(['code', 'content', 'mode'])) || !code ||
-          !exactKeys(code, new Set(['language', 'showLineNumbers', 'showMiniMap'])) ||
-          own(code, 'language') !== 'plaintext' || own(code, 'showLineNumbers') !== false || own(code, 'showMiniMap') !== false ||
-          own(options, 'mode') !== 'markdown' || typeof own(options, 'content') !== 'string' ||
-          !emptyFieldConfig || own(panel, 'datasource') !== undefined || own(panel, 'targets') !== undefined || own(panel, 'transformations') !== undefined) {
-        add(diagnostics, 'panel.profile-unsupported', `$.spec.panels[${index}]`, 'The Text panel is outside the Markdown view-only profile.', type);
+    const profile = classifyGrafana13PanelProfile(panel);
+    if (profile.kind === 'unsupported') {
+      add(diagnostics, 'panel.profile-unsupported', `$.spec.panels[${index}]`, 'The panel is outside the verified view profile.', type);
+      if (type !== 'text' && supportedPanels.has(type)) {
+        add(diagnostics, 'panel.unsupported', `$.spec.panels[${index}].type`, 'The complete panel profile is unsupported.', type);
       }
-    } else {
+    }
+    if (type !== 'text') {
       validateQueryPanel(panel, index, manifest, datasourceTypes, diagnostics);
       validateTransforms(panel, index, type, manifest, transformationIds, diagnostics, transformationAggregate);
-      validatePanelConfiguration(panel, index, type, diagnostics);
     }
   }
   const unique = (values: string[]) => frozen([...new Set(values)].sort());

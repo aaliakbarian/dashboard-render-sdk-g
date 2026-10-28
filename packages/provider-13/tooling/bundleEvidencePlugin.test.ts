@@ -35,6 +35,23 @@ describe('provider-13 emitted browser chunks', () => {
 });
 
 describe('provider-13 bundle evidence inspection', () => {
+  it('admits the complete lazy runtime-only TestData closure but keeps scene query activation forbidden', () => {
+    const testdata = ['LogIpsum.ts', 'constants.ts', 'dataquery.ts', 'datasource.ts', 'metricTree.ts', 'nodeGraphUtils.ts',
+      'runStreams.ts', 'testData/flameGraphResponse.ts', 'testData/serviceMapResponse.ts', 'testData/serviceMapResponseMedium.ts', 'variables.ts'];
+    const report: ProviderBundleEvidence = { assets: [], moduleIds: [], chunks: [{
+      fileName: 'assets/query.js', dynamicImports: [], imports: [], gzipSize: 1, rawSize: 1, isEntry: false,
+      modules: ['<grafana-source>/public/app/plugins/panel/text/panelcfg.gen.ts', '<grafana-source>/public/app/plugins/panel/text/v1/TextPanel.tsx',
+        ...testdata.map(file => `<grafana-source>/public/app/plugins/datasource/grafana-testdata-datasource/${file}`),
+        '<repo>/node_modules/@grafana/runtime/dist/esm/services/dataSourceSrv.mjs'],
+    }] };
+    expect(() => inspectProviderBundleEvidence(report)).not.toThrow();
+    expect(() => inspectProviderBundleEvidence({ ...report, moduleIds: ['<repo>/node_modules/@grafana/scenes/dist/esm/querying/SceneQueryRunner.js'] })).toThrow();
+    const pulledIntoText = { ...report, chunks: [...report.chunks, {
+      fileName: 'assets/text-runtime.js', dynamicImports: [], imports: ['assets/query.js'], gzipSize: 1, rawSize: 1, isEntry: false,
+      modules: ['<repo>/packages/provider-13/src/runtime/cohort.ts'],
+    }] };
+    expect(() => inspectProviderBundleEvidence(pulledIntoText)).toThrow();
+  });
   it('accepts exact Text source provenance and external React references', () => {
     const report: ProviderBundleEvidence = {
       assets: [],

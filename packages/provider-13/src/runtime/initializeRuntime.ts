@@ -12,6 +12,8 @@ import type {
   Grafana13RuntimeInitialization,
 } from './coordinator';
 import type { Grafana13ProviderValues } from './providers';
+import type { Grafana13QueryRuntime } from './installQueryRuntime';
+import { Grafana13RuntimeInitializationError } from './coordinator';
 
 export class Grafana13NavigationUnsupportedError extends Error {
   override readonly name = 'Grafana13NavigationUnsupportedError';
@@ -36,12 +38,14 @@ function installReadOnlyLocationPolicy(service: Record<string, unknown>): void {
 }
 
 export interface Grafana13RuntimeEnvironment {
+  readonly loadQueryRuntime?: (options: { readonly backendSrv: ReturnType<typeof createGrafana13BackendSrv>; readonly panelCatalog: Grafana13TextPanelCatalog }) => Promise<Grafana13QueryRuntime>;
   readonly loadCohort?: typeof loadGrafana13RuntimeCohort;
   readonly panelCatalog: Grafana13TextPanelCatalog;
   readonly window: Grafana13BootWindow;
 }
 
 export interface Grafana13InitializedRuntime extends Grafana13RuntimeInitialization {
+  acquireQueryRuntime(): Promise<Grafana13QueryRuntime>;
   readonly backendSrv: ReturnType<typeof createGrafana13BackendSrv>;
   readonly cohort: Grafana13RuntimeCohort;
   readonly providerValues: Grafana13ProviderValues;
@@ -92,7 +96,14 @@ export async function initializeGrafana13Runtime(
     throw new Error('The provider requires Grafana Runtime to create the light theme.');
   }
   installReadOnlyLocationPolicy(cohort.runtime.locationService);
+  let queryRuntime: Promise<Grafana13QueryRuntime> | undefined;
   return Object.freeze({
+    acquireQueryRuntime() {
+      const load = environment.loadQueryRuntime ?? (options => import('./installQueryRuntime').then(module => module.installGrafana13QueryRuntime(options)));
+      if (!queryRuntime) queryRuntime = Promise.resolve().then(() => load({ backendSrv, panelCatalog: environment.panelCatalog }))
+        .catch(() => { queryRuntime = undefined; throw new Grafana13RuntimeInitializationError(); });
+      return queryRuntime;
+    },
     backendSrv,
     cohort,
     providerValues: Object.freeze({ ThemeContext: cohort.data.ThemeContext, theme }),

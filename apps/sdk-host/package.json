@@ -10,7 +10,7 @@
     "dev": "vite --port 5173 --strictPort",
     "inspect:bundle": "yarn --cwd ../.. node apps/sdk-host/tooling/inspectHostBundle.mjs artifacts/sdk/host",
     "preview": "yarn --cwd ../.. vite preview --config apps/sdk-host/vite.config.ts --port 5173 --strictPort",
-    "test:unit": "yarn --cwd ../.. vitest run apps/sdk-host/src/transport.test.ts apps/sdk-host/vite.config.test.ts apps/sdk-host/tooling/inspectHostBundle.test.mjs --environment node",
+    "test:unit": "yarn --cwd ../.. vitest run apps/sdk-host/src/queryTransport.test.ts apps/sdk-host/src/transport.test.ts apps/sdk-host/vite.config.test.ts apps/sdk-host/tooling/inspectHostBundle.test.mjs --environment node",
     "typecheck": "yarn --cwd ../.. tsc6 --project apps/sdk-host/tsconfig.json --noEmit --pretty false"
   },
   "dependencies": {

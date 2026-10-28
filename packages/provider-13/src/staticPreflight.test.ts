@@ -12,6 +12,27 @@ function mutableDashboard(uid: 'grsdk-phase0-poc' | 'grsdk-phase0-poc-alt' = 'gr
 }
 
 describe('provider-13 static preflight', () => {
+  it.each(['accessor', 'reflection', 'revoked', 'sparse panels', 'panel limit', 'array extension'])('safely rejects direct hostile %s input', (kind) => {
+    let dashboard = mutableDashboard('grsdk-phase0-poc-alt');
+    const getter = vi.fn(() => { throw new Error('secret'); });
+    if (kind === 'accessor') Object.defineProperty(dashboard.spec.panels[0].options, 'content', { enumerable: true, get: getter });
+    if (kind === 'reflection') dashboard = new Proxy(dashboard, { ownKeys: getter });
+    if (kind === 'revoked') { const proxy = Proxy.revocable(dashboard, {}); proxy.revoke(); dashboard = proxy.proxy; }
+    if (kind === 'sparse panels') delete dashboard.spec.panels[0];
+    if (kind === 'panel limit') dashboard.spec.panels = Array(257).fill(dashboard.spec.panels[0]);
+    if (kind === 'array extension') dashboard.spec.panels.secret = true;
+    const result = preflightGrafana13DashboardV1(dashboard, canonicalManifest());
+    expect(result.kind).toBe('unsupported');
+    expect(JSON.stringify(result)).not.toContain('secret');
+    if (kind === 'accessor') expect(getter).not.toHaveBeenCalled();
+  });
+  it('matches the complete expanded private profile only with an explicit test manifest', () => {
+    const dashboard = fixtureDashboard('drsdk-g-phase2-visualizations');
+    const manifest = canonicalManifest((m) => {
+      m.capabilities.panels = ['text', 'stat', 'timeseries', 'table', 'gauge', 'bargauge', 'piechart', 'barchart'];
+    });
+    expect(preflightGrafana13DashboardV1(dashboard, manifest).kind).toBe('match');
+  });
   it('accepts the alternate Text fixture with detached immutable inventory', () => {
     const dashboard = fixtureDashboard('grsdk-phase0-poc-alt');
     const result = preflightGrafana13DashboardV1(dashboard, canonicalManifest());

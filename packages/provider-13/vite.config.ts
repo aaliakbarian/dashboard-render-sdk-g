@@ -11,9 +11,12 @@ import { pinnedGrafanaSourcePlugin } from './tooling/pinnedGrafanaSourcePlugin.t
 import { runtimeViewOnlyBarrelsPlugin } from './tooling/runtimeViewOnlyBarrelsPlugin.ts';
 import {
   GRAFANA_13_APPLICATION_SOURCES,
+  GRAFANA_13_TESTDATA_SOURCE_FILES,
+  GRAFANA_13_TESTDATA_SOURCES,
   assertGrafana13SourceIdentity,
 } from './tooling/sourceIdentity.ts';
 import { textRendererOnlyImportsPlugin } from './tooling/textRendererOnlyImportsPlugin.ts';
+import { queryRuntimeImportsPlugin } from './tooling/queryRuntimeImportsPlugin.ts';
 
 const providerRoot = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(providerRoot, '../..');
@@ -25,7 +28,7 @@ if (!grafanaSourceRoot) {
   throw new Error('Provider-13 build requires GRAFANA_SOURCE_DIR.');
 }
 
-for (const source of GRAFANA_13_APPLICATION_SOURCES) {
+for (const source of [...GRAFANA_13_APPLICATION_SOURCES, ...GRAFANA_13_TESTDATA_SOURCES]) {
   statSync(resolve(grafanaSourceRoot, source));
 }
 assertGrafana13SourceIdentity({
@@ -50,6 +53,9 @@ function providerCohortChunk(id: string): string | undefined {
   }
   if (normalized.includes('/node_modules/tslib/')) return 'provider-tslib';
   if (normalized.includes('/node_modules/uuid/')) return 'provider-uuid';
+  // Keep generic query dependencies out of the lazy application-source chunk.
+  // Otherwise the shared Runtime cohort gains a static edge into TestData.
+  if (/\/node_modules\/(?:@openfeature\/|d3-random\/)/.test(normalized)) return 'provider-query-dependencies';
   if (
     /\/node_modules\/(?:clsx|fast-equals|prop-types|react-draggable|react-grid-layout|react-resizable|react-use|resize-observer-polyfill)\//.test(
       normalized
@@ -105,8 +111,14 @@ export default defineConfig({
   plugins: [
     esmExternalRequirePlugin({ external: [/^react(?:-dom)?(?:\/|$)/] }),
     runtimeViewOnlyBarrelsPlugin({ providerRoot, repositoryRoot }),
+    queryRuntimeImportsPlugin({ providerRoot, repositoryRoot }),
     textRendererOnlyImportsPlugin({ providerRoot, sourceRoot: textSourceRoot }),
     forbiddenGrafanaImportPlugin(),
+    pinnedGrafanaSourcePlugin({
+      feature: 'testdata', entryAlias: 'grafana-provider13-testdata-runtime', entrypoint: 'datasource.ts',
+      sourceRoot: resolve(grafanaSourceRoot, 'public/app/plugins/datasource/grafana-testdata-datasource'),
+      reviewedFiles: GRAFANA_13_TESTDATA_SOURCE_FILES,
+    }),
     pinnedGrafanaSourcePlugin({
       entryAlias: 'grafana-provider13-text-renderer',
       entrypoint: 'v1/TextPanel.tsx',

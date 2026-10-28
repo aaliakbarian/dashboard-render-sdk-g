@@ -1,4 +1,5 @@
 import type { Grafana13DashboardLoadInput, Grafana13DashboardFailure, Grafana13PreflightDiagnostic } from './contracts';
+import type { Grafana13QueryPanelConfiguration, Grafana13QueryPanelType } from './preflightProfiles';
 
 export interface Grafana13RenderRequestIds {
   readonly health: string;
@@ -33,6 +34,42 @@ export interface Grafana13TextPanelModel {
   };
   readonly fieldConfig: { readonly defaults: Readonly<Record<string, never>>; readonly overrides: readonly never[] };
 }
+
+/** Provider-private DTO contracts. These do not widen the active renderable union. */
+export interface Grafana13PredictablePulseQueryProfile {
+  readonly datasource: { readonly type: 'grafana-testdata-datasource'; readonly uid: 'grsdk-testdata' };
+  readonly targets: readonly [{
+    readonly refId: 'A'; readonly scenarioId: 'predictable_pulse'; readonly alias: string;
+    readonly pulseWave: { readonly offCount: 5; readonly offValue: 10; readonly onCount: 5; readonly onValue: 90; readonly timeStep: 1 };
+  }];
+}
+
+export interface Grafana13RenameByRegexProfile {
+  readonly id: 'renameByRegex';
+  readonly options: { readonly regex: '/Raw/'; readonly renamePattern: 'Signal' };
+}
+
+type QueryPanelModel<T extends Grafana13QueryPanelType> = {
+  readonly id: number;
+  readonly type: T;
+  readonly title: string;
+  readonly pluginVersion: '13.2.3';
+  readonly options: Grafana13QueryPanelConfiguration<T>['options'];
+  readonly fieldConfig: Grafana13QueryPanelConfiguration<T>['fieldConfig'];
+  readonly query: Grafana13PredictablePulseQueryProfile;
+  readonly transformations: T extends 'timeseries' ? readonly [] | readonly [Grafana13RenameByRegexProfile] : readonly [];
+};
+
+export type Grafana13StatPanelModel = QueryPanelModel<'stat'>;
+export type Grafana13TimeSeriesPanelModel = QueryPanelModel<'timeseries'>;
+export type Grafana13TablePanelModel = QueryPanelModel<'table'>;
+export type Grafana13GaugePanelModel = QueryPanelModel<'gauge'>;
+export type Grafana13BarGaugePanelModel = QueryPanelModel<'bargauge'>;
+export type Grafana13PieChartPanelModel = QueryPanelModel<'piechart'>;
+export type Grafana13BarChartPanelModel = QueryPanelModel<'barchart'>;
+export type Grafana13QueryPanelModel = {
+  [T in Grafana13QueryPanelType]: QueryPanelModel<T>;
+}[Grafana13QueryPanelType];
 
 export interface Grafana13ConstantVariable {
   readonly name: 'environment';

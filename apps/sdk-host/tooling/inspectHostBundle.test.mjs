@@ -32,6 +32,15 @@ function validModuleEvidence() {
 }
 
 describe('SDK host post-build inspection', () => {
+  it('accepts the controlled endpoint only in reviewed host/cohort chunks alongside a lazy datasource entry', () => {
+    const bundle = validBundle();
+    bundle.set('assets/index-entry.js', bundle.get('assets/index-entry.js') + 'const policyPath="/api/ds/query";');
+    bundle.set('assets/provider-grafana-runtime.js', 'const path="/api/ds/query";');
+    bundle.set('assets/provider-implementation-runtime.js', bundle.get('assets/provider-implementation-runtime.js') + 'import("./provider-query-runtime-runtime.js");');
+    bundle.set('assets/provider-query-runtime-runtime.js', 'import("./feature-testdata-runtime-runtime.js");');
+    bundle.set('assets/feature-testdata-runtime-runtime.js', '/* exact datasource.ts */');
+    expect(() => inspectHostBundleFiles(bundle, validModuleEvidence())).not.toThrow();
+  });
   it('accepts the closed production-shaped Text bundle', () => {
     expect(inspectHostBundleFiles(validBundle(), validModuleEvidence())).toEqual({
       featureTextChunks: 1,

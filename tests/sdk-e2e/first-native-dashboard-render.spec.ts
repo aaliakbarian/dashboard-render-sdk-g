@@ -93,6 +93,8 @@ test('renders real Grafana Text and three inert placeholders through the SDK bou
     expect(network.some((entry) => entry.type === 'request' && entry.url.includes('/grafana/api/health'))).toBe(true);
     expect(network.some((entry) => entry.type === 'request' && entry.url.includes('/grafana/apis/dashboard.grafana.app/'))).toBe(true);
     expect(network.some((entry) => entry.type === 'request' && entry.url.includes('/api/ds/query'))).toBe(false);
+    expect(network.some((entry) => entry.type === 'request' && entry.url.includes('/api/frontend/settings'))).toBe(false);
+    expect(network.some((entry) => entry.type === 'request' && /\/(?:feature-testdata-runtime|provider-query-runtime|provider-query-services)-/.test(entry.url))).toBe(false);
     expect(JSON.stringify(network)).not.toMatch(/authorization|cookie|password|bearer\s/i);
 
     const resources = await captureResourceEvidence(page, 'sdk-primary-mounted');

@@ -6,6 +6,15 @@ import { describe, expect, it } from 'vitest';
 import { pinnedGrafanaSourcePlugin } from './pinnedGrafanaSourcePlugin';
 
 describe('provider-13 pinned Grafana source plugin', () => {
+  it('isolates the TestData namespace and refuses unreviewed files within its root', () => {
+    const plugin = pinnedGrafanaSourcePlugin({ entryAlias: 'grafana-provider13-testdata-runtime',
+      entrypoint: 'datasource.ts', sourceRoot: '/grafana/testdata', feature: 'testdata', reviewedFiles: ['datasource.ts'] });
+    const resolveId = plugin.resolveId as (source: string, importer?: string) => unknown;
+    const load = plugin.load as (id: string) => unknown;
+    expect(resolveId('grafana-provider13-testdata-runtime')).toBe('\0provider-13-pinned-grafana-source:testdata:datasource.ts.js');
+    expect(() => load('\0provider-13-pinned-grafana-source:testdata:module.tsx.js')).toThrow(/reviewed/i);
+    expect(load('\0provider-13-pinned-grafana-source:text:datasource.ts.js')).toBeNull();
+  });
   it('resolves only the exact Text renderer alias and its generated config import', () => {
     const root = mkdtempSync(join(tmpdir(), 'provider-13-source-'));
     try {

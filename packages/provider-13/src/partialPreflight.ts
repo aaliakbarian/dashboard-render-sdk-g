@@ -3,7 +3,8 @@ import type { ManifestValidationSuccess } from '@dashboard-render-sdk-g/provider
 import type { Grafana13DashboardV1, Grafana13JsonObject, Grafana13PreflightDiagnostic } from './contracts';
 import { cloneBoundedJson } from './dashboardApi';
 import { decodeGrafana13DashboardV1Value } from './dashboardDto';
-import type { Grafana13ConstantVariable, Grafana13PartialPreflightResult, Grafana13RenderablePanel, Grafana13TextPanelModel } from './partialContracts';
+import type { Grafana13ConstantVariable, Grafana13PartialPreflightResult, Grafana13RenderablePanel } from './partialContracts';
+import { classifyGrafana13PanelProfile } from './preflightProfiles';
 import { preflightGrafana13DashboardV1, validateGrid } from './staticPreflight';
 
 const layoutKeys = ['repeat', 'repeatDirection', 'maxPerRow', 'scopedVars', 'libraryPanel', 'collapsed', 'panels', 'rows', 'tabs'];
@@ -77,16 +78,9 @@ export function partialPreflightGrafana13DashboardV1(
     const checked = panel.type === 'text'
       ? preflightGrafana13DashboardV1({ ...dashboard, spec: { ...dashboard.spec, panels: [panel] } }, manifest)
       : undefined;
-    if (checked?.kind === 'match') {
-      const options = panel.options as Grafana13JsonObject;
-      const model: Grafana13TextPanelModel = Object.freeze({
-        fieldConfig: Object.freeze({ defaults: Object.freeze({}), overrides: Object.freeze([]) }),
-        id: identity.id, options: Object.freeze({
-          code: Object.freeze({ language: 'plaintext', showLineNumbers: false, showMiniMap: false }),
-          content: options.content as string, mode: 'markdown',
-        }), pluginVersion: '13.2.3', title: identity.title, type: 'text',
-      });
-      return Object.freeze({ ...identity, kind: 'supported', model, panelType: 'text', profile: 'text-markdown-view-v1' });
+    const profile = checked?.kind === 'match' ? classifyGrafana13PanelProfile(panel) : undefined;
+    if (profile?.kind === 'supported' && profile.profile === 'text-markdown-view-v1') {
+      return Object.freeze({ ...identity, kind: 'supported', model: profile.model, panelType: 'text', profile: profile.profile });
     }
     const diagnostics: readonly Grafana13PreflightDiagnostic[] = Object.freeze([Object.freeze({
       code: panel.type === 'text' ? 'panel.profile-unsupported' : 'panel.unsupported',
