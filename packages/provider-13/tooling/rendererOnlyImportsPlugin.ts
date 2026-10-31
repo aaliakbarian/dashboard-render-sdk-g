@@ -6,6 +6,8 @@ const prefix = '\0provider-13-pinned-grafana-source:native:';
 const leaves: Readonly<Record<string, string>> = {
   'ui-bar-gauge': '@grafana/ui/dist/esm/components/BarGauge/BarGauge.mjs',
   'ui-viz-legend': '@grafana/ui/dist/esm/components/VizLegend/VizLegend.mjs',
+  'ui-viz-legend-types': '@grafana/ui/dist/esm/components/VizLegend/types.mjs',
+  'ui-series-table': '@grafana/ui/dist/esm/components/VizTooltip/SeriesTable.mjs',
   'ui-big-value': '@grafana/ui/dist/esm/components/BigValue/BigValue.mjs',
   'ui-data-links-menu': '@grafana/ui/dist/esm/components/DataLinks/DataLinksContextMenu.mjs',
   'ui-repeater': '@grafana/ui/dist/esm/components/VizRepeater/VizRepeater.mjs',
@@ -21,6 +23,7 @@ const leaves: Readonly<Record<string, string>> = {
   'ui-measure-text': '@grafana/ui/dist/esm/utils/measureText.mjs',
   'ui-uplot-axis': '@grafana/ui/dist/esm/components/uPlot/config/UPlotAxisBuilder.mjs',
   'ui-uplot-types': '@grafana/ui/dist/esm/components/uPlot/types.mjs',
+  'ui-theme-mixins': '@grafana/ui/dist/esm/themes/mixins.mjs',
   'query-runner': '@grafana/scenes/dist/esm/querying/SceneQueryRunner.js',
   'data-transformer': '@grafana/scenes/dist/esm/querying/SceneDataTransformer.js',
   'convert-field': '@grafana/data/dist/esm/transformations/transformers/convertFieldType.mjs',
@@ -46,11 +49,14 @@ export function rendererOnlyImportsPlugin(options: { readonly providerRoot: stri
   const view = (name: string) => resolve(provider, 'tooling/viewOnly', name);
   return { name: 'provider-13-native-renderer-only-imports', enforce: 'pre', resolveId(source, importer) {
     const id = importer?.replaceAll('\\', '/').split('?')[0] ?? '';
+    if (source === '../Portal' && /\/node_modules\/@visx\/tooltip\/(?:esm|lib)\/hooks\/useTooltipInPortal\.js$/.test(id)) {
+      return view('controlledVisxPortal.tsx');
+    }
     if (source === 'uplot/dist/uPlot.min.css' && id === resolve(options.repositoryRoot, 'node_modules/@grafana/ui/dist/esm/components/uPlot/Plot.mjs').replaceAll('\\', '/')) return '\0provider-13-native-css-owned-by-scene';
     if (id === resolve(options.repositoryRoot, 'node_modules/@grafana/scenes/dist/esm/querying/SceneQueryRunner.js').replaceAll('\\', '/') && [
       '../variables/adhoc/AdHocFiltersVariable.js', '../variables/groupby/GroupByVariable.js', '../variables/DrilldownDependenciesManager.js',
     ].includes(source)) return view('queryInert.ts');
-    if (source === 'grafana-provider13-data-panel-plugin' && /^.+\/src\/panels\/(?:statPlugin|timeSeriesPlugin|gaugePlugin|barGaugePlugin|barChartPlugin)\.ts$/.test(id) && id.startsWith(`${provider}/`)) return resolve(options.repositoryRoot, 'node_modules/@grafana/data/dist/esm/panel/PanelPlugin.mjs');
+    if (source === 'grafana-provider13-data-panel-plugin' && /^.+\/src\/panels\/(?:statPlugin|timeSeriesPlugin|gaugePlugin|barGaugePlugin|pieChartPlugin|barChartPlugin)\.ts$/.test(id) && id.startsWith(`${provider}/`)) return resolve(options.repositoryRoot, 'node_modules/@grafana/data/dist/esm/panel/PanelPlugin.mjs');
     if (source === 'grafana-provider13-query-scenes' && id === `${provider}/src/runtime/implementation.tsx`) return view('queryScenes.ts');
     if (id.startsWith(`${provider}/tooling/viewOnly/`)) {
       if (source === 'grafana-provider13-native-radial-gauge') return `${prefix}packages/grafana-ui/src/components/RadialGauge/RadialGauge.tsx.js`;

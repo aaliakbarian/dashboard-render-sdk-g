@@ -19,6 +19,7 @@ describe.skipIf(!credentialsAvailable)('provider-13 real partial dashboard path'
   it.each([
     ['grsdk-phase0-poc', 3, 1, ['text', 'stat', 'table', 'timeseries']],
     ['grsdk-phase0-poc-alt', 1, 0, ['text']],
+    ['drsdk-g-phase2-visualizations', 7, 1, ['text', 'stat', 'gauge', 'bargauge', 'timeseries', 'table', 'piechart', 'barchart']],
   ] as const)('retrieves and classifies %s through health, discovery, and V1 DTO', async (
     uid,
     supportedPanelCount,
@@ -86,6 +87,10 @@ describe.skipIf(!credentialsAvailable)('provider-13 real partial dashboard path'
     expect(result.dashboard.panels.map(({ panelType }) => panelType)).toEqual(panelTypes);
     expect(result.dashboard.panels.filter(({ kind }) => kind === 'unsupported'))
       .toHaveLength(unsupportedPanelCount);
+    if (uid === 'drsdk-g-phase2-visualizations') {
+      expect(result.dashboard.panels.find(({ panelType }) => panelType === 'piechart'))
+        .toMatchObject({ kind: 'supported', panelType: 'piechart' });
+    }
     expect(observedPaths).toEqual([
       '/api/health',
       '/apis/dashboard.grafana.app/',

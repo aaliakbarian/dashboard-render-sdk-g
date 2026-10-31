@@ -1,11 +1,15 @@
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import ts from 'typescript';
 
 const exactOnePrefixes = Object.freeze({
+  featurePieChunks: 'assets/feature-piechart-',
   featureTextChunks: 'assets/feature-text-',
   hostReactChunks: 'assets/host-react-',
   providerImplementationChunks: 'assets/provider-implementation-',
+  providerPieChartChunks: 'assets/provider-piechart-source-',
+  providerPieChartDependencyChunks: 'assets/provider-piechart-dependencies-',
   providerReactDomWrappers: 'assets/provider-react-dom-external-',
   providerReactWrappers: 'assets/provider-react-external-',
 });
@@ -17,16 +21,80 @@ const forbiddenSourcePatterns = Object.freeze([
   /createElement\(\s*[`'"]iframe[`'"]\s*\)/i,
   /<iframe\b/i,
   /public\/app\/(?:routes|core\/navigation|core\/components\/AppChrome)/i,
-  /feature-(?:table|piechart)-/i,
+  /feature-table-/i,
 ]);
 
 function filesWithPrefix(files, prefix) {
   return [...files.keys()].filter((fileName) => fileName.startsWith(prefix));
 }
 
+const moduleAnalysisCache = new Map();
+
+function analyzeModuleSource(source) {
+  const text = source ?? '';
+  const cached = moduleAnalysisCache.get(text);
+  if (cached) return cached;
+  const staticImports = new Set();
+  const dynamicImports = new Set();
+  const reExports = new Set();
+  const sourceFile = ts.createSourceFile(
+    'bundle.js',
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.JS
+  );
+  for (const statement of sourceFile.statements) {
+    if (ts.isImportDeclaration(statement) && ts.isStringLiteralLike(statement.moduleSpecifier)) {
+      staticImports.add(statement.moduleSpecifier.text);
+    } else if (
+      ts.isExportDeclaration(statement) &&
+      statement.moduleSpecifier &&
+      ts.isStringLiteralLike(statement.moduleSpecifier)
+    ) {
+      reExports.add(statement.moduleSpecifier.text);
+    }
+  }
+  const visit = (node) => {
+    if (
+      ts.isCallExpression(node) &&
+      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      node.arguments.length >= 1 &&
+      ts.isStringLiteralLike(node.arguments[0])
+    ) {
+      dynamicImports.add(node.arguments[0].text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  const analysis = Object.freeze({
+    dynamicImports,
+    reExports,
+    staticImports,
+    valid: sourceFile.parseDiagnostics.length === 0,
+  });
+  moduleAnalysisCache.set(text, analysis);
+  return analysis;
+}
+
+function chunkSpecifier(fileName) {
+  return `./${path.basename(fileName)}`;
+}
+
 function hasDynamicImport(source, fileName) {
-  const escaped = path.basename(fileName).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`import\\s*\\(\\s*['\"\\\`]\\./${escaped}['\"\\\`]`).test(source ?? '');
+  return analyzeModuleSource(source).dynamicImports.has(chunkSpecifier(fileName));
+}
+
+function hasStaticImport(source, fileName) {
+  return analyzeModuleSource(source).staticImports.has(chunkSpecifier(fileName));
+}
+
+function hasStaticReExport(source, fileName) {
+  return analyzeModuleSource(source).reExports.has(chunkSpecifier(fileName));
+}
+
+function hasModuleReference(source, fileName) {
+  return hasStaticImport(source, fileName) || hasDynamicImport(source, fileName) || hasStaticReExport(source, fileName);
 }
 
 function allModuleIds(evidence) {
@@ -65,11 +133,45 @@ export function inspectHostBundleFiles(files, evidence) {
     exactOnePrefixes.providerImplementationChunks
   )[0];
   const textFile = filesWithPrefix(files, exactOnePrefixes.featureTextChunks)[0];
-  for (const id of ['stat', 'timeseries', 'gauge', 'bargauge', 'barchart']) {
+  for (const id of ['stat', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart']) {
     const nativeFiles = filesWithPrefix(files, `assets/feature-${id}-`);
     if (nativeFiles.length !== 1 || nativeFiles.some(file => !hasDynamicImport(files.get(implementationFile), file))) valid = false;
   }
-  if ([...files.keys()].some(file => /^assets\/feature-(?:table|piechart)-/.test(file))) valid = false;
+  if ([...files.keys()].some(file => /^assets\/feature-table-/.test(file))) valid = false;
+  const pieFeatureFile = filesWithPrefix(files, exactOnePrefixes.featurePieChunks)[0];
+  const pieSourceFile = filesWithPrefix(files, exactOnePrefixes.providerPieChartChunks)[0];
+  const pieDependenciesFile = filesWithPrefix(
+    files,
+    exactOnePrefixes.providerPieChartDependencyChunks
+  )[0];
+  const pieSources = [implementationFile, pieFeatureFile, pieSourceFile, pieDependenciesFile]
+    .map((fileName) => files.get(fileName));
+  if (
+    !implementationFile ||
+    !pieFeatureFile ||
+    !pieSourceFile ||
+    !pieDependenciesFile ||
+    pieSources.some((source) => !analyzeModuleSource(source).valid) ||
+    !hasStaticImport(files.get(pieFeatureFile), pieSourceFile) ||
+    !hasStaticImport(files.get(pieSourceFile), pieDependenciesFile) ||
+    hasStaticImport(files.get(implementationFile), pieFeatureFile) ||
+    hasStaticReExport(files.get(implementationFile), pieFeatureFile) ||
+    hasDynamicImport(files.get(pieFeatureFile), pieSourceFile) ||
+    hasStaticReExport(files.get(pieFeatureFile), pieSourceFile) ||
+    hasDynamicImport(files.get(pieSourceFile), pieDependenciesFile) ||
+    hasStaticReExport(files.get(pieSourceFile), pieDependenciesFile) ||
+    hasModuleReference(files.get(implementationFile), pieSourceFile) ||
+    hasModuleReference(files.get(implementationFile), pieDependenciesFile) ||
+    hasModuleReference(files.get(pieFeatureFile), implementationFile) ||
+    hasModuleReference(files.get(pieFeatureFile), pieDependenciesFile) ||
+    hasModuleReference(files.get(pieSourceFile), implementationFile) ||
+    hasModuleReference(files.get(pieSourceFile), pieFeatureFile) ||
+    hasModuleReference(files.get(pieDependenciesFile), implementationFile) ||
+    hasModuleReference(files.get(pieDependenciesFile), pieFeatureFile) ||
+    hasModuleReference(files.get(pieDependenciesFile), pieSourceFile)
+  ) {
+    valid = false;
+  }
   const reactWrapperFile = filesWithPrefix(files, exactOnePrefixes.providerReactWrappers)[0];
   const reactDomWrapperFile = filesWithPrefix(
     files,

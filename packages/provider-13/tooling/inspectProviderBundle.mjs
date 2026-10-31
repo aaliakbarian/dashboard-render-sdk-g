@@ -30,6 +30,10 @@ const expectedSources = [
   'public/app/plugins/panel/barchart/panelcfg.gen.ts',
   'public/app/plugins/panel/barchart/quadtree.ts',
   'public/app/plugins/panel/barchart/utils.ts',
+  'public/app/plugins/panel/piechart/PieChartPanel.tsx',
+  'public/app/plugins/panel/piechart/PieChart.tsx',
+  'public/app/plugins/panel/piechart/panelcfg.gen.ts',
+  'public/app/plugins/panel/piechart/utils.ts',
   'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx',
   'public/app/plugins/panel/timeseries/TimeSeriesTooltip.tsx',
   'public/app/plugins/panel/timeseries/plugins/OutsideRangePlugin.tsx',
@@ -67,7 +71,7 @@ for (const chunk of report.chunks) {
 }
 const duplicateCohortOwners = [...owners]
   .filter(([moduleId, chunkOwners]) =>
-    /\/node_modules\/(?:@grafana\/|@emotion\/|rxjs\/|uplot\/)/.test(moduleId) &&
+    /\/node_modules\/(?:@grafana\/|@emotion\/|@visx\/|rxjs\/|uplot\/)/.test(moduleId) &&
     new Set(chunkOwners).size > 1
   )
   .map(([moduleId]) => moduleId);
@@ -81,6 +85,16 @@ const cohortPackages = new Set([
   '@grafana/scenes',
   '@grafana/schema',
   '@grafana/ui',
+  '@visx/bounds',
+  '@visx/curve',
+  '@visx/event',
+  '@visx/gradient',
+  '@visx/group',
+  '@visx/point',
+  '@visx/scale',
+  '@visx/shape',
+  '@visx/tooltip',
+  '@visx/vendor',
   'rxjs',
   'uplot',
 ]);

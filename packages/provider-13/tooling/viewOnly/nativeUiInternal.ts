@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+
 export { PlotLegend } from 'grafana-provider13-native-plot-legend';
 export { UPlotChart } from 'grafana-provider13-native-uplot-chart';
 export { UPlotConfigBuilder } from 'grafana-provider13-native-uplot-config';
@@ -7,4 +9,11 @@ export { hasVisibleLegendSeries } from 'grafana-provider13-native-plot-legend';
 export { TooltipHoverMode } from 'grafana-provider13-native-tooltip-plugin';
 export { getDisplayValuesForCalcs, getStackingGroups, pluginLog, preparePlotData2 } from 'grafana-provider13-native-uplot-utils';
 export { UPLOT_AXIS_FONT_SIZE, timeUnitSize } from 'grafana-provider13-native-ui-uplot-axis';
+export { getTooltipContainerStyles } from 'grafana-provider13-native-ui-theme-mixins';
+let componentInstanceId = 0;
+export function useComponentInstanceId(prefix: string): string {
+  const idRef = useRef<string | null>(null);
+  if (idRef.current === null) idRef.current = `${prefix}${componentInstanceId++}`;
+  return idRef.current;
+}
 export const FILTER_FOR_OPERATOR = '=';

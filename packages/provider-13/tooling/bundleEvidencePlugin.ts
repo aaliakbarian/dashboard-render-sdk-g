@@ -82,6 +82,16 @@ const cohortPackages = new Set([
   '@grafana/scenes',
   '@grafana/schema',
   '@grafana/ui',
+  '@visx/bounds',
+  '@visx/curve',
+  '@visx/event',
+  '@visx/gradient',
+  '@visx/group',
+  '@visx/point',
+  '@visx/scale',
+  '@visx/shape',
+  '@visx/tooltip',
+  '@visx/vendor',
   'rxjs',
   'uplot',
 ]);
@@ -109,7 +119,7 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     .map((id) => id.slice('<grafana-source>/'.length))
     .sort();
   const hasQuerySource = applicationSources.some(id => id.includes('/datasource/'));
-  const hasNativeSource = applicationSources.some(id => /\/panel\/(?:stat|timeseries|gauge|bargauge|barchart)\//.test(id));
+  const hasNativeSource = applicationSources.some(id => /\/panel\/(?:stat|timeseries|gauge|bargauge|piechart|barchart)\//.test(id));
   const nativeUiProvenance = inspectNativeUiProvenance(report);
   const nativeUiSources = nativeUiProvenance.loadedSources.map(id => id.slice('<grafana-source>/'.length));
   const expectedSources = [...GRAFANA_13_APPLICATION_SOURCES, ...(hasQuerySource ? GRAFANA_13_TESTDATA_SOURCES : []), ...(hasNativeSource ? GRAFANA_13_NATIVE_SOURCES : [])].sort();
@@ -144,7 +154,7 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     (!hasNativeSource && /\/querying\/(?:SceneQueryRunner|RuntimeDataSource)\.(?:m?js)$/.test(id)) ||
     (!hasQuerySource && /\/services\/dataSourceSrv\.mjs$/.test(id))
   );
-  const nativeFeatures = ['stat', 'timeseries', 'gauge', 'bargauge', 'barchart'];
+  const nativeFeatures = ['stat', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart'];
   const auditedCrossFeatureSources = new Set([
     '<grafana-source>/public/app/plugins/panel/timeseries/TimeSeriesTooltip.tsx',
     '<grafana-source>/public/app/plugins/panel/timeseries/utils.ts',
@@ -208,7 +218,7 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
   }
   const duplicateCohortOwners = [...owners]
     .filter(([moduleId, chunkOwners]) =>
-      /\/node_modules\/(?:@grafana\/|@emotion\/|rxjs\/|uplot\/)/.test(moduleId) &&
+      /\/node_modules\/(?:@grafana\/|@emotion\/|@visx\/|rxjs\/|uplot\/)/.test(moduleId) &&
       new Set(chunkOwners).size > 1
     )
     .map(([moduleId]) => moduleId);

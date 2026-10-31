@@ -14,9 +14,10 @@ declare const signal: AbortSignal;
 type ActivePanelType = Extract<Grafana13RenderablePanel, { kind: 'supported' }>['panelType'];
 const gaugePanelType: ActivePanelType = 'gauge';
 const barGaugePanelType: ActivePanelType = 'bargauge';
+const pieChartPanelType: ActivePanelType = 'piechart';
 // @ts-expect-error blocked Table remains outside executable models
 const tablePanelType: ActivePanelType = 'table';
-void gaugePanelType; void barGaugePanelType; void tablePanelType;
+void gaugePanelType; void barGaugePanelType; void pieChartPanelType; void tablePanelType;
 
 const input: Grafana13PartialDashboardLoadInput = {
   manifest, namespace: 'default', requestIds: { dashboard: 'dashboard', discovery: 'discovery', health: 'health' },

@@ -10,6 +10,7 @@ export const PANEL_MODULE_IDENTITIES = Object.freeze({
   timeseries: 'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx',
   gauge: 'public/app/plugins/panel/gauge/GaugePanel.tsx',
   bargauge: 'public/app/plugins/panel/bargauge/BarGaugePanel.tsx',
+  piechart: 'public/app/plugins/panel/piechart/PieChartPanel.tsx',
   barchart: 'public/app/plugins/panel/barchart/BarChartPanel.tsx',
 } as const);
 type PanelId = keyof typeof PANEL_MODULE_IDENTITIES;
@@ -64,7 +65,7 @@ export class Grafana13PanelPluginLoadError extends Error {
 }
 
 function attachMetadata(plugin: PanelPlugin, id: PanelId): PanelPlugin {
-  const name = { text: 'Text', stat: 'Stat', timeseries: 'Time series', gauge: 'Gauge', bargauge: 'Bar gauge', barchart: 'Bar chart' }[id];
+  const name = { text: 'Text', stat: 'Stat', timeseries: 'Time series', gauge: 'Gauge', bargauge: 'Bar gauge', piechart: 'Pie chart', barchart: 'Bar chart' }[id];
   plugin.meta = {
     ...plugin.meta,
     baseUrl: '',
@@ -95,6 +96,7 @@ export function createGrafana13TextPanelCatalog(options: {
   readonly loadTimeSeriesPlugin?: () => Promise<PanelPlugin>;
   readonly loadGaugePlugin?: () => Promise<PanelPlugin>;
   readonly loadBarGaugePlugin?: () => Promise<PanelPlugin>;
+  readonly loadPieChartPlugin?: () => Promise<PanelPlugin>;
   readonly loadBarChartPlugin?: () => Promise<PanelPlugin>;
 }): Grafana13TextPanelCatalog {
   const pending = new Map<PanelId, Promise<PanelPlugin>>();
@@ -105,6 +107,7 @@ export function createGrafana13TextPanelCatalog(options: {
     timeseries: options.loadTimeSeriesPlugin ?? (() => import('./timeSeriesPlugin').then(m => m.grafana13TimeSeriesPanelPlugin)),
     gauge: options.loadGaugePlugin ?? (() => import('./gaugePlugin').then(m => m.grafana13GaugePanelPlugin)),
     bargauge: options.loadBarGaugePlugin ?? (() => import('./barGaugePlugin').then(m => m.grafana13BarGaugePanelPlugin)),
+    piechart: options.loadPieChartPlugin ?? (() => import('./pieChartPlugin').then(m => m.grafana13PieChartPanelPlugin)),
     barchart: options.loadBarChartPlugin ?? (() => import('./barChartPlugin').then(m => m.grafana13BarChartPanelPlugin)),
   };
 

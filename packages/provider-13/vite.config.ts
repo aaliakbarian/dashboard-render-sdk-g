@@ -19,6 +19,7 @@ import { textRendererOnlyImportsPlugin } from './tooling/textRendererOnlyImports
 import { queryRuntimeImportsPlugin } from './tooling/queryRuntimeImportsPlugin.ts';
 import { rendererOnlyImportsPlugin } from './tooling/rendererOnlyImportsPlugin.ts';
 import { GRAFANA_13_NATIVE_SOURCES, GRAFANA_13_NATIVE_UI_SOURCES } from './tooling/sourceIdentity.ts';
+import { providerCohortChunk } from './tooling/providerCohortChunk.ts';
 
 const providerRoot = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(providerRoot, '../..');
@@ -44,57 +45,6 @@ assertGrafana13SourceIdentity({
 });
 
 const textSourceRoot = resolve(grafanaSourceRoot, 'public/app/plugins/panel/text');
-
-function providerCohortChunk(id: string): string | undefined {
-  const normalized = id.replaceAll('\\', '/');
-  if (/native:public\/app\/plugins\/panel\/timeseries\/(?:TimeSeriesTooltip\.tsx|utils\.ts)(?:\.js)?$/.test(normalized)) return 'provider-timeseries-shared';
-  if (/\/(?:src\/panels\/gaugePlugin|tooling\/viewOnly\/gaugeUiInternal)\.ts$/.test(normalized) || normalized.includes('native:public/app/plugins/panel/gauge/') || normalized.includes('native:packages/grafana-ui/src/components/RadialGauge/')) return 'provider-gauge';
-  if (/\/(?:src\/panels\/barGaugePlugin|tooling\/viewOnly\/barGaugeUiInternal)\.ts$/.test(normalized) || normalized.includes('native:public/app/plugins/panel/bargauge/')) return 'provider-bargauge';
-  if (/\/src\/panels\/barChartPlugin\.ts$/.test(normalized) || normalized.includes('native:public/app/plugins/panel/barchart/')) return 'provider-barchart';
-  if (/\/src\/panels\/statPlugin\.ts$/.test(normalized) || normalized.includes('native:public/app/plugins/panel/stat/')) return 'provider-stat';
-  if (/\/src\/panels\/timeSeries(?:Plugin|Config)\.ts$/.test(normalized) || /native:public\/app\/(?:plugins\/panel\/timeseries\/|core\/components\/(?:TimeSeries|GraphNG)\/)/.test(normalized)) return 'provider-timeseries';
-  if (/\/viewOnly\/native(?:Inert|UiInternal)\.tsx?$/.test(normalized)) return 'provider-native-visualization';
-  if (normalized.includes('native:packages/grafana-data/')) return 'provider-grafana';
-  if (/\/viewOnly\/nativeDataInternal\.ts$/.test(normalized)) return 'provider-grafana';
-  if (/\/viewOnly\/nativeUi\.ts$/.test(normalized)) return 'provider-native-visualization';
-  if (/\/node_modules\/@grafana\/ui\/dist\/esm\/(?:components\/(?:BigValue|BarGauge|Sparkline|VizRepeater|uPlot|VizLegend|VizLayout|VizTooltip|ColorPicker|ColorSwatch)\/|graveyard\/GraphNG\/|utils\/measureText\.mjs)/.test(normalized)) return 'provider-native-visualization';
-  if (/\/node_modules\/(?:react-aria|react-stately|react-colorful)\//.test(normalized)) return 'provider-visualization-dependencies';
-  if (normalized.includes('builtin:esm-external-require-react-dom')) {
-    return 'provider-react-dom-external';
-  }
-  if (normalized.includes('builtin:esm-external-require-react')) {
-    return 'provider-react-external';
-  }
-  if (normalized.includes('/node_modules/tslib/')) return 'provider-tslib';
-  if (normalized.includes('/node_modules/uuid/')) return 'provider-uuid';
-  // Keep generic query dependencies out of the lazy application-source chunk.
-  // Otherwise the shared Runtime cohort gains a static edge into TestData.
-  if (/\/node_modules\/(?:@openfeature\/|d3-random\/)/.test(normalized)) return 'provider-query-dependencies';
-  if (
-    /\/node_modules\/(?:clsx|fast-equals|prop-types|react-draggable|react-grid-layout|react-resizable|react-use|resize-observer-polyfill)\//.test(
-      normalized
-    )
-  ) {
-    return 'provider-scenes-dependencies';
-  }
-  if (normalized.includes('/node_modules/@grafana/scenes/')) return 'provider-scenes';
-  if (
-    /\/node_modules\/@grafana\/(?:data|ui|runtime|schema|i18n|e2e-selectors)\//.test(normalized)
-  ) {
-    return 'provider-grafana';
-  }
-  if (normalized.includes('/node_modules/rxjs/')) return 'provider-rxjs';
-  if (
-    normalized.includes('/node_modules/@emotion/') ||
-    normalized.includes('/node_modules/stylis/') ||
-    normalized.includes('/node_modules/hoist-non-react-statics/') ||
-    normalized.includes('/node_modules/react-is/')
-  ) {
-    return 'provider-emotion';
-  }
-  if (normalized.includes('/node_modules/uplot/')) return 'provider-visualization';
-  return undefined;
-}
 
 export default defineConfig({
   root: repositoryRoot,
@@ -134,6 +84,7 @@ export default defineConfig({
       ['grafana-provider13-timeseries-renderer', 'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx'],
       ['grafana-provider13-gauge-renderer', 'public/app/plugins/panel/gauge/GaugePanel.tsx'],
       ['grafana-provider13-bargauge-renderer', 'public/app/plugins/panel/bargauge/BarGaugePanel.tsx'],
+      ['grafana-provider13-piechart-renderer', 'public/app/plugins/panel/piechart/PieChartPanel.tsx'],
       ['grafana-provider13-barchart-renderer', 'public/app/plugins/panel/barchart/BarChartPanel.tsx'],
       ['grafana-provider13-native-null-to-undef', 'packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts'],
     ].map(([entryAlias, entrypoint]) => pinnedGrafanaSourcePlugin({
@@ -165,6 +116,11 @@ export default defineConfig({
       '@grafana/scenes',
       '@grafana/schema',
       '@grafana/ui',
+      '@visx/event',
+      '@visx/gradient',
+      '@visx/group',
+      '@visx/shape',
+      '@visx/tooltip',
       'rxjs',
       'uplot',
     ],

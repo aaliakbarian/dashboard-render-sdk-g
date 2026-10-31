@@ -6,6 +6,8 @@ export { UPlotConfigBuilder } from 'grafana-provider13-native-uplot-config';
 export { UPLOT_AXIS_FONT_SIZE } from 'grafana-provider13-native-ui-uplot-axis';
 export { measureText } from 'grafana-provider13-native-ui-measure-text';
 export { VizLegend } from 'grafana-provider13-native-ui-viz-legend';
+export { SeriesVisibilityChangeBehavior } from 'grafana-provider13-native-ui-viz-legend-types';
+export { SeriesTable } from 'grafana-provider13-native-ui-series-table';
 export { BigValue } from 'grafana-provider13-native-ui-big-value';
 export { DataLinksContextMenu } from 'grafana-provider13-native-ui-data-links-menu';
 export { VizRepeater } from 'grafana-provider13-native-ui-repeater';
