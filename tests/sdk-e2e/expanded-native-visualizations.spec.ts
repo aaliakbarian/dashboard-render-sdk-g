@@ -175,7 +175,7 @@ test('cancels held native query generations and consumes late real responses aft
   } finally { release(); await session.cleanup(); }
 });
 
-test('keeps Table and Pie inert while all five admitted native query panels render independently', async ({ page }) => {
+test('keeps Table inert while all six admitted native query panels render independently', async ({ page }) => {
   const session = await authenticateGrafanaFixture(page);
   try {
     const guard = await installConsoleGuard(page); let queries = 0;
@@ -186,9 +186,10 @@ test('keeps Table and Pie inert while all five admitted native query panels rend
     await expect(page.getByText('Phase 2 Pulse Signal', { exact: true })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Gauge — predictable pulse' }).getByRole('img', { name: 'Gauge', exact: true })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Bar gauge — predictable pulse' })).toContainText('%');
+    await expect(page.getByRole('region', { name: 'Pie chart — predictable pulse' }).locator('svg path')).not.toHaveCount(0);
     await expect(page.getByRole('region', { name: 'Bar chart — predictable pulse' }).locator('.uplot canvas')).not.toHaveCount(0);
-    await expect(page.locator('[data-dashboard-panel-kind="not-supported"]')).toHaveCount(2);
-    expect(queries).toBe(7);
+    await expect(page.locator('[data-dashboard-panel-kind="not-supported"]')).toHaveCount(1);
+    expect(queries).toBe(8);
     await guard.assertClean();
   } finally { await session.cleanup(); }
 });

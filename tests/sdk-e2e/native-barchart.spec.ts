@@ -76,6 +76,7 @@ test('keeps Pie and rejected Bar profiles inert and query-free', async ({ page }
     const guard = await installConsoleGuard(page); const requests: string[] = [];
     page.on('request', request => requests.push(new URL(request.url()).pathname));
     await selectPanels(page, ['piechart', 'barchart'], panels => {
+      panels.find(panel => panel.type === 'piechart').options.pieType = 'donut';
       panels.find(panel => panel.type === 'barchart').options.stacking = 'normal';
     });
     await page.goto('/');

@@ -40,12 +40,15 @@ test('real PKCE and independent Viewer session render the supported catalogue an
   expect(arcLengths).toHaveLength(2);
   expect(arcLengths.every(length => length > 0)).toBe(true);
   await expect(page.getByRole('region', { name: 'Bar gauge — predictable pulse' }).getByTestId(selectors.components.Panels.Visualization.BarGauge.valueV2)).toHaveText(/(?:10|90)%/);
+  const pie = page.getByRole('region', { name: 'Pie chart — predictable pulse' });
+  await expect(pie.getByTestId(selectors.components.Panels.Visualization.PieChart.svgSlice)).toHaveCount(1);
+  await expect(pie.getByTestId(selectors.components.Panels.Visualization.PieChart.svgLabel)).toContainText('Phase 2 Pulse Raw');
   await expect(page.getByRole('region', { name: 'Bar chart — predictable pulse' }).locator('.uplot canvas')).not.toHaveCount(0);
   const placeholders = page.locator('[data-dashboard-panel-kind="not-supported"]');
-  await expect(placeholders).toHaveCount(2);
-  for (const title of ['Table', 'Pie chart']) await expect(placeholders.filter({ hasText: `${title} — predictable pulse` })).toContainText('Not-Supported');
-  await expect.poll(() => evidence.frames.length).toBe(5);
-  expect(evidence.queryPanels.sort()).toEqual(['2', '3', '5', '6', '8']);
+  await expect(placeholders).toHaveCount(1);
+  await expect(placeholders.filter({ hasText: 'Table — predictable pulse' })).toContainText('Not-Supported');
+  await expect.poll(() => evidence.frames.length).toBe(6);
+  expect(evidence.queryPanels.sort()).toEqual(['2', '3', '5', '6', '7', '8']);
   for (const frame of evidence.frames) {
     expect(frame.types).toEqual(['time', 'number']);
     expect(frame.values[0].length).toBe(frame.values[1].length);
@@ -54,6 +57,7 @@ test('real PKCE and independent Viewer session render the supported catalogue an
   }
   expect(evidence.paths).toContain(dashboardPath);
   expect(evidence.paths).toContain('<provider-barchart-asset>');
+  expect(evidence.paths).toContain('<provider-piechart-asset>');
   expect(evidence.paths).not.toContain('<unsupported-panel-asset>');
   expect(evidence.statuses.some(entry => entry.path === '/grafana/api/user' && entry.status === 401)).toBe(true);
   expect(evidence.statuses.some(entry => entry.path === '/grafana/api/user' && entry.status === 200)).toBe(true);
@@ -81,8 +85,8 @@ test('real PKCE and independent Viewer session render the supported catalogue an
   await page.getByRole('button', { name: 'Phase 2 visualizations', exact: true }).click();
   await expect(page.getByTestId('TextPanel-converted-content')).toContainText('Phase 2 native visualizations');
   await expect(page.getByLabel('Dashboard UID', { exact: true })).toHaveValue(uid);
-  await expect.poll(() => evidence.frames.length).toBe(10);
-  expect(evidence.queryPanels.sort()).toEqual(['2', '2', '3', '3', '5', '5', '6', '6', '8', '8']);
+  await expect.poll(() => evidence.frames.length).toBe(12);
+  expect(evidence.queryPanels.sort()).toEqual(['2', '2', '3', '3', '5', '5', '6', '6', '7', '7', '8', '8']);
   expect(evidence.documents()).toBe(documents);
   expect(page.url()).toBe(`${origin}/`);
   await expect(page.locator('iframe')).toHaveCount(0);

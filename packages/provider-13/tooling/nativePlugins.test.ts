@@ -18,6 +18,10 @@ describe('pinned native renderer-only entries', () => {
     expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/barchart/distribute.ts');
     expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/barchart/quadtree.ts');
     expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/barchart/panelcfg.gen.ts');
+    expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/piechart/PieChartPanel.tsx');
+    expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/piechart/PieChart.tsx');
+    expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/piechart/panelcfg.gen.ts');
+    expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/piechart/utils.ts');
     expect(GRAFANA_13_NATIVE_UI_SOURCES).toEqual([
       'RadialGauge.tsx', 'RadialBar.tsx', 'RadialBarSegmented.tsx', 'RadialArcPath.tsx',
       'RadialArcPathEndpointMarks.tsx', 'RadialScaleLabels.tsx', 'RadialSparkline.tsx',
@@ -29,6 +33,7 @@ describe('pinned native renderer-only entries', () => {
       ['timeSeriesPlugin.ts', 'grafana-provider13-timeseries-renderer', 'TimeSeriesPanel'],
       ['gaugePlugin.ts', 'grafana-provider13-gauge-renderer', 'GaugePanel'],
       ['barGaugePlugin.ts', 'grafana-provider13-bargauge-renderer', 'BarGaugePanel'],
+      ['pieChartPlugin.ts', 'grafana-provider13-piechart-renderer', 'PieChartPanel'],
       ['barChartPlugin.ts', 'grafana-provider13-barchart-renderer', 'BarChartPanel'],
     ]) {
       const source = readFileSync(`packages/provider-13/src/panels/${file}`, 'utf8');
@@ -42,6 +47,11 @@ describe('pinned native renderer-only entries', () => {
       '@visx/event', '@visx/gradient', '@visx/group', '@visx/shape/lib/shapes/Pie',
       '@visx/tooltip', '@visx/tooltip/lib/hooks/useTooltip',
     ]);
-    expect(GRAFANA_13_NATIVE_SOURCES.some(source => source.includes('/piechart/'))).toBe(false);
+    expect(GRAFANA_13_NATIVE_SOURCES.filter(source => source.includes('/piechart/'))).toEqual([
+      'public/app/plugins/panel/piechart/PieChartPanel.tsx',
+      'public/app/plugins/panel/piechart/PieChart.tsx',
+      'public/app/plugins/panel/piechart/panelcfg.gen.ts',
+      'public/app/plugins/panel/piechart/utils.ts',
+    ]);
   });
 });

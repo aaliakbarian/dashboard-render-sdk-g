@@ -29,7 +29,7 @@ it.skipIf(!user || !password)('retrieves the live native profiles without materi
   }
 });
 
-it.skipIf(!user || !password)('retrieves exact live Gauge/Bar gauge/Bar chart DTOs and leaves Table/Pie fallback under the shipped manifest', async () => {
+it.skipIf(!user || !password)('retrieves exact live Gauge/Bar gauge/Pie/Bar chart DTOs and leaves only Table fallback under the shipped manifest', async () => {
   const uid = 'drsdk-g-phase2-visualizations';
   const response = await fetch(`http://grafana:3000/apis/dashboard.grafana.app/v1/namespaces/default/dashboards/${uid}/dto`, {
     headers: { Authorization: `Basic ${btoa(`${user}:${password}`)}` }, redirect: 'error',
@@ -42,19 +42,23 @@ it.skipIf(!user || !password)('retrieves exact live Gauge/Bar gauge/Bar chart DT
     expect(differencePaths(panel, expected), `${type} changed material paths only`).toEqual(['$.fieldConfig.defaults.thresholds.steps.0.value']);
     expect(classifyGrafana13PanelProfile(panel).kind).toBe('supported');
   }
-  const barChart = dto.spec.panels.find((panel: any) => panel.type === 'barchart');
-  const expectedBarChart = fixtureDashboard(uid).spec.panels.find(panel => panel.type === 'barchart');
-  expect(differencePaths(barChart, expectedBarChart)).toEqual([]);
-  expect(classifyGrafana13PanelProfile(barChart).kind).toBe('supported');
+  for (const type of ['piechart', 'barchart']) {
+    const panel = dto.spec.panels.find((candidate: any) => candidate.type === type);
+    const expected = fixtureDashboard(uid).spec.panels.find(candidate => candidate.type === type);
+    expect(differencePaths(panel, expected), `${type} must match the exact fixture profile`).toEqual([]);
+    expect(classifyGrafana13PanelProfile(panel).kind).toBe('supported');
+  }
   const manifest = validateProviderCompatibilityManifest(grafana13Provider.manifest);
   if (!manifest.valid) throw new Error('Expected shipped manifest');
   const decoded = decodeGrafana13DashboardV1Value(dto, { namespace: 'default', requestId: 'expanded-live-dto', uid });
   expect(decoded.kind).toBe('success');
   if (decoded.kind !== 'success') throw new Error('Expected decoded live DTO');
   const result = partialPreflightGrafana13DashboardV1(decoded.value, manifest);
-  expect(result).toMatchObject({ kind: 'renderable', supportedPanelCount: 6, unsupportedPanelCount: 2 });
+  expect(result).toMatchObject({ kind: 'renderable', supportedPanelCount: 7, unsupportedPanelCount: 1 });
   if (result.kind === 'renderable') {
-    expect(result.panels.filter(p => p.kind === 'supported').map(p => p.panelType)).toContain('barchart');
-    expect(result.panels.filter(p => p.kind === 'unsupported').map(p => p.panelType)).toEqual(['table', 'piechart']);
+    expect(result.panels.filter(p => p.kind === 'supported').map(p => p.panelType)).toEqual([
+      'text', 'stat', 'gauge', 'bargauge', 'timeseries', 'piechart', 'barchart',
+    ]);
+    expect(result.panels.filter(p => p.kind === 'unsupported').map(p => p.panelType)).toEqual(['table']);
   }
 });

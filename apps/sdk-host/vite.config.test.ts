@@ -6,6 +6,9 @@ describe('SDK host provider artifact chunk ownership', () => {
   it.each([
     ['provider-stat-AbCdEf12.js', 'feature-stat'],
     ['provider-barchart-AbCdEf12.js', 'feature-barchart'],
+    ['provider-piechart-dependencies-AbCdEf12.js', 'provider-piechart-dependencies'],
+    ['provider-piechart-AbCdEf12.js', 'provider-piechart-source'],
+    ['pieChartPlugin-AbCdEf12.js', 'feature-piechart'],
     ['provider-timeseries-shared-AbCdEf12.js', 'provider-timeseries-shared'],
     ['provider-timeseries-AbCdEf12.js', 'feature-timeseries'],
     ['provider-native-visualization-AbCdEf12.js', 'provider-native-visualization'],

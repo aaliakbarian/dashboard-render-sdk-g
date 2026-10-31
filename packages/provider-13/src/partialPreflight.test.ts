@@ -29,8 +29,8 @@ describe('closed native partial preflight', () => {
       kind: 'unsupported',
       diagnostics: [{ code: 'panel.unsupported', message: 'The panel is outside the verified view profile.' }],
     });
-    expect(result.supportedPanelCount).toBe(5);
-    expect(result.unsupportedPanelCount).toBe(3);
+    expect(result.supportedPanelCount).toBe(6);
+    expect(result.unsupportedPanelCount).toBe(2);
   });
   it('admits only the exact executable barchart profile and keeps a changed profile query-free', () => {
     const type = 'barchart';
@@ -46,14 +46,20 @@ describe('closed native partial preflight', () => {
     expect(panel).toMatchObject({ kind: 'unsupported', panelType: type });
     expect(JSON.stringify(panel)).not.toMatch(/query|targets|datasource|transformations/);
   });
-  it('keeps Pie inert even when its exact private DTO profile validates', () => {
+  it('admits only the exact executable Pie profile and keeps a changed profile query-free', () => {
     const dashboard = fixtureDashboard('drsdk-g-phase2-visualizations');
     expect(classifyGrafana13PanelProfile(dashboard.spec.panels.find(panel => panel.type === 'piechart'))).toMatchObject({ kind: 'supported' });
     const result = provider.partialPreflightGrafana13DashboardV1(dashboard, manifest());
-    if (result.kind !== 'renderable') throw new Error('Expected panel fallback');
+    if (result.kind !== 'renderable') throw new Error('Expected exact profile');
     const pie = result.panels.find(panel => panel.panelType === 'piechart');
-    expect(pie).toMatchObject({ kind: 'unsupported', panelType: 'piechart' });
-    expect(JSON.stringify(pie)).not.toMatch(/query|targets|datasource|transformations/);
+    expect(pie).toMatchObject({ kind: 'supported', panelType: 'piechart', model: { type: 'piechart' } });
+    const changed: any = structuredClone(dashboard);
+    changed.spec.panels.find((panel: any) => panel.type === 'piechart').options.pieType = 'donut';
+    const rejected = provider.partialPreflightGrafana13DashboardV1(changed, manifest());
+    if (rejected.kind !== 'renderable') throw new Error('Expected panel fallback');
+    const rejectedPie = rejected.panels.find(panel => panel.panelType === 'piechart');
+    expect(rejectedPie).toMatchObject({ kind: 'unsupported', panelType: 'piechart' });
+    expect(JSON.stringify(rejectedPie)).not.toMatch(/query|targets|datasource|transformations/);
   });
   it('admits only native Stat/Time series candidate profiles with explicit manifest coverage', () => {
     const candidate = validateProviderCompatibilityManifest({ ...provider.grafana13Provider.manifest, capabilities: {
@@ -86,7 +92,7 @@ describe('closed native partial preflight', () => {
       { grid: { height: 10, width: 8, x: 16, y: 0 }, id: 4, index: 3, kind: 'unsupported', panelType: 'table' },
     ]);
     expect(provider.grafana13Provider.manifest.capabilities).toEqual({
-      datasources: ['grafana-testdata-datasource'], panels: ['text', 'stat', 'timeseries', 'gauge', 'bargauge', 'barchart'], transformations: { allowEmptyPipeline: true, ids: ['renameByRegex'], maxChainLength: 1 },
+      datasources: ['grafana-testdata-datasource'], panels: ['text', 'stat', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart'], transformations: { allowEmptyPipeline: true, ids: ['renameByRegex'], maxChainLength: 1 },
     });
     for (const panel of result.panels.filter(p => p.kind === 'unsupported')) {
       expect(Object.keys(panel).sort()).toEqual(['diagnostics', 'grid', 'id', 'index', 'kind', 'panelType', 'title']);
