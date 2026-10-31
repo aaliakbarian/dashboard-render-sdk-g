@@ -87,7 +87,7 @@ interface PanelIdentity {
 
 export type Grafana13RenderablePanel =
   | (PanelIdentity & { readonly kind: 'supported'; readonly profile: 'text-markdown-view-v1'; readonly panelType: 'text'; readonly model: Grafana13TextPanelModel })
-  | (PanelIdentity & { readonly kind: 'supported'; readonly profile: 'predictable-pulse-view-v1'; readonly panelType: 'stat' | 'timeseries' | 'gauge' | 'bargauge'; readonly model: Grafana13StatPanelModel | Grafana13TimeSeriesPanelModel | Grafana13GaugePanelModel | Grafana13BarGaugePanelModel })
+  | (PanelIdentity & { readonly kind: 'supported'; readonly profile: 'predictable-pulse-view-v1'; readonly panelType: 'stat' | 'timeseries' | 'gauge' | 'bargauge' | 'barchart'; readonly model: Grafana13StatPanelModel | Grafana13TimeSeriesPanelModel | Grafana13GaugePanelModel | Grafana13BarGaugePanelModel | Grafana13BarChartPanelModel })
   | (PanelIdentity & { readonly kind: 'unsupported'; readonly diagnostics: readonly Grafana13PreflightDiagnostic[] });
 
 export type Grafana13PartialPreflightResult =

@@ -16,7 +16,7 @@ particular proxy prefix. Retrieval/classification imports no React or Grafana
 implementation. The separately lazy renderer uses the pinned Grafana/Scenes
 cohort and host React; the provider owns no backend or authentication.
 
-The profile is deliberately closed to the verified Text, Stat, Time series, Gauge and Bar gauge,
+The profile is deliberately closed to the verified Text, Stat, Time series, Gauge, Bar gauge and Bar chart,
 controlled TestData Predictable Pulse, and optional single Time series
 `renameByRegex` shapes. Table and every unknown material feature are unsupported. JSON,
 container, panel, transformation, and returned-diagnostic counts are bounded;
@@ -31,11 +31,11 @@ The separate issue #91 facade, `retrieveAndClassifyGrafana13DashboardV1`, first
 checks `/api/health` for exact version `13.2.3`, then reuses the stable discovery
 and bounded DTO stages. Health commit metadata is not compared with source
 provenance. The shipped `grafana13Provider` manifest admits only the exact Text,
-Stat, Time series, Gauge and Bar gauge fixture profiles, controlled TestData Predictable Pulse,
+Stat, Time series, Gauge, Bar gauge and Bar chart fixture profiles, controlled TestData Predictable Pulse,
 and at most one approved Time series `renameByRegex` transformation.
 
 `partialPreflightGrafana13DashboardV1` returns a detached, deeply frozen model
-for the complete ordered grid. Exact fixture Markdown Text, Stat, Time series, Gauge and Bar gauge
+for the complete ordered grid. Exact fixture Markdown Text, Stat, Time series, Gauge, Bar gauge and Bar chart
 are supported; other panels preserve only identity, title, grid, and sanitized diagnostics. They retain
 no targets, datasource, options, transformations, or executable model. Invalid
 layout/identity, rows, tabs, repeat/library panels, unsupported dashboard features,
@@ -49,11 +49,11 @@ settles even when the host transport ignores the signal; late settlement is
 consumed and cannot publish a renderable result. This classification slice
 imports no React, Grafana, or Scenes implementation and performs no rendering.
 
-The renderer uses independent renderer-only Stat, Time series, Gauge and Bar gauge chunks,
+The renderer uses independent renderer-only Stat, Time series, Gauge, Bar gauge and Bar chart chunks,
 actual Grafana DataFrames/display processing, native radial SVG, native gradient bars and uPlot canvas. Native panels own their
 query runners and optional transform, with a scene-generation request prefix
 and bounded dashboard/panel identity. Text and unsupported panels acquire no
-query runtime. Table, Pie chart and Bar chart remain inert.
+query runtime. Table and Pie chart remain inert.
 
 Gauge and Bar gauge support only the exact Predictable Pulse profile with
 `lastNotNull`, percent units, a 0–100 range and green/orange/red thresholds at
@@ -61,6 +61,12 @@ the base/50/80. Gauge uses the pinned native GaugePanel and RadialGauge source w
 approved arc/default sizing options. Bar gauge uses native BarGaugePanel with
 gradient display and automatic sizing. Links, actions, overrides, other options,
 targets, datasources and transformations fall back without loading or querying.
+
+Bar chart supports only the exact non-stacked Predictable Pulse profile: a time
+x-field, one numeric series, automatic orientation, and the approved legend,
+tooltip, fill, line, unit, minimum and maximum options. This does not claim
+general categorical-data support. Other Bar chart shapes fall back without
+loading or querying.
 
 Table remains blocked: the pinned TableNG graph statically imports Monaco cell
 inspection, geo and non-basic cell renderers, and its headers default to sorting.

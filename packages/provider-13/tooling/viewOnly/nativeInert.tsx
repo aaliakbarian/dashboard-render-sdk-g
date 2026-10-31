@@ -31,6 +31,14 @@ export function getVisibleLabels() {
   return [];
 }
 
+export function getThresholdItems() {
+  return [];
+}
+
+export function getValueMappingItems() {
+  return [];
+}
+
 export function getXAnnotationFrames() {
   return [];
 }

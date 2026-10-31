@@ -14,7 +14,7 @@ function panelPlugin(): PanelPlugin {
 }
 
 describe('Grafana 13 closed Text catalogue', () => {
-  it.each(['stat', 'timeseries', 'gauge', 'bargauge'] as const)('loads and caches only the fixed %s renderer identity independently', async (id) => {
+  it.each(['stat', 'timeseries', 'gauge', 'bargauge', 'barchart'] as const)('loads and caches only the fixed %s renderer identity independently', async (id) => {
     const plugin = panelPlugin();
     const other = panelPlugin();
     const catalogue = createGrafana13TextPanelCatalog({
@@ -22,6 +22,7 @@ describe('Grafana 13 closed Text catalogue', () => {
       loadTimeSeriesPlugin: async () => id === 'timeseries' ? plugin : other,
       loadGaugePlugin: async () => id === 'gauge' ? plugin : other,
       loadBarGaugePlugin: async () => id === 'bargauge' ? plugin : other,
+      loadBarChartPlugin: async () => id === 'barchart' ? plugin : other,
     });
     const first = catalogue.importPanelPlugin(id);
     const second = catalogue.importPanelPlugin(id);
@@ -34,12 +35,12 @@ describe('Grafana 13 closed Text catalogue', () => {
     const otherId = id === 'stat' ? 'timeseries' : 'stat';
     expect(catalogue.getPanelPluginFromCache(otherId)).toBeUndefined();
     await expect(catalogue.importPanelPlugin(otherId)).resolves.toBe(other);
-    for (const unsupported of ['table', 'piechart', 'barchart']) {
+    for (const unsupported of ['table', 'piechart']) {
       await expect(catalogue.importPanelPlugin(unsupported)).rejects.toBeInstanceOf(Grafana13UnsupportedPanelPluginError);
     }
   });
 
-  it.each(['stat', 'timeseries', 'gauge', 'bargauge'] as const)('evicts a rejected %s load without poisoning its sibling or leaking the cause', async (id) => {
+  it.each(['stat', 'timeseries', 'gauge', 'bargauge', 'barchart'] as const)('evicts a rejected %s load without poisoning its sibling or leaking the cause', async (id) => {
     let attempts = 0;
     const plugin = panelPlugin();
     const load = async () => { if (++attempts === 1) throw new Error('Bearer secret-canary'); return plugin; };
@@ -48,6 +49,7 @@ describe('Grafana 13 closed Text catalogue', () => {
       loadTimeSeriesPlugin: id === 'timeseries' ? load : async () => panelPlugin(),
       loadGaugePlugin: id === 'gauge' ? load : async () => panelPlugin(),
       loadBarGaugePlugin: id === 'bargauge' ? load : async () => panelPlugin(),
+      loadBarChartPlugin: id === 'barchart' ? load : async () => panelPlugin(),
     });
     const failure = await catalogue.importPanelPlugin(id).catch((error: unknown) => error);
     expect(failure).toBeInstanceOf(Grafana13PanelPluginLoadError);

@@ -17,6 +17,9 @@ declare module 'grafana-provider13-gauge-renderer' {
 declare module 'grafana-provider13-bargauge-renderer' {
   export const BarGaugePanel: import('react').ComponentType<any>;
 }
+declare module 'grafana-provider13-barchart-renderer' {
+  export const BarChartPanel: import('react').ComponentType<any>;
+}
 declare module 'grafana-provider13-query-scenes' {
   export const SceneQueryRunner: new (state: Record<string, unknown>) => any;
   export const SceneDataTransformer: new (state: Record<string, unknown>) => any;

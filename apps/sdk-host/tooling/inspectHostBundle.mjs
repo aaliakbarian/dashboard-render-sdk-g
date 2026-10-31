@@ -17,7 +17,7 @@ const forbiddenSourcePatterns = Object.freeze([
   /createElement\(\s*[`'"]iframe[`'"]\s*\)/i,
   /<iframe\b/i,
   /public\/app\/(?:routes|core\/navigation|core\/components\/AppChrome)/i,
-  /feature-(?:table|piechart|barchart)-/i,
+  /feature-(?:table|piechart)-/i,
 ]);
 
 function filesWithPrefix(files, prefix) {
@@ -65,11 +65,11 @@ export function inspectHostBundleFiles(files, evidence) {
     exactOnePrefixes.providerImplementationChunks
   )[0];
   const textFile = filesWithPrefix(files, exactOnePrefixes.featureTextChunks)[0];
-  for (const id of ['stat', 'timeseries', 'gauge', 'bargauge']) {
+  for (const id of ['stat', 'timeseries', 'gauge', 'bargauge', 'barchart']) {
     const nativeFiles = filesWithPrefix(files, `assets/feature-${id}-`);
     if (nativeFiles.length !== 1 || nativeFiles.some(file => !hasDynamicImport(files.get(implementationFile), file))) valid = false;
   }
-  if ([...files.keys()].some(file => /^assets\/feature-(?:table|piechart|barchart)-/.test(file))) valid = false;
+  if ([...files.keys()].some(file => /^assets\/feature-(?:table|piechart)-/.test(file))) valid = false;
   const reactWrapperFile = filesWithPrefix(files, exactOnePrefixes.providerReactWrappers)[0];
   const reactDomWrapperFile = filesWithPrefix(
     files,

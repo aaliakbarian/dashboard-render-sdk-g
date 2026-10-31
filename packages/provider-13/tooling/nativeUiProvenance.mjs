@@ -39,7 +39,7 @@ export function inspectNativeUiProvenance(report) {
   const missingSources = expectedSources.filter(id => id !== foldedConstant && !owners.has(id));
   const duplicateSources = [...owners].filter(([, files]) => files.length !== 1).map(([id]) => id);
   const misplacedSources = [...owners].filter(([, files]) => files.some(file => !gaugeFiles.has(file))).map(([id]) => id);
-  const siblingStaticReach = Object.fromEntries(['text', 'stat', 'timeseries', 'bargauge', 'bootstrap'].map(feature => {
+  const siblingStaticReach = Object.fromEntries(['text', 'stat', 'timeseries', 'bargauge', 'barchart', 'bootstrap'].map(feature => {
     const roots = report.chunks.filter(chunk => feature === 'bootstrap' ? chunk.isEntry
       : chunk.modules.some(id => id.startsWith(`${sourcePrefix}public/app/plugins/panel/${feature}/`)));
     const files = staticClosure(roots);

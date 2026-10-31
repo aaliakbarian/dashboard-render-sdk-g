@@ -189,6 +189,22 @@ describe('provider-private exact panel profiles', () => {
     expect(classifyGrafana13PanelProfile(raw).kind).toBe('unsupported');
   });
 
+  it.each([
+    ['Pie extra target', 6, (p: any) => { p.targets.push(structuredClone(p.targets[0])); }],
+    ['Pie values mode', 6, (p: any) => { p.options.reduceOptions.values = true; }],
+    ['Pie persisted visibility override', 6, (p: any) => { p.fieldConfig.overrides = [{ matcher: { id: 'byName', options: 'Value' }, properties: [{ id: 'custom.hideFrom', value: { viz: true } }] }]; }],
+    ['Pie data link', 6, (p: any) => { p.fieldConfig.defaults.links = [{ title: 'outside', url: '/outside' }]; }],
+    ['Bar extra target', 7, (p: any) => { p.targets.push(structuredClone(p.targets[0])); }],
+    ['Bar categorical x field', 7, (p: any) => { p.options.xField = 'Category'; }],
+    ['Bar grouping', 7, (p: any) => { p.options.groupWidth = 0.5; }],
+    ['Bar stacking', 7, (p: any) => { p.options.stacking = 'normal'; }],
+    ['Bar action', 7, (p: any) => { p.fieldConfig.defaults.actions = [{ type: 'fetch' }]; }],
+  ])('keeps the bounded one-series graph profile inert for %s', (_name, index, mutate) => {
+    const raw = panel(index as number);
+    (mutate as (p: any) => void)(raw);
+    expect(classifyGrafana13PanelProfile(raw)).toMatchObject({ kind: 'unsupported' });
+  });
+
   it('accepts explicitly empty query pipelines and bounds query aliases', () => {
     const raw = panel();
     raw.transformations = [];

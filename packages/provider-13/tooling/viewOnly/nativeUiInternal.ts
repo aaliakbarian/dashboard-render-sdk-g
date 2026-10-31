@@ -5,4 +5,6 @@ export { buildScaleKey } from 'grafana-provider13-native-scale-key';
 export { getScaleGradientFn } from 'grafana-provider13-native-gradient-fills';
 export { hasVisibleLegendSeries } from 'grafana-provider13-native-plot-legend';
 export { TooltipHoverMode } from 'grafana-provider13-native-tooltip-plugin';
-export { getStackingGroups, pluginLog, preparePlotData2 } from 'grafana-provider13-native-uplot-utils';
+export { getDisplayValuesForCalcs, getStackingGroups, pluginLog, preparePlotData2 } from 'grafana-provider13-native-uplot-utils';
+export { UPLOT_AXIS_FONT_SIZE, timeUnitSize } from 'grafana-provider13-native-ui-uplot-axis';
+export const FILTER_FOR_OPERATOR = '=';

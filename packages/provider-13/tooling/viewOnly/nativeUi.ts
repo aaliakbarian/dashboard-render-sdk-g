@@ -1,11 +1,16 @@
 export { Button, Stack, useTheme2, useStyles2, usePanelContext } from '@grafana/ui';
 export { BarGauge } from 'grafana-provider13-native-ui-bar-gauge';
+export { FIXED_UNIT } from 'grafana-provider13-native-ui-uplot-types';
+export { UPlotChart } from 'grafana-provider13-native-uplot-chart';
+export { UPlotConfigBuilder } from 'grafana-provider13-native-uplot-config';
+export { UPLOT_AXIS_FONT_SIZE } from 'grafana-provider13-native-ui-uplot-axis';
+export { measureText } from 'grafana-provider13-native-ui-measure-text';
 export { VizLegend } from 'grafana-provider13-native-ui-viz-legend';
 export { BigValue } from 'grafana-provider13-native-ui-big-value';
 export { DataLinksContextMenu } from 'grafana-provider13-native-ui-data-links-menu';
 export { VizRepeater } from 'grafana-provider13-native-ui-repeater';
 export { VizLayout } from 'grafana-provider13-native-ui-layout';
-export { GraphDrawStyle as DrawStyle } from '@grafana/schema';
+export { GraphDrawStyle as DrawStyle, ScaleDirection, ScaleOrientation, StackingMode, TooltipDisplayMode } from '@grafana/schema';
 export { EventBusPlugin } from 'grafana-provider13-native-ui-event-bus';
 export { KeyboardPlugin } from 'grafana-provider13-native-ui-keyboard';
 export { TooltipPlugin2 } from 'grafana-provider13-native-tooltip-plugin';
