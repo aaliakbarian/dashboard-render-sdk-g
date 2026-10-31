@@ -22,6 +22,7 @@ export const GRAFANA_13_NATIVE_SOURCES = Object.freeze([
   'public/app/plugins/panel/piechart/panelcfg.gen.ts',
   'public/app/plugins/panel/piechart/utils.ts',
   'public/app/plugins/panel/stat/StatPanel.tsx',
+  'public/app/plugins/panel/table/TablePanel.tsx',
   'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx',
   'public/app/plugins/panel/timeseries/TimeSeriesTooltip.tsx',
   'public/app/plugins/panel/timeseries/plugins/OutsideRangePlugin.tsx',
@@ -32,7 +33,7 @@ export const GRAFANA_13_NATIVE_SOURCES = Object.freeze([
   'public/app/core/components/GraphNG/utils.ts',
 ] as const);
 
-export { GRAFANA_13_NATIVE_UI_SOURCES } from './nativeUiProvenance.mjs';
+export { GRAFANA_13_NATIVE_UI_SOURCES, GRAFANA_13_TABLE_UI_SOURCES } from './nativeUiProvenance.mjs';
 
 export const GRAFANA_13_TESTDATA_SOURCE_FILES = Object.freeze([
   'LogIpsum.ts', 'constants.ts', 'dataquery.ts', 'datasource.ts', 'metricTree.ts',

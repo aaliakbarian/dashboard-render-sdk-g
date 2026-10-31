@@ -33,21 +33,24 @@ const allowedPeers = { react: '19.2.8', 'react-dom': '19.2.8' };
 
 test('allows only the exact native renderer and scoped stylesheet owners', async () => {
   await withFixture({
-    'index.ts': 'export { load } from "./panels/catalog"; export { mount } from "./runtime/implementation";',
-    'panels/catalog.ts': 'export async function load() { await import("./statPlugin"); await import("./timeSeriesPlugin"); await import("./gaugePlugin"); await import("./barGaugePlugin"); await import("./pieChartPlugin"); await import("./barChartPlugin"); }',
+    'index.ts': 'export { load } from "./panels/catalog"; export { mount } from "./runtime/implementation"; export { TableNG } from "./runtime/viewOnly/tableUiUnstable"; export { AutoCell } from "./runtime/viewOnly/tableBasicCellRegistry";',
+    'panels/catalog.ts': 'export async function load() { await import("./statPlugin"); await import("./timeSeriesPlugin"); await import("./tablePlugin"); await import("./gaugePlugin"); await import("./barGaugePlugin"); await import("./pieChartPlugin"); await import("./barChartPlugin"); }',
     'panels/statPlugin.ts': 'import { PanelPlugin } from "grafana-provider13-data-panel-plugin"; import { StatPanel } from "grafana-provider13-stat-renderer"; export const plugin = new PanelPlugin(StatPanel);',
     'panels/timeSeriesPlugin.ts': 'import { PanelPlugin } from "grafana-provider13-data-panel-plugin"; import { TimeSeriesPanel } from "grafana-provider13-timeseries-renderer"; export const plugin = new PanelPlugin(TimeSeriesPanel);',
     'panels/gaugePlugin.ts': 'import { PanelPlugin } from "grafana-provider13-data-panel-plugin"; import { GaugePanel } from "grafana-provider13-gauge-renderer"; export const plugin = new PanelPlugin(GaugePanel);',
     'panels/barGaugePlugin.ts': 'import { PanelPlugin } from "grafana-provider13-data-panel-plugin"; import { BarGaugePanel } from "grafana-provider13-bargauge-renderer"; export const plugin = new PanelPlugin(BarGaugePanel);',
     'panels/pieChartPlugin.ts': 'import { PanelPlugin } from "grafana-provider13-data-panel-plugin"; import { PieChartPanel } from "grafana-provider13-piechart-renderer"; export const plugin = new PanelPlugin(PieChartPanel);',
     'panels/barChartPlugin.ts': 'import { PanelPlugin } from "grafana-provider13-data-panel-plugin"; import { BarChartPanel } from "grafana-provider13-barchart-renderer"; export const plugin = new PanelPlugin(BarChartPanel);',
+    'panels/tablePlugin.ts': 'import { PanelPlugin } from "grafana-provider13-data-panel-plugin"; import { TablePanel } from "grafana-provider13-table-renderer"; export const plugin = new PanelPlugin(TablePanel);',
     'runtime/implementation.tsx': 'export async function mount() { await import("grafana-provider13-query-scenes"); await import("./nativeStyles"); }',
-    'runtime/nativeStyles.ts': 'import css from "uplot/dist/uPlot.min.css?inline"; export { css };',
+    'runtime/nativeStyles.ts': 'import css from "uplot/dist/uPlot.min.css?inline"; import grid from "@grafana/react-data-grid/lib/styles.css?inline"; export { css, grid };',
+    'runtime/viewOnly/tableUiUnstable.ts': 'export { TableNG } from "grafana-provider13-native-table-flat";',
+    'runtime/viewOnly/tableBasicCellRegistry.tsx': 'import { AutoCell } from "grafana-provider13-native-table-auto-cell"; export { AutoCell };',
   }, async repositoryRoot => {
     assert.deepEqual((await inspectProvider13Boundary(repositoryRoot)).importFindings, []);
   });
-  await withFixture({ 'index.ts': 'import "grafana-provider13-stat-renderer"; import "grafana-provider13-gauge-renderer"; import "grafana-provider13-bargauge-renderer"; import "uplot/dist/uPlot.min.css?inline"; const p = import("grafana-provider13-query-scenes");' }, async repositoryRoot => {
-    assert.equal((await inspectProvider13Boundary(repositoryRoot)).importFindings.length, 5);
+  await withFixture({ 'index.ts': 'import "grafana-provider13-stat-renderer"; import "grafana-provider13-gauge-renderer"; import "grafana-provider13-bargauge-renderer"; import "grafana-provider13-table-renderer"; import "grafana-provider13-native-table-flat"; import "grafana-provider13-native-table-auto-cell"; import "@grafana/react-data-grid/lib/styles.css?inline"; import "uplot/dist/uPlot.min.css?inline"; const p = import("grafana-provider13-query-scenes");' }, async repositoryRoot => {
+    assert.equal((await inspectProvider13Boundary(repositoryRoot)).importFindings.length, 9);
   });
 });
 

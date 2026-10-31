@@ -29,6 +29,7 @@ const providerArtifactChunkPrefixes = Object.freeze([
   ['provider-gauge-', 'feature-gauge'],
   ['provider-bargauge-', 'feature-bargauge'],
   ['provider-stat-', 'feature-stat'],
+  ['tablePlugin-', 'feature-table'],
   ['provider-barchart-', 'feature-barchart'],
   ['provider-piechart-dependencies-', 'provider-piechart-dependencies'],
   ['provider-piechart-', 'provider-piechart-source'],

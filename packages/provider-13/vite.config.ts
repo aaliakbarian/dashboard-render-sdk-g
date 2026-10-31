@@ -18,7 +18,7 @@ import {
 import { textRendererOnlyImportsPlugin } from './tooling/textRendererOnlyImportsPlugin.ts';
 import { queryRuntimeImportsPlugin } from './tooling/queryRuntimeImportsPlugin.ts';
 import { rendererOnlyImportsPlugin } from './tooling/rendererOnlyImportsPlugin.ts';
-import { GRAFANA_13_NATIVE_SOURCES, GRAFANA_13_NATIVE_UI_SOURCES } from './tooling/sourceIdentity.ts';
+import { GRAFANA_13_NATIVE_SOURCES, GRAFANA_13_NATIVE_UI_SOURCES, GRAFANA_13_TABLE_UI_SOURCES } from './tooling/sourceIdentity.ts';
 import { providerCohortChunk } from './tooling/providerCohortChunk.ts';
 
 const providerRoot = dirname(fileURLToPath(import.meta.url));
@@ -31,7 +31,7 @@ if (!grafanaSourceRoot) {
   throw new Error('Provider-13 build requires GRAFANA_SOURCE_DIR.');
 }
 
-for (const source of [...GRAFANA_13_APPLICATION_SOURCES, ...GRAFANA_13_TESTDATA_SOURCES, ...GRAFANA_13_NATIVE_SOURCES, ...GRAFANA_13_NATIVE_UI_SOURCES]) {
+for (const source of [...GRAFANA_13_APPLICATION_SOURCES, ...GRAFANA_13_TESTDATA_SOURCES, ...GRAFANA_13_NATIVE_SOURCES, ...GRAFANA_13_NATIVE_UI_SOURCES, ...GRAFANA_13_TABLE_UI_SOURCES]) {
   statSync(resolve(grafanaSourceRoot, source));
 }
 assertGrafana13SourceIdentity({
@@ -80,23 +80,29 @@ export default defineConfig({
     textRendererOnlyImportsPlugin({ providerRoot, sourceRoot: textSourceRoot }),
     forbiddenGrafanaImportPlugin(),
     ...[
-      ['grafana-provider13-stat-renderer', 'public/app/plugins/panel/stat/StatPanel.tsx'],
-      ['grafana-provider13-timeseries-renderer', 'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx'],
-      ['grafana-provider13-gauge-renderer', 'public/app/plugins/panel/gauge/GaugePanel.tsx'],
-      ['grafana-provider13-bargauge-renderer', 'public/app/plugins/panel/bargauge/BarGaugePanel.tsx'],
-      ['grafana-provider13-piechart-renderer', 'public/app/plugins/panel/piechart/PieChartPanel.tsx'],
-      ['grafana-provider13-barchart-renderer', 'public/app/plugins/panel/barchart/BarChartPanel.tsx'],
-      ['grafana-provider13-native-null-to-undef', 'packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts'],
-    ].map(([entryAlias, entrypoint]) => pinnedGrafanaSourcePlugin({
+      ['grafana-provider13-stat-renderer', 'public/app/plugins/panel/stat/StatPanel.tsx', 'src/panels/statPlugin.ts'],
+      ['grafana-provider13-timeseries-renderer', 'public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx', 'src/panels/timeSeriesPlugin.ts'],
+      ['grafana-provider13-gauge-renderer', 'public/app/plugins/panel/gauge/GaugePanel.tsx', 'src/panels/gaugePlugin.ts'],
+      ['grafana-provider13-bargauge-renderer', 'public/app/plugins/panel/bargauge/BarGaugePanel.tsx', 'src/panels/barGaugePlugin.ts'],
+      ['grafana-provider13-piechart-renderer', 'public/app/plugins/panel/piechart/PieChartPanel.tsx', 'src/panels/pieChartPlugin.ts'],
+      ['grafana-provider13-barchart-renderer', 'public/app/plugins/panel/barchart/BarChartPanel.tsx', 'src/panels/barChartPlugin.ts'],
+      ['grafana-provider13-table-renderer', 'public/app/plugins/panel/table/TablePanel.tsx', 'src/panels/tablePlugin.ts'],
+      ['grafana-provider13-native-table-flat', 'packages/grafana-ui/src/components/Table/TableNG/TableFlat.tsx', 'src/runtime/viewOnly/tableUiUnstable.ts'],
+      ['grafana-provider13-native-table-auto-cell', 'packages/grafana-ui/src/components/Table/TableNG/Cells/AutoCell.tsx', 'src/runtime/viewOnly/tableBasicCellRegistry.tsx'],
+      ['grafana-provider13-native-null-to-undef', 'packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts', 'tooling/viewOnly/nativeDataInternal.ts'],
+    ].map(([entryAlias, entrypoint, allowedEntryImporter]) => pinnedGrafanaSourcePlugin({
+      allowedEntryImporters: [resolve(providerRoot, allowedEntryImporter!)],
       feature: 'native', entryAlias: entryAlias!, entrypoint: entrypoint!, sourceRoot: grafanaSourceRoot,
-      reviewedFiles: [...GRAFANA_13_NATIVE_SOURCES, ...GRAFANA_13_NATIVE_UI_SOURCES, 'packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts'],
+      reviewedFiles: [...GRAFANA_13_NATIVE_SOURCES, ...GRAFANA_13_NATIVE_UI_SOURCES, ...GRAFANA_13_TABLE_UI_SOURCES, 'packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts'],
     })),
     pinnedGrafanaSourcePlugin({
+      allowedEntryImporters: [resolve(providerRoot, 'src/datasource/testDataPlugin.ts')],
       feature: 'testdata', entryAlias: 'grafana-provider13-testdata-runtime', entrypoint: 'datasource.ts',
       sourceRoot: resolve(grafanaSourceRoot, 'public/app/plugins/datasource/grafana-testdata-datasource'),
       reviewedFiles: GRAFANA_13_TESTDATA_SOURCE_FILES,
     }),
     pinnedGrafanaSourcePlugin({
+      allowedEntryImporters: [resolve(providerRoot, 'src/panels/textPlugin.ts')],
       entryAlias: 'grafana-provider13-text-renderer',
       entrypoint: 'v1/TextPanel.tsx',
       sourceRoot: textSourceRoot,

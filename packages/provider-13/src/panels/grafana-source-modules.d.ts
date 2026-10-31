@@ -23,6 +23,17 @@ declare module 'grafana-provider13-barchart-renderer' {
 declare module 'grafana-provider13-piechart-renderer' {
   export const PieChartPanel: import('react').ComponentType<any>;
 }
+declare module 'grafana-provider13-table-renderer' {
+  export const TablePanel: import('react').ComponentType<any>;
+}
+declare module 'grafana-provider13-native-table-flat' {
+  export const TableFlat: import('react').ComponentType<any>;
+}
+declare module 'grafana-provider13-native-table-auto-cell' {
+  export const AutoCell: import('react').ComponentType<any>;
+  export const getStyles: (theme: any, options: any) => string | undefined;
+}
+declare module '@grafana/react-data-grid/lib/styles.css?inline' { const css: string; export default css; }
 declare module 'grafana-provider13-query-scenes' {
   export const SceneQueryRunner: new (state: Record<string, unknown>) => any;
   export const SceneDataTransformer: new (state: Record<string, unknown>) => any;

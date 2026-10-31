@@ -4,6 +4,7 @@ import { relative, resolve, sep } from 'node:path';
 import { transformWithOxc, type Plugin } from 'vite';
 
 export interface PinnedGrafanaSourcePluginOptions {
+  readonly allowedEntryImporters: readonly string[];
   readonly feature?: 'text' | 'testdata' | 'native';
   readonly reviewedFiles?: readonly string[];
   readonly entryAlias: string;
@@ -14,6 +15,9 @@ export interface PinnedGrafanaSourcePluginOptions {
 export function pinnedGrafanaSourcePlugin(options: PinnedGrafanaSourcePluginOptions): Plugin {
   const VIRTUAL_PREFIX = `\0provider-13-pinned-grafana-source:${options.feature ?? 'text'}:`;
   const sourceRoot = resolve(options.sourceRoot).replaceAll('\\', '/').replace(/\/$/, '');
+  const allowedEntryImporters = new Set(
+    options.allowedEntryImporters.map((importer) => resolve(importer).replaceAll('\\', '/'))
+  );
   const assertInside = (file: string) => {
     const absolute = resolve(file).replaceAll('\\', '/');
     if (absolute !== sourceRoot && !absolute.startsWith(`${sourceRoot}/`)) {
@@ -39,7 +43,14 @@ export function pinnedGrafanaSourcePlugin(options: PinnedGrafanaSourcePluginOpti
     name: 'provider-13-pinned-grafana-source',
     enforce: 'pre',
     resolveId(source, importer) {
-      if (source === options.entryAlias) return toVirtual(resolve(sourceRoot, options.entrypoint));
+      if (source === options.entryAlias) {
+        const normalizedImporter = importer === undefined
+          ? undefined
+          : resolve(importer.split('?')[0]).replaceAll('\\', '/');
+        return normalizedImporter !== undefined && allowedEntryImporters.has(normalizedImporter)
+          ? toVirtual(resolve(sourceRoot, options.entrypoint))
+          : null;
+      }
       if (!importer?.startsWith(VIRTUAL_PREFIX) || !source.startsWith('.')) return null;
       const importerFile = fromVirtual(importer);
       const resolved = resolveSource(resolve(importerFile, '..', source));

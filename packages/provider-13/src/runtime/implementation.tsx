@@ -81,7 +81,8 @@ export function createGrafana13RuntimeDashboardMounter(
         await lease.acquireQueryRuntime();
         const queryScenes = await (dependencies.loadQueryScenes ?? (() => import('grafana-provider13-query-scenes')))();
         sceneConstructors = { ...cohort.scenes, ...queryScenes };
-        nativeCss = (await import('./nativeStyles')).nativeVisualizationCss;
+        const styles = await import('./nativeStyles');
+        nativeCss = `${styles.nativeVisualizationCss}${ids.includes('table') ? `\n${styles.nativeTableCss}` : ''}`;
       }
       const failedPluginIds: string[] = [];
       for (const id of ids) {

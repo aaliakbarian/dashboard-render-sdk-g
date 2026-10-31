@@ -15,7 +15,6 @@ type ActivePanelType = Extract<Grafana13RenderablePanel, { kind: 'supported' }>[
 const gaugePanelType: ActivePanelType = 'gauge';
 const barGaugePanelType: ActivePanelType = 'bargauge';
 const pieChartPanelType: ActivePanelType = 'piechart';
-// @ts-expect-error blocked Table remains outside executable models
 const tablePanelType: ActivePanelType = 'table';
 void gaugePanelType; void barGaugePanelType; void pieChartPanelType; void tablePanelType;
 

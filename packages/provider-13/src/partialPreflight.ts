@@ -75,7 +75,7 @@ export function partialPreflightGrafana13DashboardV1(
       grid: Object.freeze({ height: grid.h as number, width: grid.w as number, x: grid.x as number, y: grid.y as number }),
       id: panel.id as number, index, panelType: panel.type as string, title: panel.title as string,
     };
-    const checked = ['text', 'stat', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart'].includes(panel.type as string)
+    const checked = ['text', 'stat', 'timeseries', 'table', 'gauge', 'bargauge', 'piechart', 'barchart'].includes(panel.type as string)
       ? preflightGrafana13DashboardV1({ ...dashboard, spec: { ...dashboard.spec, panels: [panel] } }, manifest)
       : undefined;
     const profile = checked?.kind === 'match' ? classifyGrafana13PanelProfile(panel) : undefined;
@@ -83,7 +83,7 @@ export function partialPreflightGrafana13DashboardV1(
       return Object.freeze({ ...identity, kind: 'supported', model: profile.model, panelType: 'text', profile: profile.profile });
     }
     if (profile?.kind === 'supported' && profile.profile === 'predictable-pulse-view-v1' &&
-        (profile.model.type === 'stat' || profile.model.type === 'timeseries' || profile.model.type === 'gauge' || profile.model.type === 'bargauge' || profile.model.type === 'piechart' || profile.model.type === 'barchart')) {
+        (profile.model.type === 'stat' || profile.model.type === 'timeseries' || profile.model.type === 'table' || profile.model.type === 'gauge' || profile.model.type === 'bargauge' || profile.model.type === 'piechart' || profile.model.type === 'barchart')) {
       return Object.freeze({ ...identity, kind: 'supported', model: profile.model, panelType: profile.model.type, profile: profile.profile });
     }
     const diagnostics: readonly Grafana13PreflightDiagnostic[] = Object.freeze([Object.freeze({

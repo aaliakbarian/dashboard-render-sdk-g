@@ -1,6 +1,6 @@
-import { resolve } from 'node:path';
+import { posix, resolve } from 'node:path';
 import type { Plugin } from 'vite';
-import { GRAFANA_13_NATIVE_SOURCES } from './sourceIdentity.ts';
+import { GRAFANA_13_NATIVE_SOURCES, GRAFANA_13_TABLE_UI_SOURCES } from './sourceIdentity.ts';
 
 const prefix = '\0provider-13-pinned-grafana-source:native:';
 const leaves: Readonly<Record<string, string>> = {
@@ -47,6 +47,7 @@ const absentIntegrations = new Set([
 export function rendererOnlyImportsPlugin(options: { readonly providerRoot: string; readonly repositoryRoot: string; readonly sourceRoot: string }): Plugin {
   const provider = resolve(options.providerRoot).replaceAll('\\', '/');
   const view = (name: string) => resolve(provider, 'tooling/viewOnly', name);
+  const tableView = (name: string) => resolve(provider, 'src/runtime/viewOnly', name);
   return { name: 'provider-13-native-renderer-only-imports', enforce: 'pre', resolveId(source, importer) {
     const id = importer?.replaceAll('\\', '/').split('?')[0] ?? '';
     if (source === '../Portal' && /\/node_modules\/@visx\/tooltip\/(?:esm|lib)\/hooks\/useTooltipInPortal\.js$/.test(id)) {
@@ -56,7 +57,7 @@ export function rendererOnlyImportsPlugin(options: { readonly providerRoot: stri
     if (id === resolve(options.repositoryRoot, 'node_modules/@grafana/scenes/dist/esm/querying/SceneQueryRunner.js').replaceAll('\\', '/') && [
       '../variables/adhoc/AdHocFiltersVariable.js', '../variables/groupby/GroupByVariable.js', '../variables/DrilldownDependenciesManager.js',
     ].includes(source)) return view('queryInert.ts');
-    if (source === 'grafana-provider13-data-panel-plugin' && /^.+\/src\/panels\/(?:statPlugin|timeSeriesPlugin|gaugePlugin|barGaugePlugin|pieChartPlugin|barChartPlugin)\.ts$/.test(id) && id.startsWith(`${provider}/`)) return resolve(options.repositoryRoot, 'node_modules/@grafana/data/dist/esm/panel/PanelPlugin.mjs');
+    if (source === 'grafana-provider13-data-panel-plugin' && /^.+\/src\/panels\/(?:statPlugin|timeSeriesPlugin|gaugePlugin|barGaugePlugin|pieChartPlugin|barChartPlugin|tablePlugin)\.ts$/.test(id) && id.startsWith(`${provider}/`)) return resolve(options.repositoryRoot, 'node_modules/@grafana/data/dist/esm/panel/PanelPlugin.mjs');
     if (source === 'grafana-provider13-query-scenes' && id === `${provider}/src/runtime/implementation.tsx`) return view('queryScenes.ts');
     if (id.startsWith(`${provider}/tooling/viewOnly/`)) {
       if (source === 'grafana-provider13-native-radial-gauge') return `${prefix}packages/grafana-ui/src/components/RadialGauge/RadialGauge.tsx.js`;
@@ -64,6 +65,39 @@ export function rendererOnlyImportsPlugin(options: { readonly providerRoot: stri
       if (source.startsWith('grafana-provider13-native-') && leaf) return resolve(options.repositoryRoot, 'node_modules', leaf);
     }
     if (!id.startsWith(prefix)) return null;
+    const tablePanel = id === `${prefix}public/app/plugins/panel/table/TablePanel.tsx.js`;
+    const tableUi = id.startsWith(`${prefix}packages/grafana-ui/src/components/Table/TableNG/`);
+    if (tablePanel) {
+      if (source === '@grafana/ui') return tableView('tablePanelUi.tsx');
+      if (source === '@grafana/ui/unstable') return tableView('tableUiUnstable.ts');
+      if (source === 'app/features/table/hooks') return tableView('tablePanelHooks.ts');
+      if (source === 'app/features/table/utils') return tableView('tablePanelUtils.ts');
+      if (source === './migrations') return tableView('tableMigrations.ts');
+    }
+    if (tableUi) {
+      const current = id.slice(prefix.length).replace(/\.js$/, '');
+      if (source.startsWith('.')) {
+        const requested = posix.normalize(posix.join(posix.dirname(current), source));
+        const reviewed = GRAFANA_13_TABLE_UI_SOURCES.find((file) => file.replace(/\.tsx?$/, '') === requested);
+        if (reviewed) return `${prefix}${reviewed}.js`;
+      }
+      if (source === '@grafana/react-data-grid/lib/styles.css') return '\0provider-13-table-data-grid-css-owned-by-scene';
+      if (source === './Cells/renderers') return tableView('tableBasicCellRegistry.tsx');
+      if (source === '../components/MaybeWrapWithLink') return tableView('tableOptional.tsx');
+      if (['../../Pagination/Pagination', '../DataLinksActionsTooltip', '../TableCellInspector', './components/TableCellActions', './components/TableCellTooltip', '../Filter/Filter', '../geo'].includes(source)) return tableView('tableOptional.tsx');
+      if (source === '../../PanelChrome') return tableView('tablePanelContext.ts');
+      const tableLeaves: Readonly<Record<string, string>> = {
+        '../../../themes/ThemeContext': '@grafana/ui/dist/esm/themes/ThemeContext.mjs',
+        '../../../../themes/ThemeContext': '@grafana/ui/dist/esm/themes/ThemeContext.mjs',
+        '../../../utils/colors': '@grafana/ui/dist/esm/utils/colors.mjs',
+        '../../../../types/icon': '@grafana/ui/dist/esm/types/icon.mjs',
+        '../../../Icon/Icon': '@grafana/ui/dist/esm/components/Icon/Icon.mjs',
+        '../../../Layout/Stack/Stack': '@grafana/ui/dist/esm/components/Layout/Stack/Stack.mjs',
+        '../cellUtils': '@grafana/ui/dist/esm/components/Table/cellUtils.mjs',
+        '../types': '@grafana/ui/dist/esm/components/Table/types.mjs',
+      };
+      if (tableLeaves[source]) return resolve(options.repositoryRoot, 'node_modules', tableLeaves[source]);
+    }
     if (id.startsWith(`${prefix}packages/grafana-ui/src/components/RadialGauge/`)) {
       const packageLeaves: Readonly<Record<string, string>> = {
         '../../themes/ThemeContext': '@grafana/ui/dist/esm/themes/ThemeContext.mjs',
@@ -86,5 +120,9 @@ export function rendererOnlyImportsPlugin(options: { readonly providerRoot: stri
       if (file) return `${prefix}${file}.js`;
     }
     return null;
-  }, load(id) { return id === '\0provider-13-native-css-owned-by-scene' ? 'export {};' : null; } };
+  }, load(id) {
+    return id === '\0provider-13-native-css-owned-by-scene' || id === '\0provider-13-table-data-grid-css-owned-by-scene'
+      ? 'export {};'
+      : null;
+  } };
 }
