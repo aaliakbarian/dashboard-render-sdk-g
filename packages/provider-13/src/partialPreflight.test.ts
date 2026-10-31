@@ -29,8 +29,8 @@ describe('closed native partial preflight', () => {
       kind: 'unsupported',
       diagnostics: [{ code: 'panel.unsupported', message: 'The panel is outside the verified view profile.' }],
     });
-    expect(result.supportedPanelCount).toBe(6);
-    expect(result.unsupportedPanelCount).toBe(2);
+    expect(result.supportedPanelCount).toBe(7);
+    expect(result.unsupportedPanelCount).toBe(1);
   });
   it('admits only the exact executable barchart profile and keeps a changed profile query-free', () => {
     const type = 'barchart';
@@ -60,6 +60,19 @@ describe('closed native partial preflight', () => {
     const rejectedPie = rejected.panels.find(panel => panel.panelType === 'piechart');
     expect(rejectedPie).toMatchObject({ kind: 'unsupported', panelType: 'piechart' });
     expect(JSON.stringify(rejectedPie)).not.toMatch(/query|targets|datasource|transformations/);
+  });
+  it('admits only the exact executable Table profile and keeps table_static query-free', () => {
+    const dashboard = fixtureDashboard('drsdk-g-phase2-visualizations');
+    const result = provider.partialPreflightGrafana13DashboardV1(dashboard, manifest());
+    if (result.kind !== 'renderable') throw new Error('Expected exact profile');
+    expect(result.panels.find(panel => panel.panelType === 'table')).toMatchObject({
+      kind: 'supported', model: { type: 'table' }, panelType: 'table', profile: 'predictable-pulse-view-v1',
+    });
+    const old = provider.partialPreflightGrafana13DashboardV1(fixtureDashboard('grsdk-phase0-poc'), manifest());
+    if (old.kind !== 'renderable') throw new Error('Expected panel fallback');
+    const table = old.panels.find(panel => panel.panelType === 'table');
+    expect(table).toMatchObject({ kind: 'unsupported', panelType: 'table' });
+    expect(JSON.stringify(table)).not.toMatch(/query|targets|datasource|table_static/);
   });
   it('admits only native Stat/Time series candidate profiles with explicit manifest coverage', () => {
     const candidate = validateProviderCompatibilityManifest({ ...provider.grafana13Provider.manifest, capabilities: {
@@ -92,7 +105,7 @@ describe('closed native partial preflight', () => {
       { grid: { height: 10, width: 8, x: 16, y: 0 }, id: 4, index: 3, kind: 'unsupported', panelType: 'table' },
     ]);
     expect(provider.grafana13Provider.manifest.capabilities).toEqual({
-      datasources: ['grafana-testdata-datasource'], panels: ['text', 'stat', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart'], transformations: { allowEmptyPipeline: true, ids: ['renameByRegex'], maxChainLength: 1 },
+      datasources: ['grafana-testdata-datasource'], panels: ['text', 'stat', 'timeseries', 'table', 'gauge', 'bargauge', 'piechart', 'barchart'], transformations: { allowEmptyPipeline: true, ids: ['renameByRegex'], maxChainLength: 1 },
     });
     for (const panel of result.panels.filter(p => p.kind === 'unsupported')) {
       expect(Object.keys(panel).sort()).toEqual(['diagnostics', 'grid', 'id', 'index', 'kind', 'panelType', 'title']);

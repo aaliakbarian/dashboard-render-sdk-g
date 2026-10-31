@@ -36,4 +36,19 @@ describe('native renderer import closure', () => {
     expect(resolve('grafana-provider13-data-panel-plugin', '/repo/packages/provider-13/src/panels/barGaugePlugin.ts')).toContain('/panel/PanelPlugin.mjs');
     expect(resolve('app/features/table/hooks', gauge)).toBeNull();
   });
+
+  it('routes the pinned TablePanel through the bounded flat-table view-only closure', () => {
+    const table = '\0provider-13-pinned-grafana-source:native:public/app/plugins/panel/table/TablePanel.tsx.js';
+    const flat = '\0provider-13-pinned-grafana-source:native:packages/grafana-ui/src/components/Table/TableNG/TableFlat.tsx.js';
+    const grid = '\0provider-13-pinned-grafana-source:native:packages/grafana-ui/src/components/Table/TableNG/TableDataGrid.tsx.js';
+    expect(resolve('@grafana/ui/unstable', table)).toContain('/src/runtime/viewOnly/tableUiUnstable.ts');
+    expect(resolve('app/features/table/hooks', table)).toContain('/src/runtime/viewOnly/tablePanelHooks.ts');
+    expect(resolve('app/features/table/utils', table)).toContain('/src/runtime/viewOnly/tablePanelUtils.ts');
+    expect(resolve('./migrations', table)).toContain('/src/runtime/viewOnly/tableMigrations.ts');
+    expect(resolve('./TableDataGrid', flat)).toBe(`${grid}`);
+    expect(resolve('./Cells/renderers', '\0provider-13-pinned-grafana-source:native:packages/grafana-ui/src/components/Table/TableNG/render-hooks.tsx.js'))
+      .toContain('/src/runtime/viewOnly/tableBasicCellRegistry.tsx');
+    expect(resolve('@grafana/react-data-grid/lib/styles.css', grid)).toBe('\0provider-13-table-data-grid-css-owned-by-scene');
+    expect(resolve('./TableNested', table)).toBeNull();
+  });
 });

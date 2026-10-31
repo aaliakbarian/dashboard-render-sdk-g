@@ -19,6 +19,7 @@ const expectedSources = [
   'public/app/plugins/panel/text/panelcfg.gen.ts',
   'public/app/plugins/panel/text/v1/TextPanel.tsx',
   'public/app/plugins/panel/stat/StatPanel.tsx',
+  'public/app/plugins/panel/table/TablePanel.tsx',
   'public/app/plugins/panel/gauge/GaugePanel.tsx',
   'public/app/plugins/panel/bargauge/BarGaugePanel.tsx',
   'public/app/plugins/panel/bargauge/BarGaugeLegend.tsx',

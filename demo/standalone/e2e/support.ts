@@ -68,8 +68,8 @@ export async function observeBrowser(page: Page) {
       ? '<provider-barchart-asset>'
       : /\/assets\/(?:pieChartPlugin|feature-piechart|provider-piechart(?:-source|-dependencies)?)-[^/]+\.js$/.test(url.pathname)
         ? '<provider-piechart-asset>'
-      : /\/assets\/(?:feature|provider)-table-[^/]+\.js$/.test(url.pathname)
-        ? '<unsupported-panel-asset>'
+      : /\/assets\/(?:tablePlugin|feature-table|provider-table(?:-source|-dependencies)?)-[^/]+\.js$/.test(url.pathname)
+        ? '<provider-table-asset>'
         : '<resource>';
     paths.push(allowedApis.has(url.pathname) || authPaths.has(url.pathname) ? url.pathname : resourceClass);
     if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++;
@@ -121,7 +121,7 @@ export async function observeBrowser(page: Page) {
       if (!queryAllowed) problems.push('unexpected API query parameters');
       if (url.pathname === '/grafana/api/ds/query') {
         const panel = headers['x-panel-id'] ?? '';
-        queryPanels.push(['2', '3', '5', '6', '7', '8'].includes(panel) ? panel : '<unexpected-panel>');
+        queryPanels.push(['2', '3', '4', '5', '6', '7', '8'].includes(panel) ? panel : '<unexpected-panel>');
         const body = request.postDataJSON();
         if (request.method() !== 'POST' || body.queries?.length !== 1 || body.queries[0].datasource?.uid !== 'grsdk-testdata' ||
             body.queries[0].scenarioId !== 'predictable_pulse') problems.push('unexpected query shape');

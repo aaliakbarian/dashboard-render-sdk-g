@@ -19,7 +19,7 @@ describe.skipIf(!credentialsAvailable)('provider-13 real partial dashboard path'
   it.each([
     ['grsdk-phase0-poc', 3, 1, ['text', 'stat', 'table', 'timeseries']],
     ['grsdk-phase0-poc-alt', 1, 0, ['text']],
-    ['drsdk-g-phase2-visualizations', 7, 1, ['text', 'stat', 'gauge', 'bargauge', 'timeseries', 'table', 'piechart', 'barchart']],
+    ['drsdk-g-phase2-visualizations', 8, 0, ['text', 'stat', 'gauge', 'bargauge', 'timeseries', 'table', 'piechart', 'barchart']],
   ] as const)('retrieves and classifies %s through health, discovery, and V1 DTO', async (
     uid,
     supportedPanelCount,

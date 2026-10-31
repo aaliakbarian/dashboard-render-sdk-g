@@ -12,6 +12,7 @@ export const PANEL_MODULE_IDENTITIES = Object.freeze({
   bargauge: 'public/app/plugins/panel/bargauge/BarGaugePanel.tsx',
   piechart: 'public/app/plugins/panel/piechart/PieChartPanel.tsx',
   barchart: 'public/app/plugins/panel/barchart/BarChartPanel.tsx',
+  table: 'public/app/plugins/panel/table/TablePanel.tsx',
 } as const);
 type PanelId = keyof typeof PANEL_MODULE_IDENTITIES;
 
@@ -65,7 +66,7 @@ export class Grafana13PanelPluginLoadError extends Error {
 }
 
 function attachMetadata(plugin: PanelPlugin, id: PanelId): PanelPlugin {
-  const name = { text: 'Text', stat: 'Stat', timeseries: 'Time series', gauge: 'Gauge', bargauge: 'Bar gauge', piechart: 'Pie chart', barchart: 'Bar chart' }[id];
+  const name = { text: 'Text', stat: 'Stat', timeseries: 'Time series', gauge: 'Gauge', bargauge: 'Bar gauge', piechart: 'Pie chart', barchart: 'Bar chart', table: 'Table' }[id];
   plugin.meta = {
     ...plugin.meta,
     baseUrl: '',
@@ -98,6 +99,7 @@ export function createGrafana13TextPanelCatalog(options: {
   readonly loadBarGaugePlugin?: () => Promise<PanelPlugin>;
   readonly loadPieChartPlugin?: () => Promise<PanelPlugin>;
   readonly loadBarChartPlugin?: () => Promise<PanelPlugin>;
+  readonly loadTablePlugin?: () => Promise<PanelPlugin>;
 }): Grafana13TextPanelCatalog {
   const pending = new Map<PanelId, Promise<PanelPlugin>>();
   const resolved = new Map<PanelId, PanelPlugin>();
@@ -109,6 +111,7 @@ export function createGrafana13TextPanelCatalog(options: {
     bargauge: options.loadBarGaugePlugin ?? (() => import('./barGaugePlugin').then(m => m.grafana13BarGaugePanelPlugin)),
     piechart: options.loadPieChartPlugin ?? (() => import('./pieChartPlugin').then(m => m.grafana13PieChartPanelPlugin)),
     barchart: options.loadBarChartPlugin ?? (() => import('./barChartPlugin').then(m => m.grafana13BarChartPanelPlugin)),
+    table: options.loadTablePlugin ?? (() => import('./tablePlugin').then(m => m.grafana13TablePanelPlugin)),
   };
 
   return {

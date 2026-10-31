@@ -9,7 +9,7 @@ import {
   inspectProviderBundleEvidence,
   type ProviderBundleEvidence,
 } from './bundleEvidencePlugin';
-import { GRAFANA_13_APPLICATION_SOURCES, GRAFANA_13_NATIVE_SOURCES, GRAFANA_13_NATIVE_UI_SOURCES, GRAFANA_13_TESTDATA_SOURCES } from './sourceIdentity';
+import { GRAFANA_13_APPLICATION_SOURCES, GRAFANA_13_NATIVE_SOURCES, GRAFANA_13_NATIVE_UI_SOURCES, GRAFANA_13_TABLE_UI_SOURCES, GRAFANA_13_TESTDATA_SOURCES } from './sourceIdentity';
 
 const radialPrefix = '<grafana-source>/packages/grafana-ui/src/components/RadialGauge/';
 
@@ -20,7 +20,7 @@ function nativeBundleEvidence(): ProviderBundleEvidence {
     (file.includes('/timeseries/') || file.includes('/core/components/')) && !sharedTimeSeries.includes(file));
   return { assets: [], moduleIds: [
     ...GRAFANA_13_APPLICATION_SOURCES, ...GRAFANA_13_NATIVE_SOURCES,
-    ...GRAFANA_13_TESTDATA_SOURCES, ...GRAFANA_13_NATIVE_UI_SOURCES,
+    ...GRAFANA_13_TESTDATA_SOURCES, ...GRAFANA_13_NATIVE_UI_SOURCES, ...GRAFANA_13_TABLE_UI_SOURCES.filter(file => !file.endsWith('/types.ts')),
   ].map(file => `<grafana-source>/${file}`), chunks: [
     { ...chunk('provider.js', ['<repo>/packages/provider-13/src/artifactEntry.ts']), isEntry: true },
     chunk('assets/text.js', GRAFANA_13_APPLICATION_SOURCES.map(file => `<grafana-source>/${file}`)),
@@ -28,6 +28,8 @@ function nativeBundleEvidence(): ProviderBundleEvidence {
     { ...chunk('assets/timeseries.js', timeSeriesOnly.map(file => `<grafana-source>/${file}`)), imports: ['assets/timeseries-shared.js'] },
     chunk('assets/gauge.js', [...GRAFANA_13_NATIVE_SOURCES.filter(file => file.includes('/gauge/')),
       ...GRAFANA_13_NATIVE_UI_SOURCES.filter(file => !file.endsWith('/constants.ts'))].map(file => `<grafana-source>/${file}`)),
+    chunk('assets/table.js', [...GRAFANA_13_NATIVE_SOURCES.filter(file => file.includes('/table/')),
+      ...GRAFANA_13_TABLE_UI_SOURCES.filter(file => !file.endsWith('/types.ts'))].map(file => `<grafana-source>/${file}`)),
     chunk('assets/bargauge.js', GRAFANA_13_NATIVE_SOURCES.filter(file => file.includes('/bargauge/')).map(file => `<grafana-source>/${file}`)),
     chunk('assets/piechart.js', GRAFANA_13_NATIVE_SOURCES.filter(file => file.includes('/piechart/')).map(file => `<grafana-source>/${file}`)),
     { ...chunk('assets/barchart.js', GRAFANA_13_NATIVE_SOURCES.filter(file => file.includes('/barchart/')).map(file => `<grafana-source>/${file}`)), imports: ['assets/timeseries-shared.js'] },
@@ -52,7 +54,7 @@ describe.each(['build', 'standalone'] as const)('%s emitted radial provenance', 
     if (result.status !== 0) throw new Error(result.stderr);
     return JSON.parse(result.stdout);
   }
-  it('accepts 13 loaded sources with 12 emitted and only constants folded away', () => {
+  it('accepts the exact isolated Gauge and Table sources with only constants/type-only modules folded away', () => {
     expect(() => inspect(nativeBundleEvidence())).not.toThrow();
   });
   it.each(['stat', 'timeseries', 'bargauge'])('rejects radial source in a shared chunk statically reached by %s', sibling => {
@@ -134,6 +136,7 @@ describe('provider-13 bundle evidence inspection', () => {
       chunk('assets/statPlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/stat/')).map(f => `<grafana-source>/${f}`)),
       { ...chunk('assets/timeSeriesPlugin.js', timeSeriesOnly.map(f => `<grafana-source>/${f}`)), imports: ['assets/timeSeriesShared.js'] },
       chunk('assets/gaugePlugin.js', [...GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/gauge/')), ...GRAFANA_13_NATIVE_UI_SOURCES].map(f => `<grafana-source>/${f}`)),
+      chunk('assets/tablePlugin.js', [...GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/table/')), ...GRAFANA_13_TABLE_UI_SOURCES.filter(f => !f.endsWith('/types.ts'))].map(f => `<grafana-source>/${f}`)),
       chunk('assets/barGaugePlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/bargauge/')).map(f => `<grafana-source>/${f}`)),
       chunk('assets/pieChartPlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/piechart/')).map(f => `<grafana-source>/${f}`)),
       { ...chunk('assets/barChartPlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/barchart/')).map(f => `<grafana-source>/${f}`)), imports: ['assets/timeSeriesShared.js'] },

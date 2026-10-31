@@ -59,8 +59,7 @@ redirects are registered for it.
 
 The host selects `drsdk-g-phase2-visualizations`, using the existing TestData
 datasource `grsdk-testdata` and its Predictable Pulse fixture. Native panels are
-Text, Stat, Time series, Gauge, Bar gauge, Pie chart, and Bar chart. Table
-remains an inert `Not-Supported` placeholder and issues no query. The sidebar
+Text, Stat, Time series, Table, Gauge, Bar gauge, Pie chart, and Bar chart. The sidebar
 collapses to an icon rail; selecting Phase 2 restores the fixture after an
 optional lookup of a missing dashboard UID.
 
@@ -125,8 +124,8 @@ with the root `compose.yaml`, not the demo stack; `--no-deps` avoids starting th
 separate root Grafana fixture. The equivalent workspace command inside this
 runner is `yarn workspace @dashboard-render-sdk-g/standalone-demo test:e2e`.
 
-The test exercises real login, both PKCE flows, Viewer authorization, seven native
-panels, one unsupported placeholder, pulse query DataFrames, sidebar resizing,
+The test exercises real login, both PKCE flows, Viewer authorization, eight native
+panels, pulse query DataFrames, sidebar resizing,
 missing-UID recovery, and logout. It also rejects unexpected network traffic,
 token forwarding/storage, duplicate React renderers, iframes, Grafana shell,
 and unexpected browser errors. It uses no route or response mocks. Authentication

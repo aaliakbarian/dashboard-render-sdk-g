@@ -14,7 +14,7 @@ function panelPlugin(): PanelPlugin {
 }
 
 describe('Grafana 13 closed Text catalogue', () => {
-  it.each(['stat', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart'] as const)('loads and caches only the fixed %s renderer identity independently', async (id) => {
+  it.each(['stat', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart', 'table'] as const)('loads and caches only the fixed %s renderer identity independently', async (id) => {
     const plugin = panelPlugin();
     const other = panelPlugin();
     const catalogue = createGrafana13TextPanelCatalog({
@@ -24,6 +24,7 @@ describe('Grafana 13 closed Text catalogue', () => {
       loadBarGaugePlugin: async () => id === 'bargauge' ? plugin : other,
       loadPieChartPlugin: async () => id === 'piechart' ? plugin : other,
       loadBarChartPlugin: async () => id === 'barchart' ? plugin : other,
+      loadTablePlugin: async () => id === 'table' ? plugin : other,
     });
     const first = catalogue.importPanelPlugin(id);
     const second = catalogue.importPanelPlugin(id);
@@ -36,12 +37,12 @@ describe('Grafana 13 closed Text catalogue', () => {
     const otherId = id === 'stat' ? 'timeseries' : 'stat';
     expect(catalogue.getPanelPluginFromCache(otherId)).toBeUndefined();
     await expect(catalogue.importPanelPlugin(otherId)).resolves.toBe(other);
-    for (const unsupported of ['table']) {
+    for (const unsupported of ['unknown']) {
       await expect(catalogue.importPanelPlugin(unsupported)).rejects.toBeInstanceOf(Grafana13UnsupportedPanelPluginError);
     }
   });
 
-  it.each(['stat', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart'] as const)('evicts a rejected %s load without poisoning its sibling or leaking the cause', async (id) => {
+  it.each(['stat', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart', 'table'] as const)('evicts a rejected %s load without poisoning its sibling or leaking the cause', async (id) => {
     let attempts = 0;
     const plugin = panelPlugin();
     const load = async () => { if (++attempts === 1) throw new Error('Bearer secret-canary'); return plugin; };
@@ -52,6 +53,7 @@ describe('Grafana 13 closed Text catalogue', () => {
       loadBarGaugePlugin: id === 'bargauge' ? load : async () => panelPlugin(),
       loadPieChartPlugin: id === 'piechart' ? load : async () => panelPlugin(),
       loadBarChartPlugin: id === 'barchart' ? load : async () => panelPlugin(),
+      loadTablePlugin: id === 'table' ? load : async () => panelPlugin(),
     });
     const failure = await catalogue.importPanelPlugin(id).catch((error: unknown) => error);
     expect(failure).toBeInstanceOf(Grafana13PanelPluginLoadError);

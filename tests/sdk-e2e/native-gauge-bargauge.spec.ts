@@ -110,7 +110,7 @@ for (const [type, expectedLast] of [['gauge', null], ['bargauge', 10], ['bargaug
   });
 }
 
-test('keeps rejected single-value profiles and both Table profiles query-free and loader-free', async ({ page }) => {
+test('keeps rejected single-value and Table profiles query-free and loader-free', async ({ page }) => {
   const session = await authenticateGrafanaFixture(page);
   try {
     const guard = await installConsoleGuard(page); const requests: string[] = [];
@@ -118,6 +118,7 @@ test('keeps rejected single-value profiles and both Table profiles query-free an
     await selectPanels(page, ['gauge', 'bargauge', 'table'], panels => {
       panels.find(p => p.type === 'gauge').options.shape = 'circle';
       panels.find(p => p.type === 'bargauge').targets[0].scenarioId = 'table_static';
+      panels.find(p => p.type === 'table').options.enablePagination = true;
       const old = JSON.parse(readFileSync('dev/grafana/provisioning/dashboards/grsdk-phase0-poc.json', 'utf8')).panels.find((p: any) => p.type === 'table');
       old.id = 44; old.gridPos = { x: 0, y: 30, w: 8, h: 6 }; panels.push(old);
     });

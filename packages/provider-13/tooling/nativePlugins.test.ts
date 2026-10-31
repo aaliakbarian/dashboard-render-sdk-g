@@ -1,6 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { GRAFANA_13_NATIVE_SOURCES, GRAFANA_13_NATIVE_UI_SOURCES } from './sourceIdentity';
+import {
+  GRAFANA_13_NATIVE_SOURCES,
+  GRAFANA_13_NATIVE_UI_SOURCES,
+  GRAFANA_13_TABLE_UI_SOURCES,
+} from './sourceIdentity';
 
 describe('pinned native renderer-only entries', () => {
   it('pins the exact view closure and excludes full modules and authoring integrations', () => {
@@ -22,11 +26,26 @@ describe('pinned native renderer-only entries', () => {
     expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/piechart/PieChart.tsx');
     expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/piechart/panelcfg.gen.ts');
     expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/piechart/utils.ts');
+    expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/table/TablePanel.tsx');
     expect(GRAFANA_13_NATIVE_UI_SOURCES).toEqual([
       'RadialGauge.tsx', 'RadialBar.tsx', 'RadialBarSegmented.tsx', 'RadialArcPath.tsx',
       'RadialArcPathEndpointMarks.tsx', 'RadialScaleLabels.tsx', 'RadialSparkline.tsx',
       'RadialText.tsx', 'ThresholdsBar.tsx', 'colors.ts', 'constants.ts', 'effects.tsx', 'utils.ts',
     ].map(file => `packages/grafana-ui/src/components/RadialGauge/${file}`));
+    expect(GRAFANA_13_TABLE_UI_SOURCES).toEqual([
+      'Cells/AutoCell.tsx',
+      'TableDataGrid.tsx',
+      'TableFlat.tsx',
+      'components/EmptyTablePlaceholder.tsx',
+      'components/HeaderCell.tsx',
+      'components/SummaryCell.tsx',
+      'constants.ts',
+      'hooks.ts',
+      'render-hooks.tsx',
+      'styles.ts',
+      'types.ts',
+      'utils.ts',
+    ].map(file => `packages/grafana-ui/src/components/Table/TableNG/${file}`));
     expect(GRAFANA_13_NATIVE_SOURCES.join('\n')).not.toMatch(/module\.tsx|[Ee]ditor|[Mm]igration|presets|suggestions|routes|System/);
     for (const [file, alias, symbol] of [
       ['statPlugin.ts', 'grafana-provider13-stat-renderer', 'StatPanel'],
@@ -35,6 +54,7 @@ describe('pinned native renderer-only entries', () => {
       ['barGaugePlugin.ts', 'grafana-provider13-bargauge-renderer', 'BarGaugePanel'],
       ['pieChartPlugin.ts', 'grafana-provider13-piechart-renderer', 'PieChartPanel'],
       ['barChartPlugin.ts', 'grafana-provider13-barchart-renderer', 'BarChartPanel'],
+      ['tablePlugin.ts', 'grafana-provider13-table-renderer', 'TablePanel'],
     ]) {
       const source = readFileSync(`packages/provider-13/src/panels/${file}`, 'utf8');
       expect(source).toContain(alias);
@@ -53,5 +73,8 @@ describe('pinned native renderer-only entries', () => {
       'public/app/plugins/panel/piechart/panelcfg.gen.ts',
       'public/app/plugins/panel/piechart/utils.ts',
     ]);
+    expect([...GRAFANA_13_NATIVE_SOURCES, ...GRAFANA_13_TABLE_UI_SOURCES].join('\n')).not.toMatch(
+      /TableNested|TableCellInspector|GeoCell|ImageCell|MarkdownCell|PillCell|CodeEditor|monaco/
+    );
   });
 });

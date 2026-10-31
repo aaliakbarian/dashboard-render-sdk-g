@@ -21,7 +21,6 @@ const forbiddenSourcePatterns = Object.freeze([
   /createElement\(\s*[`'"]iframe[`'"]\s*\)/i,
   /<iframe\b/i,
   /public\/app\/(?:routes|core\/navigation|core\/components\/AppChrome)/i,
-  /feature-table-/i,
 ]);
 
 function filesWithPrefix(files, prefix) {
@@ -133,11 +132,10 @@ export function inspectHostBundleFiles(files, evidence) {
     exactOnePrefixes.providerImplementationChunks
   )[0];
   const textFile = filesWithPrefix(files, exactOnePrefixes.featureTextChunks)[0];
-  for (const id of ['stat', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart']) {
+  for (const id of ['stat', 'timeseries', 'table', 'gauge', 'bargauge', 'piechart', 'barchart']) {
     const nativeFiles = filesWithPrefix(files, `assets/feature-${id}-`);
     if (nativeFiles.length !== 1 || nativeFiles.some(file => !hasDynamicImport(files.get(implementationFile), file))) valid = false;
   }
-  if ([...files.keys()].some(file => /^assets\/feature-table-/.test(file))) valid = false;
   const pieFeatureFile = filesWithPrefix(files, exactOnePrefixes.featurePieChunks)[0];
   const pieSourceFile = filesWithPrefix(files, exactOnePrefixes.providerPieChartChunks)[0];
   const pieDependenciesFile = filesWithPrefix(

@@ -74,18 +74,18 @@ const primary: Extract<Grafana13PartialPreflightResult, { kind: 'renderable' }> 
 };
 
 describe('convertPartialDashboardToGrafana13Scene', () => {
-  it('attaches independent existing query runners to Gauge/Bar gauge/Pie/Bar chart while Table stays inert', () => {
+  it('attaches independent existing query runners to Table/Gauge/Bar gauge/Pie/Bar chart', () => {
     const manifest = validateProviderCompatibilityManifest({ ...grafana13Provider.manifest, capabilities: {
-      ...grafana13Provider.manifest.capabilities, panels: ['text', 'stat', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart'],
+      ...grafana13Provider.manifest.capabilities, panels: ['text', 'stat', 'timeseries', 'table', 'gauge', 'bargauge', 'piechart', 'barchart'],
     } });
     if (!manifest.valid) throw new Error('Expected candidate manifest');
     const dashboard = partialPreflightGrafana13DashboardV1(fixtureDashboard('drsdk-g-phase2-visualizations'), manifest);
     if (dashboard.kind !== 'renderable') throw new Error('Expected renderable');
-    expect(dashboard.panels.filter(panel => panel.kind === 'supported').map(panel => panel.panelType)).toEqual(['text', 'stat', 'timeseries', 'gauge', 'bargauge', 'piechart', 'barchart']);
+    expect(dashboard.panels.filter(panel => panel.kind === 'supported').map(panel => panel.panelType)).toEqual(['text', 'stat', 'timeseries', 'table', 'gauge', 'bargauge', 'piechart', 'barchart']);
     const graph = convertPartialDashboardToGrafana13Scene(dashboard, scenes as never);
     const bodies = graph.scene.state.body.state.children.map((item: any) => item.state.body);
-    const native = [bodies[4], bodies[5], bodies[6], bodies[7]].map((body: any) => body.state.panel);
-    const identities = [['gauge', 5], ['bargauge', 6], ['piechart', 7], ['barchart', 8]] as const;
+    const native = [bodies[3], bodies[4], bodies[5], bodies[6], bodies[7]].map((body: any) => body.state.panel);
+    const identities = [['table', 4], ['gauge', 5], ['bargauge', 6], ['piechart', 7], ['barchart', 8]] as const;
     for (const [index, viz] of native.entries()) {
       expect(viz.state.pluginId).toBe(identities[index]![0]);
       expect(viz.state.$data.state.datasource).toEqual({ type: 'grafana-testdata-datasource', uid: 'grsdk-testdata' });
@@ -99,9 +99,9 @@ describe('convertPartialDashboardToGrafana13Scene', () => {
     expect(native[0].state.$data).not.toBe(native[1].state.$data);
     expect(native[1].state.$data).not.toBe(native[2].state.$data);
     expect(native[2].state.$data).not.toBe(native[3].state.$data);
-    for (const index of [3]) expect(JSON.stringify(bodies[index].state)).not.toMatch(/\$data|queries|targets|datasource|pluginId/);
     const failed = convertPartialDashboardToGrafana13Scene(dashboard, scenes as never, { failedPluginIds: ['gauge'] });
     expect(JSON.stringify(failed.scene.state.body.state.children[4].state.body.state)).not.toMatch(/\$data|queries|targets|datasource|pluginId/);
+    expect(failed.scene.state.body.state.children[3].state.body.state.panel.state.$data).toBeInstanceOf(FakeQueryRunner);
     expect(failed.scene.state.body.state.children[5].state.body.state.panel.state.$data).toBeInstanceOf(FakeQueryRunner);
     expect(failed.scene.state.body.state.children[6].state.body.state.panel.state.$data).toBeInstanceOf(FakeQueryRunner);
     expect(failed.scene.state.body.state.children[7].state.body.state.panel.state.$data).toBeInstanceOf(FakeQueryRunner);
