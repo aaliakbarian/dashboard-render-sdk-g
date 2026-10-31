@@ -15,6 +15,9 @@ const radialPrefix = '<grafana-source>/packages/grafana-ui/src/components/Radial
 
 function nativeBundleEvidence(): ProviderBundleEvidence {
   const chunk = (fileName: string, modules: string[]) => ({ fileName, modules, dynamicImports: [], imports: [] as string[], gzipSize: 1, rawSize: 1, isEntry: false });
+  const sharedTimeSeries = GRAFANA_13_NATIVE_SOURCES.filter(file => /\/timeseries\/(?:TimeSeriesTooltip\.tsx|utils\.ts)$/.test(file));
+  const timeSeriesOnly = GRAFANA_13_NATIVE_SOURCES.filter(file =>
+    (file.includes('/timeseries/') || file.includes('/core/components/')) && !sharedTimeSeries.includes(file));
   return { assets: [], moduleIds: [
     ...GRAFANA_13_APPLICATION_SOURCES, ...GRAFANA_13_NATIVE_SOURCES,
     ...GRAFANA_13_TESTDATA_SOURCES, ...GRAFANA_13_NATIVE_UI_SOURCES,
@@ -22,10 +25,12 @@ function nativeBundleEvidence(): ProviderBundleEvidence {
     { ...chunk('provider.js', ['<repo>/packages/provider-13/src/artifactEntry.ts']), isEntry: true },
     chunk('assets/text.js', GRAFANA_13_APPLICATION_SOURCES.map(file => `<grafana-source>/${file}`)),
     chunk('assets/stat.js', GRAFANA_13_NATIVE_SOURCES.filter(file => file.includes('/stat/')).map(file => `<grafana-source>/${file}`)),
-    chunk('assets/timeseries.js', GRAFANA_13_NATIVE_SOURCES.filter(file => !/\/panel\/(?:stat|gauge|bargauge)\//.test(file)).map(file => `<grafana-source>/${file}`)),
+    { ...chunk('assets/timeseries.js', timeSeriesOnly.map(file => `<grafana-source>/${file}`)), imports: ['assets/timeseries-shared.js'] },
     chunk('assets/gauge.js', [...GRAFANA_13_NATIVE_SOURCES.filter(file => file.includes('/gauge/')),
       ...GRAFANA_13_NATIVE_UI_SOURCES.filter(file => !file.endsWith('/constants.ts'))].map(file => `<grafana-source>/${file}`)),
     chunk('assets/bargauge.js', GRAFANA_13_NATIVE_SOURCES.filter(file => file.includes('/bargauge/')).map(file => `<grafana-source>/${file}`)),
+    { ...chunk('assets/barchart.js', GRAFANA_13_NATIVE_SOURCES.filter(file => file.includes('/barchart/')).map(file => `<grafana-source>/${file}`)), imports: ['assets/timeseries-shared.js'] },
+    chunk('assets/timeseries-shared.js', sharedTimeSeries.map(file => `<grafana-source>/${file}`)),
     chunk('assets/query.js', GRAFANA_13_TESTDATA_SOURCES.map(file => `<grafana-source>/${file}`)),
   ] };
 }
@@ -120,12 +125,17 @@ describe('provider-13 emitted browser chunks', () => {
 describe('provider-13 bundle evidence inspection', () => {
   it('admits exact independent native closures and query scenes only when native provenance exists', () => {
     const chunk = (fileName: string, modules: string[]) => ({ fileName, modules, dynamicImports: [], imports: [], gzipSize: 1, rawSize: 1, isEntry: false });
+    const sharedTimeSeries = GRAFANA_13_NATIVE_SOURCES.filter(file => /\/timeseries\/(?:TimeSeriesTooltip\.tsx|utils\.ts)$/.test(file));
+    const timeSeriesOnly = GRAFANA_13_NATIVE_SOURCES.filter(file =>
+      (file.includes('/timeseries/') || file.includes('/core/components/')) && !sharedTimeSeries.includes(file));
     const report: ProviderBundleEvidence = { assets: [], moduleIds: [], chunks: [
       chunk('assets/text.js', GRAFANA_13_APPLICATION_SOURCES.map(f => `<grafana-source>/${f}`)),
       chunk('assets/statPlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/stat/')).map(f => `<grafana-source>/${f}`)),
-      chunk('assets/timeSeriesPlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => !/\/panel\/(?:stat|gauge|bargauge)\//.test(f)).map(f => `<grafana-source>/${f}`)),
+      { ...chunk('assets/timeSeriesPlugin.js', timeSeriesOnly.map(f => `<grafana-source>/${f}`)), imports: ['assets/timeSeriesShared.js'] },
       chunk('assets/gaugePlugin.js', [...GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/gauge/')), ...GRAFANA_13_NATIVE_UI_SOURCES].map(f => `<grafana-source>/${f}`)),
       chunk('assets/barGaugePlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/bargauge/')).map(f => `<grafana-source>/${f}`)),
+      { ...chunk('assets/barChartPlugin.js', GRAFANA_13_NATIVE_SOURCES.filter(f => f.includes('/barchart/')).map(f => `<grafana-source>/${f}`)), imports: ['assets/timeSeriesShared.js'] },
+      chunk('assets/timeSeriesShared.js', sharedTimeSeries.map(f => `<grafana-source>/${f}`)),
       chunk('assets/query.js', [...GRAFANA_13_TESTDATA_SOURCES.map(f => `<grafana-source>/${f}`), '<repo>/node_modules/@grafana/scenes/dist/esm/querying/SceneQueryRunner.js']),
     ] };
     expect(() => inspectProviderBundleEvidence(report)).not.toThrow();

@@ -109,7 +109,7 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     .map((id) => id.slice('<grafana-source>/'.length))
     .sort();
   const hasQuerySource = applicationSources.some(id => id.includes('/datasource/'));
-  const hasNativeSource = applicationSources.some(id => id.includes('/stat/') || id.includes('/timeseries/'));
+  const hasNativeSource = applicationSources.some(id => /\/panel\/(?:stat|timeseries|gauge|bargauge|barchart)\//.test(id));
   const nativeUiProvenance = inspectNativeUiProvenance(report);
   const nativeUiSources = nativeUiProvenance.loadedSources.map(id => id.slice('<grafana-source>/'.length));
   const expectedSources = [...GRAFANA_13_APPLICATION_SOURCES, ...(hasQuerySource ? GRAFANA_13_TESTDATA_SOURCES : []), ...(hasNativeSource ? GRAFANA_13_NATIVE_SOURCES : [])].sort();
@@ -144,7 +144,11 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     (!hasNativeSource && /\/querying\/(?:SceneQueryRunner|RuntimeDataSource)\.(?:m?js)$/.test(id)) ||
     (!hasQuerySource && /\/services\/dataSourceSrv\.mjs$/.test(id))
   );
-  const nativeFeatures = ['stat', 'timeseries', 'gauge', 'bargauge'];
+  const nativeFeatures = ['stat', 'timeseries', 'gauge', 'bargauge', 'barchart'];
+  const auditedCrossFeatureSources = new Set([
+    '<grafana-source>/public/app/plugins/panel/timeseries/TimeSeriesTooltip.tsx',
+    '<grafana-source>/public/app/plugins/panel/timeseries/utils.ts',
+  ]);
   const featureClosures = Object.fromEntries(nativeFeatures.map(feature => {
     const files = new Set<string>();
     const visitFeature = (file: string) => {
@@ -156,7 +160,8 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     return [feature, [...files].flatMap(file => byFile.get(file)?.modules ?? [])];
   }));
   const crossedFeatureSources = nativeFeatures.flatMap(feature => (featureClosures[feature] ?? []).filter(id =>
-    nativeFeatures.some(other => other !== feature && id.includes(`/panel/${other}/`))));
+    nativeFeatures.some(other => other !== feature && id.includes(`/panel/${other}/`)) &&
+    !(feature === 'barchart' && auditedCrossFeatureSources.has(id))));
   const inertEntryGrafanaModules = report.chunks
     .filter((chunk) => chunk.isEntry)
     .flatMap((chunk) => chunk.modules)
@@ -234,7 +239,22 @@ export function inspectProviderBundleEvidence(report: ProviderBundleEvidence) {
     duplicateCohortOwners.length > 0
     || crossedFeatureSources.length > 0
   ) {
-    throw new Error(`Provider bundle boundary evidence did not match the exact audited closure. ${JSON.stringify({ eagerQuerySources, eagerNativeModules, forbidden, executableQueryModules, crossedFeatureSources, duplicateCohortOwners })}`);
+    throw new Error(`Provider bundle boundary evidence did not match the exact audited closure. ${JSON.stringify({
+      applicationSources,
+      expectedSources,
+      eagerQuerySources,
+      eagerNativeModules,
+      forbidden,
+      executableQueryModules,
+      crossedFeatureSources,
+      duplicateCohortOwners,
+      inertEntryGrafanaModules,
+      inertEntryDeferredModules,
+      misplacedTslibOwners,
+      misplacedUuidOwners,
+      misplacedScenesDependencyOwners,
+      cyclicReactDomExternalWrappers,
+    })}`);
   }
   return Object.freeze({
     applicationSources,

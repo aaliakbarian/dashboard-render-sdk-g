@@ -74,31 +74,35 @@ const primary: Extract<Grafana13PartialPreflightResult, { kind: 'renderable' }> 
 };
 
 describe('convertPartialDashboardToGrafana13Scene', () => {
-  it('attaches independent existing query runners to Gauge/Bar gauge and no execution state to either Table profile', () => {
+  it('attaches independent existing query runners to Gauge/Bar gauge/Bar chart while Table and Pie stay inert', () => {
     const manifest = validateProviderCompatibilityManifest({ ...grafana13Provider.manifest, capabilities: {
-      ...grafana13Provider.manifest.capabilities, panels: ['text', 'stat', 'timeseries', 'gauge', 'bargauge'],
+      ...grafana13Provider.manifest.capabilities, panels: ['text', 'stat', 'timeseries', 'gauge', 'bargauge', 'barchart'],
     } });
     if (!manifest.valid) throw new Error('Expected candidate manifest');
     const dashboard = partialPreflightGrafana13DashboardV1(fixtureDashboard('drsdk-g-phase2-visualizations'), manifest);
     if (dashboard.kind !== 'renderable') throw new Error('Expected renderable');
-    expect(dashboard.panels.filter(panel => panel.kind === 'supported').map(panel => panel.panelType)).toEqual(['text', 'stat', 'timeseries', 'gauge', 'bargauge']);
+    expect(dashboard.panels.filter(panel => panel.kind === 'supported').map(panel => panel.panelType)).toEqual(['text', 'stat', 'timeseries', 'gauge', 'bargauge', 'barchart']);
     const graph = convertPartialDashboardToGrafana13Scene(dashboard, scenes as never);
     const bodies = graph.scene.state.body.state.children.map((item: any) => item.state.body);
-    const [gauge, barGauge] = bodies.slice(4, 6).map((body: any) => body.state.panel);
-    for (const [index, viz] of [gauge, barGauge].entries()) {
-      expect(viz.state.pluginId).toBe(index === 0 ? 'gauge' : 'bargauge');
+    const native = [bodies[4], bodies[5], bodies[7]].map((body: any) => body.state.panel);
+    const identities = [['gauge', 5], ['bargauge', 6], ['barchart', 8]] as const;
+    for (const [index, viz] of native.entries()) {
+      expect(viz.state.pluginId).toBe(identities[index]![0]);
       expect(viz.state.$data.state.datasource).toEqual({ type: 'grafana-testdata-datasource', uid: 'grsdk-testdata' });
       expect(viz.state.$data.state.queries[0]).toMatchObject({ refId: 'A', scenarioId: 'predictable_pulse' });
       expect(viz.state.$data.parent).toBe(viz);
-      expect(graph.scene.enrichDataRequest(viz.state.$data)).toEqual({ dashboardUID: dashboard.uid, panelId: index + 5 });
-      expect(viz.state.options).toEqual((dashboard.panels[index + 4] as any).model.options);
-      expect(viz.state.fieldConfig).toEqual((dashboard.panels[index + 4] as any).model.fieldConfig);
+      expect(graph.scene.enrichDataRequest(viz.state.$data)).toEqual({ dashboardUID: dashboard.uid, panelId: identities[index]![1] });
+      const source = dashboard.panels.find(panel => panel.id === identities[index]![1]) as any;
+      expect(viz.state.options).toEqual(source.model.options);
+      expect(viz.state.fieldConfig).toEqual(source.model.fieldConfig);
     }
-    expect(gauge.state.$data).not.toBe(barGauge.state.$data);
-    for (const index of [3, 6, 7]) expect(JSON.stringify(bodies[index].state)).not.toMatch(/\$data|queries|targets|datasource|pluginId/);
+    expect(native[0].state.$data).not.toBe(native[1].state.$data);
+    expect(native[1].state.$data).not.toBe(native[2].state.$data);
+    for (const index of [3, 6]) expect(JSON.stringify(bodies[index].state)).not.toMatch(/\$data|queries|targets|datasource|pluginId/);
     const failed = convertPartialDashboardToGrafana13Scene(dashboard, scenes as never, { failedPluginIds: ['gauge'] });
     expect(JSON.stringify(failed.scene.state.body.state.children[4].state.body.state)).not.toMatch(/\$data|queries|targets|datasource|pluginId/);
     expect(failed.scene.state.body.state.children[5].state.body.state.panel.state.$data).toBeInstanceOf(FakeQueryRunner);
+    expect(failed.scene.state.body.state.children[7].state.body.state.panel.state.$data).toBeInstanceOf(FakeQueryRunner);
   });
   it('parents independent real-query strategies under Stat and transformed Time series while preserving exact DTO state', () => {
     const fixture = JSON.parse(readFileSync('dev/grafana/provisioning/dashboards/drsdk-g-phase2-visualizations.json', 'utf8'));

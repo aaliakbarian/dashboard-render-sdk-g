@@ -5,6 +5,8 @@ import { providerArtifactChunk } from './vite.config';
 describe('SDK host provider artifact chunk ownership', () => {
   it.each([
     ['provider-stat-AbCdEf12.js', 'feature-stat'],
+    ['provider-barchart-AbCdEf12.js', 'feature-barchart'],
+    ['provider-timeseries-shared-AbCdEf12.js', 'provider-timeseries-shared'],
     ['provider-timeseries-AbCdEf12.js', 'feature-timeseries'],
     ['provider-native-visualization-AbCdEf12.js', 'provider-native-visualization'],
     ['provider-visualization-dependencies-AbCdEf12.js', 'provider-visualization-dependencies'],

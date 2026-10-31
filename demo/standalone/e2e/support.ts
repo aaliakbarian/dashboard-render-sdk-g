@@ -64,7 +64,12 @@ export async function observeBrowser(page: Page) {
   page.on('websocket', () => problems.push('unexpected WebSocket'));
   page.on('request', request => {
     const url = new URL(request.url());
-    paths.push(allowedApis.has(url.pathname) || authPaths.has(url.pathname) ? url.pathname : '<resource>');
+    const resourceClass = /\/assets\/provider-barchart-[^/]+\.js$/.test(url.pathname)
+      ? '<provider-barchart-asset>'
+      : /\/assets\/(?:feature|provider)-(?:table|piechart)-[^/]+\.js$/.test(url.pathname)
+        ? '<unsupported-panel-asset>'
+        : '<resource>';
+    paths.push(allowedApis.has(url.pathname) || authPaths.has(url.pathname) ? url.pathname : resourceClass);
     if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documents++;
     if (url.origin !== origin) problems.push('cross-origin request');
     const allowedResource = url.pathname === '/' || url.pathname === '/favicon.ico' ||
@@ -114,7 +119,7 @@ export async function observeBrowser(page: Page) {
       if (!queryAllowed) problems.push('unexpected API query parameters');
       if (url.pathname === '/grafana/api/ds/query') {
         const panel = headers['x-panel-id'] ?? '';
-        queryPanels.push(['2', '3', '5', '6'].includes(panel) ? panel : '<unexpected-panel>');
+        queryPanels.push(['2', '3', '5', '6', '8'].includes(panel) ? panel : '<unexpected-panel>');
         const body = request.postDataJSON();
         if (request.method() !== 'POST' || body.queries?.length !== 1 || body.queries[0].datasource?.uid !== 'grsdk-testdata' ||
             body.queries[0].scenarioId !== 'predictable_pulse') problems.push('unexpected query shape');

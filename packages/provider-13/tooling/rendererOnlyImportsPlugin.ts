@@ -18,6 +18,9 @@ const leaves: Readonly<Record<string, string>> = {
   'ui-tooltip-header': '@grafana/ui/dist/esm/components/VizTooltip/VizTooltipHeader.mjs',
   'ui-tooltip-wrapper': '@grafana/ui/dist/esm/components/VizTooltip/VizTooltipWrapper.mjs',
   'ui-tooltip-utils': '@grafana/ui/dist/esm/components/VizTooltip/utils.mjs',
+  'ui-measure-text': '@grafana/ui/dist/esm/utils/measureText.mjs',
+  'ui-uplot-axis': '@grafana/ui/dist/esm/components/uPlot/config/UPlotAxisBuilder.mjs',
+  'ui-uplot-types': '@grafana/ui/dist/esm/components/uPlot/types.mjs',
   'query-runner': '@grafana/scenes/dist/esm/querying/SceneQueryRunner.js',
   'data-transformer': '@grafana/scenes/dist/esm/querying/SceneDataTransformer.js',
   'convert-field': '@grafana/data/dist/esm/transformations/transformers/convertFieldType.mjs',
@@ -34,6 +37,7 @@ const leaves: Readonly<Record<string, string>> = {
 const absentIntegrations = new Set([
   './plugins/AnnotationsPlugin', './plugins/ExemplarsPlugin', './plugins/utils', '../status-history/utils', './suggestions',
   '../../../plugins/panel/timeseries/plugins/utils',
+  'app/core/components/TimelineChart/utils',
   'app/core/components/AssistantTooltip/AssistantTooltipButton', 'app/core/components/AssistantTooltip/buildAssistantContext',
   'app/features/panel/filters/adhoc',
 ]);
@@ -46,7 +50,7 @@ export function rendererOnlyImportsPlugin(options: { readonly providerRoot: stri
     if (id === resolve(options.repositoryRoot, 'node_modules/@grafana/scenes/dist/esm/querying/SceneQueryRunner.js').replaceAll('\\', '/') && [
       '../variables/adhoc/AdHocFiltersVariable.js', '../variables/groupby/GroupByVariable.js', '../variables/DrilldownDependenciesManager.js',
     ].includes(source)) return view('queryInert.ts');
-    if (source === 'grafana-provider13-data-panel-plugin' && /^.+\/src\/panels\/(?:statPlugin|timeSeriesPlugin|gaugePlugin|barGaugePlugin)\.ts$/.test(id) && id.startsWith(`${provider}/`)) return resolve(options.repositoryRoot, 'node_modules/@grafana/data/dist/esm/panel/PanelPlugin.mjs');
+    if (source === 'grafana-provider13-data-panel-plugin' && /^.+\/src\/panels\/(?:statPlugin|timeSeriesPlugin|gaugePlugin|barGaugePlugin|barChartPlugin)\.ts$/.test(id) && id.startsWith(`${provider}/`)) return resolve(options.repositoryRoot, 'node_modules/@grafana/data/dist/esm/panel/PanelPlugin.mjs');
     if (source === 'grafana-provider13-query-scenes' && id === `${provider}/src/runtime/implementation.tsx`) return view('queryScenes.ts');
     if (id.startsWith(`${provider}/tooling/viewOnly/`)) {
       if (source === 'grafana-provider13-native-radial-gauge') return `${prefix}packages/grafana-ui/src/components/RadialGauge/RadialGauge.tsx.js`;

@@ -11,6 +11,13 @@ describe('pinned native renderer-only entries', () => {
     expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/bargauge/BarGaugePanel.tsx');
     expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/bargauge/BarGaugeLegend.tsx');
     expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/bargauge/panelcfg.gen.ts');
+    expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/barchart/BarChartPanel.tsx');
+    expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/barchart/BarChartLegend.tsx');
+    expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/barchart/utils.ts');
+    expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/barchart/bars.ts');
+    expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/barchart/distribute.ts');
+    expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/barchart/quadtree.ts');
+    expect(GRAFANA_13_NATIVE_SOURCES).toContain('public/app/plugins/panel/barchart/panelcfg.gen.ts');
     expect(GRAFANA_13_NATIVE_UI_SOURCES).toEqual([
       'RadialGauge.tsx', 'RadialBar.tsx', 'RadialBarSegmented.tsx', 'RadialArcPath.tsx',
       'RadialArcPathEndpointMarks.tsx', 'RadialScaleLabels.tsx', 'RadialSparkline.tsx',
@@ -22,6 +29,7 @@ describe('pinned native renderer-only entries', () => {
       ['timeSeriesPlugin.ts', 'grafana-provider13-timeseries-renderer', 'TimeSeriesPanel'],
       ['gaugePlugin.ts', 'grafana-provider13-gauge-renderer', 'GaugePanel'],
       ['barGaugePlugin.ts', 'grafana-provider13-bargauge-renderer', 'BarGaugePanel'],
+      ['barChartPlugin.ts', 'grafana-provider13-barchart-renderer', 'BarChartPanel'],
     ]) {
       const source = readFileSync(`packages/provider-13/src/panels/${file}`, 'utf8');
       expect(source).toContain(alias);
@@ -29,5 +37,11 @@ describe('pinned native renderer-only entries', () => {
       expect(source).toContain('useFieldConfig');
       expect(source).not.toMatch(/module\.tsx|setPanelOptions|setMigrationHandler|setSuggestionsSupplier/);
     }
+    const pie = readFileSync('.grafana-source/grafana-v13.2.3/public/app/plugins/panel/piechart/PieChart.tsx', 'utf8');
+    expect([...pie.matchAll(/from ['"](@visx\/[^'"]+)['"]/g)].map(match => match[1]).sort()).toEqual([
+      '@visx/event', '@visx/gradient', '@visx/group', '@visx/shape/lib/shapes/Pie',
+      '@visx/tooltip', '@visx/tooltip/lib/hooks/useTooltip',
+    ]);
+    expect(GRAFANA_13_NATIVE_SOURCES.some(source => source.includes('/piechart/'))).toBe(false);
   });
 });
