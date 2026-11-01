@@ -11,6 +11,8 @@ export interface Grafana13DashboardSceneGraph {
   readonly scene: any;
 }
 
+type LifecycleRelease = void | (() => void);
+
 type QueryIdentity = { readonly dashboardUID: string; readonly panelId: number };
 let nextSceneGeneration = 0;
 
@@ -43,7 +45,12 @@ function createNativePanelBody(
 export function convertPartialDashboardToGrafana13Scene(
   dashboard: RenderableDashboard,
   scenes: Grafana13ScenesModule,
-  options: { readonly onPanelRenderFailure?: (panelId: number) => void; readonly failedPluginIds?: readonly string[] } = {}
+  options: {
+    readonly failedPluginIds?: readonly string[];
+    readonly onPanelRenderFailure?: (panelId: number) => void;
+    readonly onQueryRunnerActivation?: (panelId: number) => LifecycleRelease;
+    readonly onSceneActivation?: () => LifecycleRelease;
+  } = {}
 ): Grafana13DashboardSceneGraph {
   // One fresh prefix per scene generation, never derived from caller text or
   // React IDs. The pinned runner appends its own monotonic request counter.
@@ -75,6 +82,9 @@ export function convertPartialDashboardToGrafana13Scene(
               maxDataPoints: 300,
               requestIdPrefix: `sdk13-g${generation}-p${panel.id}`,
             });
+            if (options.onQueryRunnerActivation) {
+              runner.addActivationHandler(() => options.onQueryRunnerActivation?.(panel.id));
+            }
             queryIdentities.set(runner, Object.freeze({ dashboardUID: dashboard.uid, panelId: panel.id }));
             if (panel.model.type === 'timeseries' && panel.model.transformations.length) {
               if (!scenes.SceneDataTransformer) throw new Error('Transform scene constructor is unavailable.');
@@ -123,15 +133,19 @@ export function convertPartialDashboardToGrafana13Scene(
     to: dashboard.timeRange.to,
   });
   const variableSet = new scenes.SceneVariableSet({ variables });
+  const scene = createRoot(scenes, {
+    $timeRange: timeRange,
+    $variables: variableSet,
+    body,
+    title: dashboard.title,
+    uid: dashboard.uid,
+  }, queryIdentities);
+  if (options.onSceneActivation) {
+    scene.addActivationHandler(() => options.onSceneActivation?.());
+  }
   return Object.freeze({
     panelIds: Object.freeze(dashboard.panels.map(({ id }) => id)),
-    scene: createRoot(scenes, {
-      $timeRange: timeRange,
-      $variables: variableSet,
-      body,
-      title: dashboard.title,
-      uid: dashboard.uid,
-    }, queryIdentities),
+    scene,
   });
 }
 

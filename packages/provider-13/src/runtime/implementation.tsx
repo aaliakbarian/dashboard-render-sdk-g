@@ -40,6 +40,28 @@ function releaseOnce(actions: readonly (() => void)[]) {
   };
 }
 
+function markTestResource(kind: 'sceneActivation' | 'subscription'): LifecycleRelease {
+  try {
+    const evidence = (
+      globalThis as typeof globalThis & {
+        __POC_RESOURCE_EVIDENCE__?: {
+          mark(resource: 'sceneActivation' | 'subscription', lifetime: 'instance'): unknown;
+        };
+      }
+    ).__POC_RESOURCE_EVIDENCE__;
+    if (!evidence || typeof evidence.mark !== 'function') return;
+    const release = evidence.mark(kind, 'instance');
+    return typeof release === 'function' ? () => {
+      try { release(); } catch { /* test evidence cannot interrupt real cleanup */ }
+    } : undefined;
+  } catch {
+    // Test-only evidence must never affect the production lifecycle.
+    return;
+  }
+}
+
+type LifecycleRelease = void | (() => void);
+
 export function createGrafana13RuntimeDashboardMounter(
   dependencies: RuntimeMounterDependencies
 ): Grafana13RuntimeImplementation['mountDashboard'] {
@@ -95,7 +117,12 @@ export function createGrafana13RuntimeDashboardMounter(
         }
       }
       scope = lease.acquireSceneScope(instanceId);
-      const graph = dependencies.convert(dashboard, sceneConstructors, { failedPluginIds, onPanelRenderFailure });
+      const graph = dependencies.convert(dashboard, sceneConstructors, {
+        failedPluginIds,
+        onPanelRenderFailure,
+        onQueryRunnerActivation: () => markTestResource('subscription'),
+        onSceneActivation: () => markTestResource('sceneActivation'),
+      });
       deactivate = graph.scene.activate();
       const Scene = graph.scene.Component;
       const sceneElement = createElement(

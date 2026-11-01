@@ -2,6 +2,10 @@
 
 Private, experimental Grafana OSS 13.2.3 provider workspace for Dashboard Render SDK G.
 
+The exact Phase 2 eight-panel compatibility cell, supported profiles, fallback
+policy, lifecycle evidence, and packaging limitations are documented in the
+[Phase 2 native rendering support matrix](../../docs/architecture/production/phase-2-native-rendering-support.md).
+
 This package is not published. It implements a bounded, stateless Grafana OSS
 13.2.3 dashboard provider slice for issue #89:
 
