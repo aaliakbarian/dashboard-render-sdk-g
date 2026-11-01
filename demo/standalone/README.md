@@ -1,5 +1,8 @@
 # Standalone SDK demo
 
+The demo exercises the exact bounded profiles in the
+[Phase 2 native rendering support matrix](../../docs/architecture/production/phase-2-native-rendering-support.md).
+
 This local reference app owns its navigation, layout, authentication, and logout
 while rendering the existing Phase 2 dashboard through the public SDK. It is
 experimental contributor infrastructure, not an SDK backend or a deployment

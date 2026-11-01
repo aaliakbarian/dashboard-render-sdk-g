@@ -12,6 +12,17 @@ export function expandedManifest() {
 }
 
 describe('all-eight private fixture contract', () => {
+  const rejectedProfiles: Array<[string, (panel: any) => void]> = [
+    ['text', panel => { panel.options.mode = 'html'; }],
+    ['stat', panel => { panel.options.reduceOptions.calcs = ['mean']; }],
+    ['timeseries', panel => { panel.transformations[0].options.regex = '/Other/'; }],
+    ['table', panel => { panel.targets[0].scenarioId = 'table_static'; }],
+    ['gauge', panel => { panel.options.shape = 'circle'; }],
+    ['bargauge', panel => { panel.options.displayMode = 'basic'; }],
+    ['piechart', panel => { panel.options.pieType = 'donut'; }],
+    ['barchart', panel => { panel.options.stacking = 'normal'; }],
+  ];
+
   it('pins eight unique nonoverlapping grids and the same cloned bounded pulse target', () => {
     const fixture = fixtureDashboard('drsdk-g-phase2-visualizations');
     expect(fixture.spec.panels.map((p) => [p.id, p.type, p.gridPos])).toEqual([
@@ -78,6 +89,29 @@ describe('all-eight private fixture contract', () => {
     expect(original.spec.panels[3]).toMatchObject({ type: 'table', targets: [{ scenarioId: 'table_static' }] });
     expect(classifyGrafana13PanelProfile(original.spec.panels[3]).kind).toBe('unsupported');
     expect(preflightGrafana13DashboardV1(original, expandedManifest()).kind).toBe('unsupported');
+  });
+
+  it.each(rejectedProfiles)('isolates a rejected %s profile without retaining executable state', (type, mutate) => {
+    const dashboard: any = structuredClone(fixtureDashboard('drsdk-g-phase2-visualizations'));
+    const index = dashboard.spec.panels.findIndex((panel: any) => panel.type === type);
+    expect(index).toBeGreaterThanOrEqual(0);
+    mutate(dashboard.spec.panels[index]);
+
+    expect(preflightGrafana13DashboardV1(dashboard, expandedManifest()).kind).toBe('unsupported');
+    const partial = partialPreflightGrafana13DashboardV1(dashboard, expandedManifest());
+    expect(partial).toMatchObject({
+      kind: 'renderable',
+      supportedPanelCount: 7,
+      unsupportedPanelCount: 1,
+    });
+    if (partial.kind !== 'renderable') throw new Error('Expected panel-local fallback');
+    const rejected = partial.panels[index];
+    expect(rejected).toMatchObject({ kind: 'unsupported', panelType: type });
+    expect(rejected).not.toHaveProperty('model');
+    expect(JSON.stringify(rejected)).not.toMatch(
+      /query|targets|datasource|transformations|predictable_pulse|table_static|grsdk-testdata/
+    );
+    expect(partial.panels.filter(panel => panel.kind === 'supported')).toHaveLength(7);
   });
 
 });

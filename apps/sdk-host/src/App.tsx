@@ -120,6 +120,8 @@ export function App() {
           <button data-testid="sdk-toggle-mount" onClick={() => setMounted((value) => !value)} type="button">Toggle dashboard</button>
           <button data-testid="sdk-toggle-second" onClick={() => setTwoInstances((value) => !value)} type="button">Toggle second dashboard</button>
           <button data-testid="sdk-toggle-native-second" onClick={() => { setSecondaryUid(PRIMARY_UID); setTwoInstances((value) => !value); }} type="button">Toggle second native dashboard</button>
+          <button data-testid="sdk-toggle-expanded-second" onClick={() => { setSecondaryUid('drsdk-g-phase2-visualizations'); setTwoInstances((value) => !value); }} type="button">Toggle second expanded dashboard</button>
+          <button data-testid="sdk-select-alternate-uid" onClick={() => setUid(ALTERNATE_UID)} type="button">Alternate fixture</button>
           <button data-testid="sdk-expanded-uid" onClick={() => setUid('drsdk-g-phase2-visualizations')} type="button">Expanded fixture</button>
           <button data-testid="sdk-toggle-conflict" onClick={() => setUseConflict((value) => !value)} type="button">Toggle runtime conflict</button>
         </nav>
