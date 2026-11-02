@@ -1,0 +1,1185 @@
+{
+  "components": [
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-data%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-data/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "0b756cafd315a4214ea8cb290d73e31d0ba8b35aa6e23f6c3492e3a0b1faa6ef"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/RadialGauge/colors.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "21a76323a4bc5f2e8cf93763d72576cb4ef6b4618158742a993cd90b01a4a9cc"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/RadialGauge/effects.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "574b4a5d2a0580cee2a7277127e359473ae1ad18d30a4234e2ee3586558e32d9"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/RadialGauge/RadialArcPath.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "c81116e325c0b11baae96bd426763db8ec9e995d43495ea68cb20fb399acf819"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/RadialGauge/RadialArcPathEndpointMarks.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "39640891aad5a1d63e698215acfa24063ccfbd0f4ab86c7e00c1ec9021318f9c"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/RadialGauge/RadialBar.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "ccac97ad803ae543e8546fd4d673e6eb69665300905bfbf5a6231b6fe1a03ef9"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/RadialGauge/RadialBarSegmented.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "5f6bddb5f974607133a9eba1db2f4ee157befd24a7587fe0257a6738741effa6"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/RadialGauge/RadialGauge.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "c41454e158ed2f35d192d74bcdaac4f5204b90e37465e35d9104f73e91da09a7"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/RadialGauge/RadialScaleLabels.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "4ef296f7bc01a905d0ed3f799807b11aac82fcbf1e6c23308c5259eb92e5d2d3"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/RadialGauge/RadialSparkline.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "1e7a342f2d142a5a178daac4f4429f27733dac86b7af561a72e31aea3614b9d4"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/RadialGauge/RadialText.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "1b1b04af14f5710bfd6df4b0df156d60d936e07a4593498b0f7b8bdc98ff2e21"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/RadialGauge/ThresholdsBar.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "d219765b27c9e8a84888a4b3e96699cecdeb3891bf897cda7590a10dc4ed1d61"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/RadialGauge/utils.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "183b9e20c56347edcb8276333452c7685919f4299cab45abbc20beb86bf58447"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/Table/TableNG/Cells/AutoCell.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "f05163d34249250ba9a2e567267b9b8e71e3dbbb50bd1e4388152771a23f4041"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/Table/TableNG/components/EmptyTablePlaceholder.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "ccd705e8def2d89404adfb77b913f729e3a579e45e74cec6fdd618decf3547f2"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/Table/TableNG/components/HeaderCell.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "95be54654dd3af92a5f713ad0d162d0163457f66b173ac1f2959876a4312352c"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/Table/TableNG/components/SummaryCell.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "5a8841cd73814184f0734984580153746bd9a6bc59751af1620765f2c9ca908e"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/Table/TableNG/constants.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "ccca61f9fcf4caff29c93c6027bc5ddea1ea5152160b55c881cb1fda9e435d2c"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/Table/TableNG/hooks.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "d77176b74efd75c26a91cc3e0f293c8a0242404cc204d9341807729afcf9c879"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/Table/TableNG/render-hooks.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "67f8f3d44860f509e8a7a6dc0b63fe5b660558a225b5f72e7cedf41a49353718"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/Table/TableNG/styles.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "e952b3e778ff1b22b22fa7a2665d99c94df80ba8fdfc94c192663f40521a2c52"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/Table/TableNG/TableDataGrid.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "018c1ef332f95545aac44f0e6da5c68ab3f0a4e607473bcf1d8ab6c8e4c288f7"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/Table/TableNG/TableFlat.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "a531010ac9ee0d8eb3d0d49b38507d5f3205b132ba4bcd41f01f1e015cb3ae71"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/source/packages%2Fgrafana-ui%2FLICENSE_APACHE2",
+          "path": ".grafana-source/grafana-v13.2.3/packages/grafana-ui/LICENSE_APACHE2",
+          "sha256": "7486ea148c36b1bd8608aeba83584f242acd880d97db00fa657c88a962316777"
+        }
+      ],
+      "license": "Apache-2.0",
+      "path": "packages/grafana-ui/src/components/Table/TableNG/utils.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "5481bf77bce00734215314a67c4619b37ac89df8cba95d2961a1efed0406d651"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/core/components/GraphNG/GraphNG.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "89517052b72e2df6f0065158accde16eaadaff9df93aa52d42e3a9e0ca71faed"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/core/components/GraphNG/utils.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "cd0d1d4ff6fc0bba3e3046871555ba007249f44f033b332436052a9552f9fd02"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/core/components/TimeSeries/TimeSeries.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "1f6df1c855d11d78cc3c3ce679a650b450ca2f897cd622fadf14e170021463c2"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/core/components/TimeSeries/utils.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "5b1a678a06d8982b0be3dd799e63fbb4ec435b766d5ec70ee737e9f32e5844ae"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/datasource/grafana-testdata-datasource/constants.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "74c795f862a8cb0f1f79539fc47b55b3db28ba24e66f56d3d3d956c129b7ab18"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/datasource/grafana-testdata-datasource/dataquery.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "964d56eb2eb8c2aa57f599d7c86a2dab541723246aa945bade2a7aade467b6b6"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/datasource/grafana-testdata-datasource/datasource.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "e9ef22ebd6f24e6e4b2f708b38c2d78005da7b9fa6605687f489d3fb4b6736d8"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/datasource/grafana-testdata-datasource/LogIpsum.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "27c1a34c1c574969230a04487248dfc42848f72de7e587e0b2d81c3a8333f8c8"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/datasource/grafana-testdata-datasource/metricTree.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "ce96fbf7e2a7a0fdf855fb0a7db9b000786ac9206173c7f4098fa5cd4871e194"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/datasource/grafana-testdata-datasource/nodeGraphUtils.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "4adb233b1ccb311d86d7c892c1bb16a09f99292d5ae3392127b8069fe1015ebb"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/datasource/grafana-testdata-datasource/runStreams.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "4a2f64376e4ba9107814f6aa2bfa48273d851c4957a79702aed82a7f2f62fb1f"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/datasource/grafana-testdata-datasource/testData/flameGraphResponse.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "c31be7b5ee43e075be5939b00e197759508448c8f9031ac68fa0efe1d9b09fb7"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/datasource/grafana-testdata-datasource/testData/serviceMapResponse.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "57225000674bf2daec4bc96130a4a6e1682f8fb86fa68f589d481531bc5b302c"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/datasource/grafana-testdata-datasource/testData/serviceMapResponseMedium.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "24a8e288257755824d7f176b79c120acd127e888e52c6e5194c1fec99964880b"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/datasource/grafana-testdata-datasource/variables.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "650e5a8279eb6304516a73d14d54e41fa871b32282b135d89b1725ac9730643b"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/barchart/BarChartLegend.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "545b1c75ec44cb820a5708eda9918d748055aeeef0a08ad913e7e9a4161db41d"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/barchart/BarChartPanel.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "eab7a5a1a9b18dcced745526487d2932aa92fbcc3f374aa7af0f2dcfa63ad142"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/barchart/bars.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "4516db28874b8aad5a6799f31e1234b065043d0394b1806634ce09d8cf670671"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/barchart/distribute.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "45792abeea7e891d7ef43725efae659d9d80face102207f8e41e6e66c6fe75bf"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/barchart/panelcfg.gen.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "372a591775ff74031f4ac2cf6a4b2d6e6043a51a04e30a69f04bd91489bb2e42"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/barchart/quadtree.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "b414ae8d19dc76c8a8d35786b5867cfa73929923b0bdb2e3ef5caa8184e73d55"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/barchart/utils.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "7fe882b4bf391ce2f709db2eca81c15ac0c7f3657bd049f735099c1ced871f80"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/bargauge/BarGaugeLegend.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "03f3736c07cf1513140de7d7693acc69db025a39a50894a082d196024526acff"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/bargauge/BarGaugePanel.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "5102b2f62f96dcc572b79140f3fb86a85a00b3a24646b5adc4e6700b17cdf03c"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/bargauge/panelcfg.gen.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "f61168f707d0922d97296e05ab92d71ecc37cec3848d94d87cb19a4ffde5db17"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/gauge/GaugePanel.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "22c94d738a0619b44b5e5a13a82deae7160dff7bdc61e1673a7d71e597d0f11a"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/piechart/panelcfg.gen.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "6eaa9700bde82e415193efb2638673d7fb883b60ece582e9fac912b3a4c25614"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/piechart/PieChart.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "6e25dd1b91902f31edd42c5ab5d4dce19977aac28336480f651a96e7ef8a8bf2"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/piechart/PieChartPanel.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "70563502aa9138c000f1bade362748549ec19df43e592456e202695fc7dc8992"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/piechart/utils.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "2bcbea83b602fa77937becb52c358c240ae0093867eb7bb500978b01452bb0d9"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/stat/StatPanel.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "2f193767cf7938873575eb4c598d69cd8d71b027e9afa1196fc9c9b184390946"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/table/TablePanel.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "cd68461dc70a9b015da472c4471f25d47a20a39a8a945b3f989dc3ec0419bf01"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/text/panelcfg.gen.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "29a54d0d94dc2b1ca8bfd5df12f1893e0a7109bbb930935de186f1d853928ca1"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/text/v1/TextPanel.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "f74b1492925e7556d1f5f4df1aa06a9a4ab9888ffc5f4fc537e7b35ffab233dd"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/timeseries/plugins/OutsideRangePlugin.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "83f7a5784a041bd83de99dd66aaf56772bbf812d7512a87fa6bb1e3d5ba97cc1"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "c6a4dc6771ff86b6b05bc8b42fd17c801c473174350ba058518166b6a2cfad80"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/timeseries/TimeSeriesTooltip.tsx",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "c7f45e4e3d68f916eae4eba8c0a6e7bfead1b9824e7aeca01efd45630d91a18b"
+    },
+    {
+      "bundles": [
+        "host-bundled",
+        "provider-bundled"
+      ],
+      "evidence": [
+        {
+          "output": "licenses/evidence/grafana/LICENSE",
+          "path": ".grafana-source/grafana-v13.2.3/LICENSE",
+          "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+        }
+      ],
+      "license": "AGPL-3.0-only",
+      "path": "public/app/plugins/panel/timeseries/utils.ts",
+      "scopes": [
+        "source-derived"
+      ],
+      "sha256": "ec0cc27c90ae90fea5722fdd9f0dd7b0c011bc69d87f4d5d7b1ed72c0a0b25e4"
+    }
+  ],
+  "revision": "6193dc03311b631b9727b560d24369e683dc396e",
+  "schemaVersion": 1,
+  "sourceUrl": "https://github.com/grafana/grafana"
+}

@@ -1,0 +1,97 @@
+{
+  "components": [
+    {
+      "included": false,
+      "path": ".grafana-source/grafana-v13.2.3/public/fonts/inter",
+      "reason": "The current provider and host bundle evidence emits no font asset and contains no Inter font module.",
+      "scopes": [
+        "installed-not-distributed"
+      ],
+      "type": "font",
+      "use": "static"
+    },
+    {
+      "included": false,
+      "path": ".grafana-source/grafana-v13.2.3/public/img/icons/unicons",
+      "reason": "The current provider and host bundle evidence emits no Unicons asset and contains no Unicons module.",
+      "scopes": [
+        "installed-not-distributed"
+      ],
+      "type": "icon",
+      "use": "static"
+    },
+    {
+      "evidence": [],
+      "firstParty": true,
+      "path": "apps/sdk-host/src/host.css",
+      "reason": "Project-owned host style source is bundled into the host JavaScript artifact.",
+      "scopes": [
+        "first-party"
+      ],
+      "sha256": "b6f89329e94429fb548f4a31b445d6ad984c639dde61715c95ec068722d1d4bf",
+      "type": "css",
+      "use": "runtime"
+    },
+    {
+      "evidence": [],
+      "firstParty": true,
+      "path": "artifacts/sdk/host/assets/index-BfQopXmr.css",
+      "reason": "Generated host CSS contains only the project-owned host style source and is an emitted host artifact.",
+      "scopes": [
+        "first-party"
+      ],
+      "sha256": "eb5d7203cf5c171ee6c5c2f16aa36e0ad2b7471e3cde7f98b730f183cc995bcc",
+      "type": "css",
+      "use": "static"
+    },
+    {
+      "evidence": [],
+      "firstParty": true,
+      "path": "artifacts/sdk/host/index.html",
+      "reason": "Generated host entry HTML is a project-owned build artifact.",
+      "scopes": [
+        "first-party"
+      ],
+      "sha256": "b38aeda9d6ab44aa64b9ea283c21f635a9053fc0a22826e25a3bcdce9eef7f35",
+      "type": "other",
+      "use": "static"
+    },
+    {
+      "included": false,
+      "path": "artifacts/sdk/provider-13/assets/workers",
+      "reason": "The provider evidence reports no emitted workers or worker modules.",
+      "scopes": [
+        "installed-not-distributed"
+      ],
+      "type": "worker",
+      "use": "static"
+    },
+    {
+      "evidence": [],
+      "location": "node_modules/@grafana/react-data-grid",
+      "package": "@grafana/react-data-grid@7.0.0-beta.57",
+      "path": "node_modules/@grafana/react-data-grid/lib/styles.css",
+      "reason": "CSS source is embedded into the provider JavaScript chunk by the reviewed native style owner.",
+      "scopes": [
+        "asset"
+      ],
+      "sha256": "530f208b048ae924fb97c9b7f9bbafe58ffc90b26409e614a4ad6939ef782771",
+      "type": "css",
+      "use": "runtime"
+    },
+    {
+      "evidence": [],
+      "location": "node_modules/uplot",
+      "package": "uplot@1.6.32",
+      "path": "node_modules/uplot/dist/uPlot.min.css",
+      "reason": "CSS source is embedded into the provider JavaScript chunk by the reviewed native style owner.",
+      "scopes": [
+        "asset"
+      ],
+      "sha256": "df630c6a8d6f8eeaff264b50f73ce5b114f646ffd9a0bb74f049b0a00135fa04",
+      "type": "css",
+      "use": "runtime"
+    }
+  ],
+  "schemaVersion": 1
+}
