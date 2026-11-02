@@ -62,9 +62,25 @@ redirects are registered for it.
 
 The host selects `drsdk-g-phase2-visualizations`, using the existing TestData
 datasource `grsdk-testdata` and its Predictable Pulse fixture. Native panels are
-Text, Stat, Time series, Table, Gauge, Bar gauge, Pie chart, and Bar chart. The sidebar
-collapses to an icon rail; selecting Phase 2 restores the fixture after an
-optional lookup of a missing dashboard UID.
+Text, Stat, Time series, Table, Gauge, Bar gauge, Pie chart, and Bar chart.
+
+## Use the app
+
+- The header shows the application name, the signed-in Keycloak display name
+  and username, and the logout action.
+- The sidebar contains the existing Phase 2 dashboard. Its toggle collapses the
+  navigation to a narrow icon rail and immediately gives the dashboard more
+  horizontal space; expanding it restores the labels.
+- The main area renders the real `GrafanaDashboard` SDK component. It retrieves
+  `drsdk-g-phase2-visualizations` and runs the controlled TestData requests
+  through the host-owned Grafana session.
+- The optional UID input changes the React `uid` prop without a full-page
+  reload. Selecting **Phase 2 visualizations** restores the provisioned fixture
+  after trying another valid UID, including a missing UID.
+
+The eight panels use the exact bounded profiles in the support matrix. A panel
+outside those profiles remains visible as a `Not-Supported` placeholder instead
+of silently disappearing or executing an unsupported query.
 
 ## Routing and independent sessions
 
@@ -142,7 +158,14 @@ docker compose --env-file dev/grafana/.env -f compose.yaml -f demo/standalone/pl
 docker compose --env-file dev/grafana/.env -f compose.yaml -f demo/standalone/playwright.compose.yaml run --rm --no-deps dev yarn workspace @dashboard-render-sdk-g/standalone-demo typecheck
 ```
 
-## Teardown and a reproducible fresh realm
+## Stop or reset
+
+To stop containers while preserving the current Keycloak realm, Grafana state,
+sessions, dependency volume, and Yarn cache:
+
+```bash
+docker compose -f demo/standalone/compose.yaml down
+```
 
 Keycloak imports a realm only when it does not already exist. Restarting an
 existing volume does not apply edits to the realm JSON. To reproduce the checked-in
@@ -165,3 +188,53 @@ dependency volume, and Yarn cache. It does not target the separate root
 development volumes. Generated provider and host artifacts remain ignored in
 the checkout. Use plain `down` only when intentionally preserving the current
 realm and development state; use the reset sequence after realm import changes.
+
+## Troubleshooting
+
+### The first startup takes several minutes
+
+The host performs an immutable install, builds the pinned provider, builds the
+React app, and starts Vite preview before becoming healthy. Inspect the scoped
+service state and logs instead of switching to the unsupported raw development
+server:
+
+```bash
+docker compose -f demo/standalone/compose.yaml ps
+docker compose -f demo/standalone/compose.yaml logs host grafana keycloak proxy
+```
+
+If the host reports that the Grafana source checkout is missing, verify
+`.grafana-source/grafana-v13.2.3/` at the commit in [Prerequisites](#prerequisites).
+The Compose stack intentionally does not download or modify that checkout.
+
+### A realm or OAuth configuration change is not visible
+
+Keycloak does not re-import an existing realm. Use the `down --volumes` reset
+sequence in [Stop or reset](#stop-or-reset), then start the stack again. This
+deletes only the volumes scoped to this demo.
+
+### Login loops or the dashboard remains unauthorized
+
+Use exactly `http://localhost:8088/`, not another hostname or port. The SPA and
+Grafana OAuth clients, cookies, callbacks, and logout redirects are registered
+for that origin. Confirm all four services are healthy. If a previous partial
+login left disposable state behind, perform the clean reset and sign in again;
+do not copy the Keycloak token into the SDK or add an Authorization header.
+
+### Port 8088 is already in use
+
+Only the reverse proxy publishes a port, fixed to loopback `127.0.0.1:8088`.
+Stop the conflicting local process or Compose project. Changing the port alone
+will break the checked-in OAuth callback registration and is not a supported
+demo configuration.
+
+### Source changes do not appear
+
+The app serves a production build through Vite preview. Rebuild and recreate the
+host after source changes:
+
+```bash
+docker compose -f demo/standalone/compose.yaml up --build --detach --wait --force-recreate
+```
+
+For authentication realm changes, use the volume-reset sequence as well.

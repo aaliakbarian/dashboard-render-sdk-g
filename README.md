@@ -1,141 +1,190 @@
 # Dashboard Render SDK G
 
-> **Experimental pre-release project.** There is no published npm SDK yet. The
-> repository contains a disposable Phase 0 POC and is beginning private Phase 2
-> implementation of the approved architecture; neither is a supported
-> production SDK.
+> **Experimental pre-release software.** The SDK workspaces are private, no npm
+> package has been published, and the verified compatibility surface is narrow.
+> This repository is not yet a supported production SDK.
 
-Dashboard Render SDK G is an independent open-source SDK project for rendering
-supported dashboards compatible with its verified Grafana OSS provider cell as
-native React components.
+Dashboard Render SDK G renders supported Grafana OSS dashboards as native React
+content inside a host application.
 
-No iframe.  
-No Grafana application shell.
+**No iframe. No Grafana application shell.**
 
-The project explores how a host application can select a Grafana dashboard by
-UID and render it inside its own React interface while retaining ownership of
-navigation, layout, authentication, and product chrome.
-
-## Phase 0 result
-
-**Gate C: PASS**
-
-**Overall Phase 0 decision: REVISE**
-
-The core architectural hypothesis succeeded: native Grafana panel rendering
-without an iframe or the Grafana application shell is viable. The controlled
-POC renders real Grafana OSS 13.2.3 panels through React 19.2.8 without calling
-`GrafanaApp.init`.
-
-`REVISE` does not mean the rendering architecture failed. It records that
-production and distribution architecture work was still required when Phase 0
-ended. See the complete
-[Phase 0 results](docs/architecture/research/poc-results.md).
-
-## Project progression
-
-- **Phase 0 — REVISE:** native rendering succeeded, but production architecture
-  still needed definition and validation.
-- **Phase 1 — APPROVE:** the production architecture was accepted and now
-  authorizes private, experimental Phase 2 implementation. See the
-  [Phase 1 production architecture decision](docs/architecture/production/phase1-production-architecture-decision.md).
-- **Phase 2 — CURRENT:** the project is implementing and validating the
-  production-oriented SDK foundation within that approved architecture.
-
-Phase 1 approval does not authorize public npm or renderer-provider
-publication. Public release remains gated by artifact-specific compliance,
-conformance, provenance, security, bundle, and maintainer review.
+The host keeps ownership of React, navigation, layout, authentication,
+authorized HTTP transport, routing, and product chrome. The provider owns the
+pinned Grafana implementation cohort needed to retrieve and render a dashboard
+by UID. The project is independent of Grafana Labs; “Grafana” identifies the
+upstream compatibility target, not affiliation or endorsement.
 
 ## What works today
 
-The disposable POC has demonstrated:
+The private Phase 2 SDK renders the controlled dashboard with eight real native
+Grafana panels:
 
-- dashboard retrieval by user-facing Grafana UID;
-- stable V1/schema-42 dashboard DTO validation and constrained DTO-to-Scenes
-  conversion;
-- real Grafana Text panel rendering;
-- a real Grafana TestData datasource and query path;
-- real Grafana Stat and Time series rendering from query-backed data;
-- time-range updates and manual refresh;
-- responsive Time series resizing;
-- UID changes, stale-work cancellation, and lifecycle cleanup;
-- two compatible simultaneous dashboard instances sharing one runtime safely;
-  and
-- native React/DOM/canvas rendering with React and ReactDOM 19.2.8, no iframe,
-  no Grafana application shell, and no `GrafanaApp.init`.
+- Text
+- Stat
+- Time series
+- Table
+- Gauge
+- Bar gauge
+- Pie chart
+- Bar chart
 
-The controlled Time series comparison was visually close to the Grafana
-reference, but the project does not claim pixel-perfect parity.
+The tested path retrieves a dashboard by UID through a host-authorized browser
+transport, validates the V1/schema-42 DTO, classifies each panel, executes the
+controlled TestData Predictable Pulse query where required, and renders through
+the real pinned Grafana panel implementations. Unsupported panel profiles remain
+visible as white `Not-Supported` placeholders and do not execute hidden queries
+or renderer code.
 
-## Current POC boundary
+Browser evidence also covers UID switching, stale-work cancellation, two
+compatible dashboard instances, responsive charts, and lifecycle cleanup. The
+SDK uses native React/DOM/SVG/canvas output; it does not call `GrafanaApp.init`.
 
-Current support is intentionally constrained to:
+## Exact compatibility cell
 
-- the exact Grafana OSS 13.2.3 baseline;
-- a controlled current-schema V1/schema-42 dashboard fixture;
-- Text, Stat, and Time series panels;
-- the controlled built-in TestData datasource; and
-- selected transformations required by the fixture.
+| Component | Verified identity |
+| --- | --- |
+| Grafana | OSS 13.2.3 |
+| Dashboard API/schema | `dashboard.grafana.app/v1`, V1 DTO, schema 42 |
+| Grafana source | tag `v13.2.3`, commit `6193dc03311b631b9727b560d24369e683dc396e` |
+| React / ReactDOM | host-owned React 19.2.8 / ReactDOM 19.2.8 |
+| Scenes | 8.13.5 |
+| Datasource | `grafana-testdata-datasource`, UID `grsdk-testdata` |
+| Query profile | one exact Predictable Pulse target |
+| Transformations | empty pipeline or the verified Time series `renameByRegex` step |
 
-The POC does not establish compatibility with arbitrary panels, plugins,
-datasources, dashboard features, Grafana versions, or V2 dashboards. It is
-evidence for the approved production architecture, not a general compatibility
-promise and not production code to promote wholesale.
+This is a compatibility cell, not a general Grafana compatibility claim. Exact
+admitted panel options and known packaging constraints are documented in the
+[Phase 2 native rendering support matrix](docs/architecture/production/phase-2-native-rendering-support.md).
+Pixel-perfect parity, arbitrary dashboards, arbitrary plugins or datasources,
+V2 dashboards, other Grafana/React/Scenes versions, and production deployment
+compatibility are not claimed.
 
-## Project boundaries
+## Try the standalone demo
 
-The intended SDK remains frontend-only. The host owns authentication, routing,
-navigation, page chrome, and product-level error handling. The project will not
-ship an SDK backend, reproduce Grafana navigation, or bootstrap the Grafana web
-application shell.
+The reference app runs a reverse proxy, React host, Keycloak development
+instance, and Grafana OSS 13.2.3. It demonstrates Authorization Code with PKCE,
+an independent Grafana Viewer cookie session, all eight native panels, and the
+host-owned transport boundary.
 
-## Run the POC
+Prerequisites are Git, Docker Engine with Docker Compose, and the ignored pinned
+Grafana source checkout described in the
+[standalone demo guide](demo/standalone/README.md).
 
-There is no SDK package to install. Contributors can run the private POC
-workspaces, deterministic Grafana fixture, and verification suite through the
-repository's container-first workflow. The host requires only Git, Docker with
-Docker Compose, an editor, and the repository checkout.
+```bash
+docker compose -f demo/standalone/compose.yaml up --build --detach --wait
+```
 
-See [Local development](docs/development/local-development.md) for setup and
-commands.
+Open <http://localhost:8088/> and sign in with the labeled development-only
+fixtures `demo-viewer` / `development-only-viewer`. When finished:
 
-## Documentation and tracking
+```bash
+docker compose -f demo/standalone/compose.yaml down --volumes
+```
 
-- [Phase 0 results](docs/architecture/research/poc-results.md)
+The demo is contributor evidence, not a deployment template. See the
+[standalone demo documentation](demo/standalone/README.md) for the auth flow,
+reset procedure, tests, and troubleshooting.
+
+## React SDK integration
+
+The current API uses an explicit provider, the host's real React module
+identities, and a restricted host transport capability:
+
+```tsx
+import {
+  createDashboardRenderSdk,
+  GrafanaDashboard,
+} from '@dashboard-render-sdk-g/core';
+import {
+  Grafana13DashboardRenderer,
+  grafana13Provider,
+} from '@dashboard-render-sdk-g/provider-13';
+
+const creation = createDashboardRenderSdk({
+  provider: grafana13Provider,
+  renderer: Grafana13DashboardRenderer,
+  hostReact, // actual React, ReactDOM/client, and JSX-runtime module identities
+  transport, // created from the host's restricted, cookie-aware executor
+  namespace: 'default',
+});
+
+if (!creation.valid) throw new Error('SDK configuration is invalid.');
+
+export function Dashboard({ uid }: { readonly uid: string }) {
+  return <GrafanaDashboard sdk={creation.sdk} uid={uid} />;
+}
+```
+
+The packages above are repository-private and cannot be installed from npm.
+The complete, typechecked host example—including React identity construction,
+transport policy, status handling, UID changes, and cleanup—is in the
+[SDK integration guide](docs/development/sdk-integration.md).
+
+## Develop and test
+
+The supported workflow is container-first. Create the ignored development
+fixture environment once, replace its placeholder with a disposable local
+password, then use the existing development container:
+
+```bash
+cp dev/grafana/.env.example dev/grafana/.env
+docker compose --env-file dev/grafana/.env build dev
+docker compose --env-file dev/grafana/.env run --rm --no-deps dev yarn install --immutable
+docker compose --env-file dev/grafana/.env run --rm --no-deps dev yarn typecheck
+docker compose --env-file dev/grafana/.env run --rm --no-deps dev yarn test:unit
+docker compose --env-file dev/grafana/.env run --rm --no-deps dev yarn build:sdk-slice
+```
+
+Additional browser, fixture, bundle, licensing, and package-boundary commands
+are documented in the [local development guide](docs/development/local-development.md),
+[standalone demo guide](demo/standalone/README.md), and package scripts. The
+known Scenes 8.13.5 React peer warning is preserved as compatibility evidence.
+
+## Architecture and project documentation
+
+- [Architecture overview](docs/architecture/architecture-overview.md)
 - [Phase 1 production architecture decision](docs/architecture/production/phase1-production-architecture-decision.md)
-- [Standalone rendering POC design](docs/architecture/research/grafana-rendering-poc.md)
-- [POC implementation plan](docs/development/poc-implementation-plan.md)
-- [Local development](docs/development/local-development.md)
-- [Project context](docs/project/project-context.md)
-- [Vision](docs/project/vision.md)
-- [Roadmap](docs/project/roadmap.md)
-- [Phase 0 GitHub milestone](https://github.com/aaliakbarian/dashboard-render-sdk-g/milestone/1)
-- [Dashboard Render SDK Roadmap project](https://github.com/users/aaliakbarian/projects/1)
+- [Phase 2 native rendering support matrix](docs/architecture/production/phase-2-native-rendering-support.md)
+- [Runtime isolation model](docs/architecture/production/runtime-isolation-model.md)
+- [Bridge/provider architecture](docs/architecture/production/bridge-provider-architecture.md)
+- [SDK integration guide](docs/development/sdk-integration.md)
+- [Standalone authenticated demo](demo/standalone/README.md)
+- [Project roadmap](docs/project/roadmap.md)
+- [Contributing guide](CONTRIBUTING.md)
 
-## Contributing
+## Limitations
 
-All current packages are private research workspaces and must not be published.
-Read [CONTRIBUTING.md](CONTRIBUTING.md), the
-[development workflow](docs/project/development-workflow.md), and the
-[Code of Conduct](CODE_OF_CONDUCT.md) before proposing a change.
+- Only the exact compatibility cell and panel profiles above are admitted.
+- The only query-backed datasource profile is the provisioned TestData
+  Predictable Pulse fixture; general datasource discovery is not implemented.
+- Unsupported material options, targets, transformations, dashboards, or
+  schemas fail closed or use the documented panel-level fallback.
+- The host must establish and protect the authorized Grafana session. The SDK
+  contains no credential manager, OAuth implementation, proxy service, or
+  backend.
+- Provider/runtime ownership is realm-wide for a compatible configuration;
+  incompatible runtime identities are rejected.
+- Current inline and Emotion style paths do not claim nonce-only strict-CSP
+  compatibility.
+- All packages remain private and experimental; there is no stable public API
+  or published npm release.
 
-## License
+## Licensing and publication status
 
-Dashboard Render SDK G project-owned code is licensed under
-[AGPL-3.0-only](LICENSE). Third-party dependencies and incorporated upstream
-materials retain their applicable licenses and notice requirements; the
-project license does not relicense them. See the
-[license-adoption record](docs/project/agpl-license-adoption.md) for the
-boundary and outstanding release gates.
+Project-owned code is licensed under [AGPL-3.0-only](LICENSE). Third-party code
+and assets retain their own licenses and notices; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and the
+[third-party licensing workflow](docs/development/third-party-licensing.md).
 
-This license decision does not authorize public package or renderer-provider
-distribution. Phase 2 publication remains subject to the third-party
-license/notice, source-availability, reproducibility, SBOM, and other release
-compliance gates, including
-[#64](https://github.com/aaliakbarian/dashboard-render-sdk-g/issues/64) and
-[#65](https://github.com/aaliakbarian/dashboard-render-sdk-g/issues/65).
+The automation and artifacts for
+[#64 — third-party licensing and notices](https://github.com/aaliakbarian/dashboard-render-sdk-g/issues/64)
+are present, but the current production inventory is **blocked pending legal
+review** for documented components. Passing the notice generator would not by
+itself authorize publication.
+[#65 — source availability, reproducibility, and SBOM](https://github.com/aaliakbarian/dashboard-render-sdk-g/issues/65)
+is a separate release gate and remains required before any public-release
+decision. Do not publish the private workspaces.
 
-Grafana is a trademark of Grafana Labs. Dashboard Render SDK G is an
-independent project and is not affiliated with, endorsed by, or sponsored by
-Grafana Labs or its affiliates. References to Grafana identify compatibility
-targets only.
+Grafana is a trademark of Grafana Labs. Dashboard Render SDK G is not affiliated
+with, endorsed by, or sponsored by Grafana Labs or its affiliates.
