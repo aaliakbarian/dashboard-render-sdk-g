@@ -1,0 +1,818 @@
+{
+  "schemaVersion": 1,
+  "outputDir": "licenses",
+  "noticesPath": "THIRD_PARTY_NOTICES.md",
+  "bundles": [
+    {
+      "path": "artifacts/sdk/provider-13/evidence/bundle-evidence.json",
+      "outputDir": "artifacts/sdk/provider-13",
+      "scope": "provider-bundled",
+      "workspace": "packages/provider-13/package.json"
+    },
+    {
+      "path": "artifacts/sdk/host/evidence/bundle-evidence.json",
+      "outputDir": "artifacts/sdk/host",
+      "scope": "host-bundled",
+      "workspace": "apps/sdk-host/package.json"
+    }
+  ],
+  "workspaces": [
+    "package.json",
+    "packages/provider-contract/package.json",
+    "packages/core/package.json",
+    "packages/provider-13/package.json",
+    "apps/sdk-host/package.json",
+    "demo/standalone/package.json"
+  ],
+  "firstPartyPaths": [
+    "packages/provider-contract/",
+    "packages/core/",
+    "packages/provider-13/",
+    "apps/sdk-host/",
+    "artifacts/sdk/provider-13/",
+    "artifacts/sdk/host/"
+  ],
+  "packages": {
+    "@babel/runtime@7.29.7": {},
+    "@braintree/sanitize-url@7.1.2": {},
+    "@emotion/cache@11.14.0": {},
+    "@emotion/css@11.13.5": {},
+    "@emotion/hash@0.9.2": {},
+    "@emotion/memoize@0.9.0": {},
+    "@emotion/react@11.14.0": {},
+    "@emotion/serialize@1.3.3": {},
+    "@emotion/sheet@1.4.0": {},
+    "@emotion/unitless@0.10.0": {},
+    "@emotion/use-insertion-effect-with-fallbacks@1.2.0": {},
+    "@emotion/utils@1.4.2": {},
+    "@floating-ui/core@1.8.0": {},
+    "@floating-ui/dom@1.8.0": {},
+    "@floating-ui/react-dom@2.1.9": {},
+    "@floating-ui/react@0.27.20": {},
+    "@floating-ui/utils@0.2.12": {},
+    "@grafana/data@13.2.3": {},
+    "@grafana/e2e-selectors@13.2.3": {},
+    "@grafana/i18n@13.2.3": {
+      "conflict": {
+        "manifest": "Apache-2.0",
+        "evidence": "AGPL-3.0-only",
+        "status": "unresolved",
+        "reason": "The published npm manifest and LICENSE_APACHE2 declare Apache-2.0, while the pinned Grafana LICENSING.md Apache exception list does not name packages/grafana-i18n. Qualified review must resolve the source-boundary implication before publication."
+      },
+      "reviewReferences": [
+        "node_modules/@grafana/i18n/package.json",
+        "node_modules/@grafana/i18n/LICENSE_APACHE2",
+        ".grafana-source/grafana-v13.2.3/LICENSING.md"
+      ],
+      "reviewNote": "Complete Apache package evidence is retained; this unresolved repository-boundary classification blocks release rather than artifact generation."
+    },
+    "@grafana/react-data-grid@7.0.0-beta.57": {},
+    "@grafana/runtime@13.2.3": {},
+    "@grafana/scenes@8.13.5": {},
+    "@grafana/schema@13.2.3": {
+      "conflict": {
+        "manifest": "Apache-2.0",
+        "evidence": "AGPL-3.0-only",
+        "status": "unresolved",
+        "reason": "The published npm manifest and LICENSE_APACHE2 declare Apache-2.0, while the pinned Grafana LICENSING.md Apache exception list does not name packages/grafana-schema. Qualified review must resolve the source-boundary implication before publication."
+      },
+      "reviewReferences": [
+        "node_modules/@grafana/schema/package.json",
+        "node_modules/@grafana/schema/LICENSE_APACHE2",
+        ".grafana-source/grafana-v13.2.3/LICENSING.md"
+      ],
+      "reviewNote": "Complete Apache package evidence is retained; this unresolved repository-boundary classification blocks release rather than artifact generation."
+    },
+    "@grafana/ui@13.2.3": {},
+    "@openfeature/core@1.12.0": {},
+    "@openfeature/ofrep-core@2.3.0": {},
+    "@openfeature/ofrep-web-provider@0.4.3": {},
+    "@openfeature/web-sdk@1.10.0": {},
+    "@visx/bounds@3.12.0": {},
+    "@visx/event@3.12.0": {},
+    "@visx/gradient@3.12.0": {},
+    "@visx/group@3.12.0": {},
+    "@visx/point@3.12.0": {},
+    "@visx/shape@3.12.0": {},
+    "@visx/tooltip@3.12.0": {},
+    "@visx/vendor@3.12.0": {
+      "license": "MIT AND ISC",
+      "unresolvedLicense": {
+        "reason": "The upstream manifest uses the non-SPDX string 'MIT and ISC'. The installed artifact contains an MIT package license and multiple vendored ISC license files, but the normalized compound expression remains an explicit review decision because this package is not in the current production bundle graph.",
+        "references": [
+          "node_modules/@visx/vendor/package.json",
+          "node_modules/@visx/vendor/LICENSE",
+          "node_modules/@visx/vendor/vendor-cjs/d3-array/LICENSE",
+          "node_modules/@visx/vendor/vendor-cjs/d3-color/LICENSE",
+          "node_modules/@visx/vendor/vendor-cjs/d3-delaunay/LICENSE",
+          "node_modules/@visx/vendor/vendor-cjs/d3-format/LICENSE",
+          "node_modules/@visx/vendor/vendor-cjs/d3-geo/LICENSE",
+          "node_modules/@visx/vendor/vendor-cjs/d3-interpolate/LICENSE",
+          "node_modules/@visx/vendor/vendor-cjs/d3-scale/LICENSE",
+          "node_modules/@visx/vendor/vendor-cjs/d3-time-format/LICENSE",
+          "node_modules/@visx/vendor/vendor-cjs/d3-time/LICENSE",
+          "node_modules/@visx/vendor/vendor-cjs/internmap/LICENSE"
+        ]
+      }
+    },
+    "classnames@2.5.1": {},
+    "clsx@2.1.1": {
+      "sourceUrl": "https://github.com/lukeed/clsx"
+    },
+    "cssfilter@0.0.10": {},
+    "d3-color@3.1.0": {},
+    "d3-interpolate@3.0.1": {},
+    "d3-path@1.0.9": {},
+    "d3-random@3.0.1": {},
+    "d3-scale-chromatic@3.1.0": {
+      "license": "ISC AND Apache-2.0",
+      "conflict": {
+        "manifest": "ISC",
+        "evidence": "ISC AND Apache-2.0",
+        "status": "resolved",
+        "reason": "The package LICENSE applies ISC to d3-scale-chromatic code and Apache-2.0 to the bundled ColorBrewer software and color schemes; both terms are retained."
+      },
+      "reviewReferences": [
+        "node_modules/d3-scale-chromatic/package.json",
+        "node_modules/d3-scale-chromatic/LICENSE"
+      ]
+    },
+    "d3-shape@1.3.7": {},
+    "dangerously-set-html-content@1.1.1": {
+      "sourceUrl": "https://github.com/christo-pr/dangerously-set-html-content",
+      "unresolvedLicense": {
+        "reason": "The bundled package declares MIT, but neither the npm artifact nor exact upstream commit 8b0977bbadde76c24e38ebde72ab988ae3ad1426 contains full license terms; a manifest declaration alone is insufficient release evidence.",
+        "references": [
+          "compliance/third-party/upstream-evidence/dangerously-set-html-content-1.1.1/package.json",
+          "compliance/third-party/upstream-evidence/README.md"
+        ]
+      }
+    },
+    "dom-helpers@5.2.1": {},
+    "dompurify@3.4.16": {
+      "license": "(MPL-2.0 OR Apache-2.0)",
+      "requiredFiles": [
+        "LICENSE",
+        "LICENSE-MPL"
+      ],
+      "reviewReferences": [
+        "node_modules/dompurify/package.json",
+        "node_modules/dompurify/LICENSE",
+        "node_modules/dompurify/LICENSE-MPL"
+      ],
+      "reviewNote": "Both complete upstream alternatives are retained; the inventory does not collapse the dual-license expression."
+    },
+    "eventemitter3@5.0.4": {},
+    "fast-equals@4.0.3": {},
+    "fast-shallow-equal@1.0.0": {
+      "license": "Unlicense",
+      "reason": "The package manifest omits its license declaration; preserve the complete Unlicense terms distributed in the installed artifact.",
+      "evidence": [
+        {
+          "path": "node_modules/fast-shallow-equal/LICENSE",
+          "kind": "license",
+          "license": "Unlicense"
+        }
+      ]
+    },
+    "get-document@1.0.0": {
+      "sourceUrl": "https://github.com/webmodules/get-document",
+      "unresolvedLicense": {
+        "reason": "The installed artifact and exact upstream 1.0.0 revision 1ba68f43808a24a721307ce67f188c9eb38d1747 contain no license declaration or license terms.",
+        "references": [
+          "node_modules/get-document/package.json"
+        ]
+      }
+    },
+    "history@4.10.1": {
+      "sourceUrl": "https://github.com/ReactTraining/history"
+    },
+    "hoist-non-react-statics@3.3.2": {},
+    "html-parse-stringify@4.0.1": {},
+    "i18next-browser-languagedetector@8.2.1": {},
+    "i18next@26.4.2": {},
+    "lodash@4.18.1": {
+      "sourceUrl": "https://github.com/lodash/lodash"
+    },
+    "marked-mangle@1.1.14": {},
+    "marked@16.4.2": {
+      "license": "MIT AND BSD-3-Clause",
+      "conflict": {
+        "manifest": "MIT",
+        "evidence": "MIT AND BSD-3-Clause",
+        "reason": "The package manifest declares MIT while the distributed LICENSE.md preserves both the Marked MIT license and the bundled Markdown BSD-3-Clause license.",
+        "status": "resolved"
+      },
+      "reason": "Preserve both authoritative license grants distributed in the package license file."
+    },
+    "memoize-one@5.2.1": {},
+    "memoize-one@6.0.0": {},
+    "micro-memoize@4.2.0": {},
+    "moment-timezone@0.5.48": {},
+    "moment@2.31.0": {
+      "sourceUrl": "https://github.com/moment/moment"
+    },
+    "papaparse@5.7.0": {},
+    "prop-types@15.8.1": {
+      "sourceUrl": "https://github.com/facebook/prop-types"
+    },
+    "react-aria@3.52.1": {},
+    "react-colorful@5.8.1": {},
+    "react-dom@19.2.8": {},
+    "react-draggable@4.7.2": {},
+    "react-from-dom@0.7.5": {},
+    "react-grid-layout@1.5.4": {
+      "sourceUrl": "https://github.com/STRML/react-grid-layout"
+    },
+    "react-hook-form@7.89.0": {},
+    "react-i18next@17.0.15": {},
+    "react-inlinesvg@4.5.0": {},
+    "react-is@16.13.1": {},
+    "react-resizable@3.2.0": {
+      "sourceUrl": "https://github.com/react-grid-layout/react-resizable"
+    },
+    "react-select@5.10.2": {},
+    "react-stately@3.50.0": {},
+    "react-transition-group@4.4.5": {},
+    "react-universal-interface@0.6.2": {
+      "license": "Unlicense",
+      "reason": "The package manifest omits its license declaration; preserve the complete Unlicense terms distributed in the installed artifact.",
+      "evidence": [
+        {
+          "path": "node_modules/react-universal-interface/LICENSE",
+          "kind": "license",
+          "license": "Unlicense"
+        }
+      ]
+    },
+    "react-use-measure@2.1.7": {},
+    "react-use@17.6.1": {},
+    "react-window@1.8.11": {},
+    "react@19.2.8": {},
+    "resize-observer-polyfill@1.5.1": {},
+    "resolve-pathname@3.0.0": {
+      "sourceUrl": "https://github.com/mjackson/resolve-pathname"
+    },
+    "rolldown@1.2.12": {},
+    "rxjs@7.8.2": {},
+    "scheduler@0.27.0": {},
+    "semver@7.8.5": {},
+    "string-hash@1.1.3": {
+      "sourceUrl": "https://github.com/darkskyapp/string-hash",
+      "reason": "The npm artifact contains no license file. Preserve the exact upstream README waiver at tag v1.1.3 commit cb38ab492aba198b9658b286bb2391278bb6992b and its checked-in provenance.",
+      "evidence": [
+        {
+          "path": "compliance/third-party/upstream-evidence/string-hash-1.1.3/README.md",
+          "kind": "license",
+          "license": "CC0-1.0",
+          "reason": "Authoritative upstream CC0 waiver at the exact 1.1.3 commit."
+        },
+        {
+          "path": "compliance/third-party/upstream-evidence/README.md",
+          "kind": "attribution"
+        }
+      ]
+    },
+    "stylis@4.2.0": {},
+    "tabbable@6.5.0": {},
+    "tiny-invariant@1.3.3": {},
+    "tinycolor2@1.6.0": {},
+    "toggle-selection@1.0.6": {
+      "sourceUrl": "https://github.com/sudodoki/toggle-selection",
+      "reason": "The npm artifact contains no license file. Preserve the exact upstream 1.0.6 manifest declaration at commit 466460c75ca40630d8de940490718247fce79a3e and its checked-in provenance.",
+      "evidence": [
+        {
+          "path": "compliance/third-party/upstream-evidence/toggle-selection-1.0.6/package.json",
+          "kind": "license",
+          "license": "MIT",
+          "reason": "Authoritative upstream manifest SPDX declaration at the exact 1.0.6 commit."
+        },
+        {
+          "path": "compliance/third-party/upstream-evidence/README.md",
+          "kind": "attribution"
+        }
+      ]
+    },
+    "tslib@2.8.1": {},
+    "uplot@1.6.32": {},
+    "use-isomorphic-layout-effect@1.2.1": {},
+    "uuid@11.1.1": {},
+    "uwrap@0.1.2": {},
+    "vite@8.2.0": {
+      "license": "MIT AND Apache-2.0 AND BSD-2-Clause AND CC0-1.0 AND ISC",
+      "conflict": {
+        "manifest": "MIT",
+        "evidence": "MIT AND Apache-2.0 AND BSD-2-Clause AND CC0-1.0 AND ISC",
+        "reason": "Vite's distributed LICENSE.md states that the published artifact contains bundled dependency code under MIT, Apache-2.0, BSD-2-Clause, CC0-1.0, and ISC terms.",
+        "status": "resolved"
+      },
+      "evidence": [
+        {
+          "path": "node_modules/vite/LICENSE.md",
+          "kind": "license",
+          "license": "MIT AND Apache-2.0 AND BSD-2-Clause AND CC0-1.0 AND ISC",
+          "reason": "The authoritative Vite license file explicitly lists these five license families for code contained in the published artifact and preserves the available embedded license and attribution material."
+        }
+      ],
+      "reason": "Preserve the complete authoritative bundled-license set distributed with the installed Vite artifact."
+    },
+    "xss@1.0.15": {},
+    "zod@4.6.5": {}
+  },
+  "externalPeers": [
+    {
+      "name": "react",
+      "version": "19.2.8",
+      "workspace": "packages/provider-13/package.json"
+    },
+    {
+      "name": "react-dom",
+      "version": "19.2.8",
+      "workspace": "packages/provider-13/package.json"
+    }
+  ],
+  "generatedHelpers": {
+    "builtin:esm-external-require-react": {
+      "package": "react@19.2.8",
+      "location": "node_modules/react"
+    },
+    "builtin:esm-external-require-react-dom": {
+      "package": "react-dom@19.2.8",
+      "location": "node_modules/react-dom"
+    },
+    "provider-13-native-css-owned-by-scene": {
+      "package": "uplot@1.6.32",
+      "location": "node_modules/uplot"
+    },
+    "provider-13-table-data-grid-css-owned-by-scene": {
+      "package": "@grafana/react-data-grid@7.0.0-beta.57",
+      "location": "node_modules/@grafana/react-data-grid"
+    },
+    "rolldown/runtime.js": {
+      "package": "rolldown@1.2.12",
+      "location": "node_modules/rolldown"
+    },
+    "vite/preload-helper.js": {
+      "package": "vite@8.2.0",
+      "location": "node_modules/vite"
+    },
+    "vite/modulepreload-polyfill.js": {
+      "package": "vite@8.2.0",
+      "location": "node_modules/vite"
+    }
+  },
+  "assets": [
+    {
+      "path": "apps/sdk-host/src/host.css",
+      "type": "css",
+      "use": "runtime",
+      "firstParty": true,
+      "reason": "Project-owned host style source is bundled into the host JavaScript artifact."
+    },
+    {
+      "path": "artifacts/sdk/host/assets/index-BfQopXmr.css",
+      "type": "css",
+      "use": "static",
+      "firstParty": true,
+      "reason": "Generated host CSS contains only the project-owned host style source and is an emitted host artifact."
+    },
+    {
+      "path": "artifacts/sdk/host/index.html",
+      "type": "other",
+      "use": "static",
+      "firstParty": true,
+      "reason": "Generated host entry HTML is a project-owned build artifact."
+    },
+    {
+      "path": "node_modules/@grafana/react-data-grid/lib/styles.css",
+      "type": "css",
+      "use": "runtime",
+      "package": "@grafana/react-data-grid@7.0.0-beta.57",
+      "location": "node_modules/@grafana/react-data-grid",
+      "reason": "CSS source is embedded into the provider JavaScript chunk by the reviewed native style owner."
+    },
+    {
+      "path": "node_modules/uplot/dist/uPlot.min.css",
+      "type": "css",
+      "use": "runtime",
+      "package": "uplot@1.6.32",
+      "location": "node_modules/uplot",
+      "reason": "CSS source is embedded into the provider JavaScript chunk by the reviewed native style owner."
+    },
+    {
+      "path": ".grafana-source/grafana-v13.2.3/public/fonts/inter",
+      "type": "font",
+      "use": "static",
+      "included": false,
+      "reason": "The current provider and host bundle evidence emits no font asset and contains no Inter font module."
+    },
+    {
+      "path": ".grafana-source/grafana-v13.2.3/public/img/icons/unicons",
+      "type": "icon",
+      "use": "static",
+      "included": false,
+      "reason": "The current provider and host bundle evidence emits no Unicons asset and contains no Unicons module."
+    },
+    {
+      "path": "artifacts/sdk/provider-13/assets/workers",
+      "type": "worker",
+      "use": "static",
+      "included": false,
+      "reason": "The provider evidence reports no emitted workers or worker modules."
+    }
+  ],
+  "classifications": {
+    "@axe-core/playwright@4.11.1": "test-only",
+    "@playwright/test@1.56.1": "test-only",
+    "keycloak-js@26.2.4": "demo-only",
+    "playwright-core@1.56.1": "test-only",
+    "vitest@4.1.10": "test-only"
+  },
+  "source": {
+    "root": ".grafana-source/grafana-v13.2.3",
+    "revision": "6193dc03311b631b9727b560d24369e683dc396e",
+    "url": "https://github.com/grafana/grafana",
+    "licensing": [
+      "LICENSE",
+      "LICENSING.md",
+      "NOTICE.md",
+      "packages/grafana-data/LICENSE_APACHE2",
+      "packages/grafana-ui/LICENSE_APACHE2"
+    ],
+    "paths": {
+      "packages/grafana-data/src/transformations/transformers/nulls/nullToUndefThreshold.ts": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-data/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/RadialGauge/RadialArcPath.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/RadialGauge/RadialArcPathEndpointMarks.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/RadialGauge/RadialBar.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/RadialGauge/RadialBarSegmented.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/RadialGauge/RadialGauge.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/RadialGauge/RadialScaleLabels.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/RadialGauge/RadialSparkline.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/RadialGauge/RadialText.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/RadialGauge/ThresholdsBar.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/RadialGauge/colors.ts": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/RadialGauge/effects.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/RadialGauge/utils.ts": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/Table/TableNG/Cells/AutoCell.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/Table/TableNG/TableDataGrid.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/Table/TableNG/TableFlat.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/Table/TableNG/components/EmptyTablePlaceholder.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/Table/TableNG/components/HeaderCell.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/Table/TableNG/components/SummaryCell.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/Table/TableNG/constants.ts": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/Table/TableNG/hooks.ts": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/Table/TableNG/render-hooks.tsx": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/Table/TableNG/styles.ts": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "packages/grafana-ui/src/components/Table/TableNG/utils.ts": {
+        "license": "Apache-2.0",
+        "evidence": [
+          "packages/grafana-ui/LICENSE_APACHE2"
+        ]
+      },
+      "public/app/core/components/GraphNG/GraphNG.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/core/components/GraphNG/utils.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/core/components/TimeSeries/TimeSeries.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/core/components/TimeSeries/utils.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/datasource/grafana-testdata-datasource/LogIpsum.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/datasource/grafana-testdata-datasource/constants.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/datasource/grafana-testdata-datasource/dataquery.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/datasource/grafana-testdata-datasource/datasource.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/datasource/grafana-testdata-datasource/metricTree.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/datasource/grafana-testdata-datasource/nodeGraphUtils.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/datasource/grafana-testdata-datasource/runStreams.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/datasource/grafana-testdata-datasource/testData/flameGraphResponse.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/datasource/grafana-testdata-datasource/testData/serviceMapResponse.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/datasource/grafana-testdata-datasource/testData/serviceMapResponseMedium.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/datasource/grafana-testdata-datasource/variables.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/barchart/BarChartLegend.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/barchart/BarChartPanel.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/barchart/bars.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/barchart/distribute.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/barchart/panelcfg.gen.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/barchart/quadtree.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/barchart/utils.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/bargauge/BarGaugeLegend.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/bargauge/BarGaugePanel.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/bargauge/panelcfg.gen.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/gauge/GaugePanel.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/piechart/PieChart.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/piechart/PieChartPanel.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/piechart/panelcfg.gen.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/piechart/utils.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/stat/StatPanel.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/table/TablePanel.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/text/panelcfg.gen.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/text/v1/TextPanel.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/timeseries/TimeSeriesPanel.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/timeseries/TimeSeriesTooltip.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/timeseries/plugins/OutsideRangePlugin.tsx": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      },
+      "public/app/plugins/panel/timeseries/utils.ts": {
+        "license": "AGPL-3.0-only",
+        "evidence": [
+          "LICENSE"
+        ]
+      }
+    }
+  },
+  "reviewStatus": "Inventory evidence is complete for the current artifacts. All five review questions remain visible; the current production publication gate is blocked by @grafana/schema, @grafana/i18n, and dangerously-set-html-content. Installed-only @visx/vendor and get-document remain inventory-review questions but are not current publication blockers. Issue #65 remains a separate source-availability, reproducibility, and SBOM gate."
+}
