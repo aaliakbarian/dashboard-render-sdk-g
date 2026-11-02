@@ -139,4 +139,3 @@ Expected: only the four planned documentation files are changed/untracked.
 - [ ] **Step 5: Request a fresh-context whole-branch review**
 
 Review issue #109 requirements against the actual working tree, exports, support matrix, demo configuration, and licensing state. Resolve all justified Critical and Important findings, rerun affected verification, and leave changes uncommitted.
-
