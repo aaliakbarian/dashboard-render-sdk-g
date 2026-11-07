@@ -60,14 +60,14 @@
     "node": "22.23.3",
     "yarn": "4.17.1",
     "containerImage": "dashboard-render-sdk-g-poc-dev:local",
-    "containerDigest": "sha256:9655bd6c5a4057d18d123c8100d3795b0a389d8ee7bf1c47b8e297d02ee426eb",
+    "containerDigest": null,
     "baseImage": "node:22.23.3-bookworm",
     "baseImageDigest": "sha256:69a5713e7f4997e96d579aafd78734810e0dac0dd5ee4621d72c27a2891a4088"
   },
   "sensitiveSourceFixtures": [
     {
       "path": "scripts/release-evidence.test.mjs",
-      "sha256": "5ee62b3e7861cbd6a3fd60cd22c33977efd7fee5edb008ca67930a4d177bec7a"
+      "sha256": "a7a5e6d0ce593586314ec03c78c86e4967cd4934bff300686ecac53cf342d850"
     },
     {
       "path": "scripts/third-party-license-gate.test.mjs",

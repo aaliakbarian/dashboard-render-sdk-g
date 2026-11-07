@@ -41,8 +41,13 @@ docker compose --env-file dev/grafana/.env run --rm --no-deps \
 `verify-build`, `generate`, and `check` each perform two builds and require
 byte-identical provider and host trees. Generation then invokes issue #64's
 read-only gate against that freshly built tree before consuming its inventories.
-The two image variables are observed on the host and must match the exact policy
-identities; configured version strings alone are not treated as observation.
+The two image variables must come from the shown host-side `docker image
+inspect` commands. Missing or malformed IDs are rejected. The base-image ID is
+an exact policy pin. The development image is local and rebuildable, so policy
+uses a `null` container digest and provenance records the actual observed image
+ID for each run. Policies for published images keep a non-null digest and
+require an exact match. Configured names or version strings alone are not image
+identity, and callers must not substitute an invented matching value.
 
 While reviewing uncommitted issue #65 work, invoke the script directly with
 `--allow-dirty` instead of weakening the root release command:
@@ -81,11 +86,11 @@ misrepresented as shipped runtime dependencies.
 
 `provenance.json` connects the SDK and Grafana commits, lockfile and build-input
 hashes, toolchain, artifact hashes, source archive, SBOM, and issue #64 status.
-The release policy records the observed local development-image digest and the
-locally available Node base-image digest; compare them with `docker image
-inspect` after rebuilding. Dockerfile and Compose definitions are hashed as
-independent build inputs. The Grafana fixture image digest is pinned in
-`dev/grafana/compose.yaml`.
+The release policy marks the rebuildable development-image digest as local and
+records each host-observed image ID in provenance. The Node base-image digest
+remains pinned and must match `docker image inspect`. Dockerfile and Compose
+definitions are hashed as independent build inputs. The Grafana fixture image
+digest is pinned in `dev/grafana/compose.yaml`.
 
 ## Source retrieval and distribution material
 
