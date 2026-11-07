@@ -473,6 +473,99 @@ test('double-build verification accepts identical complete trees and rejects a c
   }), /toolchain/i);
 });
 
+test('local image policy records each verified observed image ID without pinning a historical ID', async t => {
+  const { root } = await fixture(t);
+  const policyPath = path.join(root, 'compliance/release/policy.json');
+  const policy = JSON.parse(await readFile(policyPath, 'utf8'));
+  policy.toolchain.containerDigest = null;
+  await put(root, 'compliance/release/policy.json', policy);
+  const firstIdentity = { ...fixtureToolchain, containerDigest: `sha256:${'c'.repeat(64)}` };
+  const secondIdentity = { ...fixtureToolchain, containerDigest: `sha256:${'d'.repeat(64)}` };
+
+  const first = await verifyReproducibleBuild({ root, policyPath: 'compliance/release/policy.json', buildRunner: async () => {}, observedToolchain: firstIdentity });
+  const second = await verifyReproducibleBuild({ root, policyPath: 'compliance/release/policy.json', buildRunner: async () => {}, observedToolchain: secondIdentity });
+  const evidence = await createReleaseEvidenceBase({
+    root,
+    policyPath: 'compliance/release/policy.json',
+    allowDirty: true,
+    inventoryGate,
+    buildRunner: async () => {},
+    observedToolchain: secondIdentity,
+  });
+
+  assert.equal(first.toolchain.containerDigest, firstIdentity.containerDigest);
+  assert.equal(second.toolchain.containerDigest, secondIdentity.containerDigest);
+  assert.equal(evidence.provenance.toolchain.expected.containerDigest, null);
+  assert.equal(evidence.provenance.toolchain.observed.containerDigest, secondIdentity.containerDigest);
+  assert.notEqual(first.bindingSha256, second.bindingSha256);
+  for (const containerDigest of [
+    undefined,
+    '',
+    'sha256:not-an-image-id',
+    new String(firstIdentity.containerDigest),
+    { toString: () => firstIdentity.containerDigest },
+  ]) {
+    await assert.rejects(verifyReproducibleBuild({
+      root,
+      policyPath: 'compliance/release/policy.json',
+      buildRunner: async () => {},
+      observedToolchain: { ...fixtureToolchain, containerDigest },
+    }), /toolchain|digest/i);
+  }
+  for (const mismatch of [
+    { node: '0.0.0' },
+    { yarn: '0.0.0' },
+    { containerImage: 'unexpected-local-image:latest' },
+    { baseImage: 'node:unexpected' },
+    { baseImageDigest: `sha256:${'e'.repeat(64)}` },
+  ]) {
+    await assert.rejects(verifyReproducibleBuild({
+      root,
+      policyPath: 'compliance/release/policy.json',
+      buildRunner: async () => {},
+      observedToolchain: { ...firstIdentity, ...mismatch },
+    }), /toolchain/i);
+  }
+});
+
+test('published image policy requires its exact pinned digest', async t => {
+  const { root } = await fixture(t);
+  const policyPath = path.join(root, 'compliance/release/policy.json');
+  const policy = JSON.parse(await readFile(policyPath, 'utf8'));
+  policy.toolchain.containerImage = 'registry.example.invalid/dashboard-render-sdk-g/dev:local';
+  policy.toolchain.containerDigest = null;
+  await put(root, 'compliance/release/policy.json', policy);
+  await assert.rejects(verifyReproducibleBuild({
+    root,
+    policyPath: 'compliance/release/policy.json',
+    buildRunner: async () => {},
+    observedToolchain: { ...fixtureToolchain, containerImage: policy.toolchain.containerImage },
+  }), /local|digest/i);
+  policy.toolchain.containerImage = 'registry.example.invalid/dashboard-render-sdk-g/dev:1.0.0';
+  await put(root, 'compliance/release/policy.json', policy);
+  await assert.rejects(verifyReproducibleBuild({
+    root,
+    policyPath: 'compliance/release/policy.json',
+    buildRunner: async () => {},
+    observedToolchain: { ...fixtureToolchain, containerImage: policy.toolchain.containerImage },
+  }), /local|digest/i);
+  policy.toolchain.containerDigest = fixtureToolchain.containerDigest;
+  await put(root, 'compliance/release/policy.json', policy);
+  const publishedIdentity = { ...fixtureToolchain, containerImage: policy.toolchain.containerImage };
+  await assert.doesNotReject(verifyReproducibleBuild({
+    root,
+    policyPath: 'compliance/release/policy.json',
+    buildRunner: async () => {},
+    observedToolchain: publishedIdentity,
+  }));
+  await assert.rejects(verifyReproducibleBuild({
+    root,
+    policyPath: 'compliance/release/policy.json',
+    buildRunner: async () => {},
+    observedToolchain: { ...publishedIdentity, containerDigest: `sha256:${'f'.repeat(64)}` },
+  }), /toolchain/i);
+});
+
 test('root package exposes the bounded release-evidence commands', async () => {
   const root = path.resolve(new URL('../', import.meta.url).pathname);
   const manifest = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));

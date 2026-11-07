@@ -16,10 +16,15 @@ does not maintain a second dependency or licensing catalogue.
   cleans each production output directory, and the tool compares every file
   path, size, and SHA-256 digest from both builds.
 
-All three modes require the caller to pass the observed development-container
-and Node base-image IDs as `DRSDK_CONTAINER_IMAGE_DIGEST` and
-`DRSDK_BASE_IMAGE_DIGEST`. They must match the exact policy identities; a
-configured image name or version string is not treated as observed evidence.
+All three modes require the caller to obtain the development-container and Node
+base-image IDs from Docker and pass them as `DRSDK_CONTAINER_IMAGE_DIGEST` and
+`DRSDK_BASE_IMAGE_DIGEST`. Missing or malformed IDs are rejected. The base-image
+ID must match policy exactly. The local development image is rebuilt locally,
+so its policy digest is `null`: its valid host-observed ID is recorded in the
+build binding and provenance rather than compared with a historical local ID.
+A non-null container digest remains an exact pin, as required for a published
+image policy. A configured image name or version string is not observed image
+identity, and the generator never invents a digest.
 
 Normal `generate` and `check` also require clean SDK and Grafana checkouts.
 During uncommitted development only, pass `--allow-dirty`; the source archive
@@ -47,12 +52,12 @@ listed in `SHA256SUMS`, avoiding a self-referential hash. Generation timestamps
 are deliberately absent.
 
 The local development image is built from `node:22.23.3-bookworm` and is named
-`dashboard-render-sdk-g-poc-dev:local`. The policy records the observed local
-image digest and the locally available base-image digest. After rebuilding,
-compare `docker image inspect` with those policy values; a changed digest is a
-build-input change that must be investigated and reviewed. The Dockerfile and
-Compose inputs are also hashed in provenance. Grafana's fixture image remains
-separately digest-pinned in `dev/grafana/compose.yaml`.
+`dashboard-render-sdk-g-poc-dev:local`. Obtain its current image ID with
+`docker image inspect dashboard-render-sdk-g-poc-dev:local --format '{{.Id}}'`
+and pass that exact host observation into the container. The policy keeps the
+base-image digest pinned, and the Dockerfile and Compose inputs are hashed in
+provenance. Grafana's fixture image remains separately digest-pinned in
+`dev/grafana/compose.yaml`.
 
 Source inputs are scanned for credential-like material and machine-local paths
 before archiving. The two scanner regression fixtures intentionally contain

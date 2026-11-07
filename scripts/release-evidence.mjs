@@ -31,6 +31,7 @@ export const LIMITS = Object.freeze({
 });
 
 const productionScopes = new Set(['provider-bundled', 'host-bundled', 'external-peer', 'asset', 'generated-helper']);
+const localDevelopmentImage = 'dashboard-render-sdk-g-poc-dev:local';
 const hash = value => createHash('sha256').update(value).digest('hex');
 const json = value => `${JSON.stringify(value, null, 2)}\n`;
 
@@ -149,9 +150,12 @@ function validatePolicy(policy) {
   exactKeys(policy.toolchain, ['node', 'yarn', 'containerImage', 'containerDigest', 'baseImage', 'baseImageDigest'], 'toolchain');
   if (typeof policy.toolchain.node !== 'string' || typeof policy.toolchain.yarn !== 'string' ||
       typeof policy.toolchain.containerImage !== 'string' || typeof policy.toolchain.baseImage !== 'string') fail('Invalid toolchain');
-  for (const key of ['containerDigest', 'baseImageDigest']) {
-    if (!/^sha256:[0-9a-f]{64}$/.test(policy.toolchain[key])) fail(`Invalid ${key}`);
+  if (policy.toolchain.containerDigest === null) {
+    if (policy.toolchain.containerImage !== localDevelopmentImage) fail('Only the local development image may use an observed digest');
+  } else if (!/^sha256:[0-9a-f]{64}$/.test(policy.toolchain.containerDigest)) {
+    fail('Invalid containerDigest');
   }
+  if (!/^sha256:[0-9a-f]{64}$/.test(policy.toolchain.baseImageDigest)) fail('Invalid baseImageDigest');
   if (!Array.isArray(policy.sensitiveSourceFixtures) || policy.sensitiveSourceFixtures.length > 32) fail('Invalid sensitiveSourceFixtures');
   for (const fixture of policy.sensitiveSourceFixtures) {
     exactKeys(fixture, ['path', 'sha256'], 'sensitive source fixture');
@@ -583,7 +587,19 @@ export async function verifyReproducibleBuild({
     baseImageDigest: process.env.DRSDK_BASE_IMAGE_DIGEST,
   };
   exactKeys(observed, ['node', 'yarn', 'containerImage', 'containerDigest', 'baseImage', 'baseImageDigest'], 'observed toolchain');
-  if (json(observed) !== json(policy.toolchain)) fail('Observed toolchain identity does not match the release policy');
+  if (typeof observed.node !== 'string' || typeof observed.yarn !== 'string' ||
+      typeof observed.containerImage !== 'string' || typeof observed.baseImage !== 'string' ||
+      typeof observed.containerDigest !== 'string' || typeof observed.baseImageDigest !== 'string' ||
+      !/^sha256:[0-9a-f]{64}$/.test(observed.containerDigest) ||
+      !/^sha256:[0-9a-f]{64}$/.test(observed.baseImageDigest)) {
+    fail('Invalid observed toolchain identity');
+  }
+  for (const key of ['node', 'yarn', 'containerImage', 'baseImage', 'baseImageDigest']) {
+    if (observed[key] !== policy.toolchain[key]) fail('Observed toolchain identity does not match the release policy');
+  }
+  if (policy.toolchain.containerDigest !== null && observed.containerDigest !== policy.toolchain.containerDigest) {
+    fail('Observed toolchain identity does not match the release policy');
+  }
   const sourceBudget = { bytes: 0, files: 0 };
   const sourceFiles = projectSources(root, policy.outputDir, policy.sensitiveSourceFixtures, LIMITS, sourceBudget)
     .map(({ bytes, ...entry }) => entry);
