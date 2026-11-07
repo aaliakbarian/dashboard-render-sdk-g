@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "outputDir": "artifacts/release",
+  "inventories": {
+    "dependencies": "licenses/dependency-inventory.json",
+    "sources": "licenses/source-inventory.json",
+    "assets": "licenses/asset-inventory.json",
+    "notices": "THIRD_PARTY_NOTICES.md"
+  },
+  "grafana": {
+    "root": ".grafana-source/grafana-v13.2.3",
+    "revision": "6193dc03311b631b9727b560d24369e683dc396e",
+    "licenseFiles": [
+      "LICENSE",
+      "LICENSING.md",
+      "NOTICE.md"
+    ],
+    "buildSourceFiles": [
+      {
+        "path": "packages/grafana-ui/src/components/RadialGauge/constants.ts",
+        "license": "Apache-2.0"
+      },
+      {
+        "path": "packages/grafana-ui/src/components/Table/TableNG/types.ts",
+        "license": "Apache-2.0"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "provider-13",
+      "root": "artifacts/sdk/provider-13",
+      "evidence": "artifacts/sdk/provider-13/evidence/bundle-evidence.json"
+    },
+    {
+      "id": "sdk-host",
+      "root": "artifacts/sdk/host",
+      "evidence": "artifacts/sdk/host/evidence/bundle-evidence.json"
+    }
+  ],
+  "buildInputs": [
+    "package.json",
+    "yarn.lock",
+    ".yarnrc.yml",
+    "dev/container/Dockerfile",
+    "dev/container/entrypoint.sh",
+    "compose.yaml",
+    "packages/provider-13/package.json",
+    "packages/provider-13/vite.config.ts",
+    "apps/sdk-host/package.json",
+    "apps/sdk-host/vite.config.ts"
+  ],
+  "firstPartyPackages": [
+    "packages/provider-contract/package.json",
+    "packages/core/package.json",
+    "packages/provider-13/package.json",
+    "apps/sdk-host/package.json"
+  ],
+  "toolchain": {
+    "node": "22.23.3",
+    "yarn": "4.17.1",
+    "containerImage": "dashboard-render-sdk-g-poc-dev:local",
+    "containerDigest": "sha256:9655bd6c5a4057d18d123c8100d3795b0a389d8ee7bf1c47b8e297d02ee426eb",
+    "baseImage": "node:22.23.3-bookworm",
+    "baseImageDigest": "sha256:69a5713e7f4997e96d579aafd78734810e0dac0dd5ee4621d72c27a2891a4088"
+  },
+  "sensitiveSourceFixtures": [
+    {
+      "path": "scripts/release-evidence.test.mjs",
+      "sha256": "5ee62b3e7861cbd6a3fd60cd22c33977efd7fee5edb008ca67930a4d177bec7a"
+    },
+    {
+      "path": "scripts/third-party-license-gate.test.mjs",
+      "sha256": "a7e5f8ac2124e019b480cf889318f727b3c5ab81063f791c419123cc458faade"
+    }
+  ]
+}
