@@ -115,4 +115,3 @@ themselves settle AGPL corresponding-source obligations. Qualified review must
 confirm whether the bounded Grafana source closure is sufficient or whether a
 complete upstream source offer is required. Do not claim public-release
 readiness until issues #64 and #65 have both passed their separate gates.
-

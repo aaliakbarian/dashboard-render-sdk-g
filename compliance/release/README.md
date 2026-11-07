@@ -71,4 +71,3 @@ offer the complete upstream Grafana repository or other material.
 Issue #64 remains `blocked-legal-review` for the exact components recorded in
 `licenses/dependency-inventory.json`. A passing issue #65 tool does not clear
 those conflicts and does not make the project publication-ready.
-

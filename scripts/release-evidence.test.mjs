@@ -492,4 +492,3 @@ test('CLI rejects unknown modes and oversized policy before traversal', async t 
   assert.notEqual(large.status, 0);
   assert.match(large.stderr, /limit/i);
 });
-

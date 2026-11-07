@@ -2,8 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task by task with TDD and one fresh whole-branch review.
 
-**Issue:** #65 — Source Availability, Reproducibility and SBOM  
-**Baseline:** `5bccabbaaea8d291d0d8fd4dabea4ce789571cd0`  
+**Issue:** #65 — Source Availability, Reproducibility and SBOM
+**Baseline:** `5bccabbaaea8d291d0d8fd4dabea4ce789571cd0`
 **Branch:** `phase2/source-reproducibility-sbom`
 
 ## Goal
@@ -156,4 +156,3 @@ findings in one focused TDD pass.
   input is reported without claiming byte reproducibility.
 - #64's legal-review blockers remain explicit, and no public-release readiness
   is claimed.
-
